@@ -1,0 +1,142 @@
+(() => {
+  'use strict';
+  const targetBytes = 4_100_000; // safely under Pages CMS's ~4.5 MB upload limit
+  const output = document.getElementById('output');
+  const form = document.getElementById('form');
+  const submit = document.getElementById('submit');
+  const enc = new TextEncoder();
+  const xmp = `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/"><dc:creator><rdf:Seq><rdf:li>Nicholas Kincaid</rdf:li></rdf:Seq></dc:creator><dc:rights><rdf:Alt><rdf:li xml:lang="x-default">© Nicholas Kincaid. All rights reserved.</rdf:li></rdf:Alt></dc:rights><photoshop:Credit>Nicholas Kincaid</photoshop:Credit><xmpRights:Marked>True</xmpRights:Marked></rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>`;
+  function segment(payload) {
+    const len = payload.byteLength + 2;
+    if (len > 65535) throw new Error('Photo metadata segment too large');
+    const result = new Uint8Array(len + 2);
+    result[0] = 0xff;result[1] = 0xe1;result[2] = len >>> 8;result[3] = len & 255;
+    result.set(payload, 4);return result;
+  }
+  const xmpPayload = (() => {
+    const header = enc.encode('http://ns.adobe.com/xap/1.0/\0');
+    const xml = enc.encode(xmp);
+    const result = new Uint8Array(header.length + xml.length);
+    result.set(header); result.set(xml,header.length); return segment(result);
+  })();
+  // A resized JPEG is already oriented by the browser; neutralize EXIF Orientation.
+  function normalizeOrientation(exif) {
+    const result = new Uint8Array(exif);
+    const tiff = 10;
+    if (result.length < 24) return null;
+    const le=result[tiff]===0x49 && result[tiff+1]===0x49;
+    const be=result[tiff]===0x4d && result[tiff+1]===0x4d;
+    if (!le && !be) return null;
+    const view=new DataView(result.buffer);
+    const get16=n=>view.getUint16(n,le), get32=n=>view.getUint32(n,le);
+    const inside=(offset,length)=>Number.isSafeInteger(offset) && Number.isSafeInteger(length) && offset>=0 && length>=0 && offset+length<=result.length;
+    if (get16(tiff+2)!==42) return null;
+    const ifd=tiff+get32(tiff+4);
+    if (!inside(ifd,2)) return null;
+    const count=get16(ifd);
+    if (count>500 || !inside(ifd+2,count*12+4)) return null;
+    const gpsTypeSizes={1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8,11:4,12:8,13:4};
+    for (let j=0;j<count;j++) {
+      const at=ifd+2+j*12, tag=get16(at);
+      if (tag===0x112 && get16(at+2)===3 && get32(at+4)===1) view.setUint16(at+8,1,le);
+      if (tag!==0x8825) continue;
+      if (get16(at+2)!==4 || get32(at+4)!==1) return null;
+      const gps=tiff+get32(at+8);
+      if (!inside(gps,2)) return null;
+      const n=get16(gps);
+      if (n>100 || !inside(gps+2,n*12+4)) return null;
+      for (let j=0;j<n;j++) {
+        const entry=gps+2+j*12;
+        const sz=gpsTypeSizes[get16(entry+2)], items=get32(entry+4);
+        if (!sz || !Number.isSafeInteger(items*sz)) return null;
+        const length=items*sz;
+        if (length>4) {
+          const value=tiff+get32(entry+8);
+          if (!inside(value,length)) return null;
+          result.fill(0,value,value+length);
+        }
+      }
+      result.fill(0,gps,gps+2+n*12+4);
+      view.setUint32(at+8,0,le);
+    }
+    return result;
+  }
+  function exifSegment(bytes) {
+    if (bytes[0]!==0xff || bytes[1]!==0xd8) return null;
+    let at=2;
+    while (at+4<bytes.length && bytes[at]===0xff) {
+      const marker=bytes[at+1];
+      if (marker===0xda || marker===0xd9) break;
+      const length=(bytes[at+2]<<8)+bytes[at+3];
+      if (length<2 || at+2+length>bytes.length) break;
+      if (marker===0xe1 && bytes[at+4]===0x45 && bytes[at+5]===0x78 && bytes[at+6]===0x69 && bytes[at+7]===0x66 && bytes[at+8]===0 && bytes[at+9]===0) {
+        return normalizeOrientation(bytes.slice(at,at+length+2));
+      }
+      at+=length+2;
+    }
+    return null;
+  }
+  async function toBlob(canvas,quality) {
+    return new Promise((resolve,reject) => canvas.toBlob(blob => blob?resolve(blob):reject(new Error('JPEG export failed')),'image/jpeg',quality));
+  }
+  async function prepare(file) {
+    const inputUrl=URL.createObjectURL(file);
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file,{imageOrientation:'from-image'});
+    } finally { URL.revokeObjectURL(inputUrl); }
+    let size=Math.min(1,2800/Math.max(bitmap.width,bitmap.height));
+    let buffer;
+    let exif=null;
+    if (/image\/jpeg/i.test(file.type) || /\.jpe?g$/i.test(file.name)) {
+      const source=new Uint8Array(await file.arrayBuffer());
+      exif=exifSegment(source);
+    }
+    const addon = 2+xmpPayload.length+(exif?.length||0);
+    let dimensions='';
+    for (let round=0;round<12;round++) {
+      const width=Math.max(1,Math.round(bitmap.width*size));
+      const height=Math.max(1,Math.round(bitmap.height*size));
+      const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if (!ctx) throw new Error('Image processing unavailable');
+      ctx.fillStyle='white';ctx.fillRect(0,0,width,height);
+      ctx.drawImage(bitmap,0,0,width,height);
+      dimensions=`${width} × ${height}`;
+      for (const quality of [.88,.82,.75,.68,.58,.48]) {
+        const jpeg=await toBlob(canvas,quality);
+        if (jpeg.size+addon<=targetBytes) {buffer=new Uint8Array(await jpeg.arrayBuffer());break;}
+      }
+      if (buffer) break;
+      size*=.82;
+    }
+    if (bitmap.close) bitmap.close();
+    if (!buffer) throw new Error('Could not reduce image below the upload size limit');
+    const prefix=[buffer.subarray(0,2)];
+    if (exif) prefix.push(exif);
+    prefix.push(xmpPayload);
+    prefix.push(buffer.subarray(2));
+    const blob=new Blob(prefix,{type:'image/jpeg'});
+    const filename=file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]+/g,'-')+'-web.jpg';
+    return {blob,filename,dimensions};
+  }
+  function fmt(n) {return (n/1_000_000).toFixed(2)+' MB';}
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const files=Array.from(document.getElementById('photos').files||[]);
+    if (!files.length) return;
+    output.replaceChildren();submit.disabled=true;
+    try {
+      for (const file of files) {
+        const item=document.createElement('div');item.className='item';
+        const status=document.createElement('span');status.textContent=`${file.name} — preparing…`;
+        item.appendChild(status);output.appendChild(item);
+        try {
+          const {blob,filename,dimensions}=await prepare(file);
+          const a=document.createElement('a');a.className='download';a.href=URL.createObjectURL(blob);a.download=filename;a.textContent='Save JPEG';
+          status.textContent=`${file.name} → ${fmt(blob.size)} · ${dimensions}`;item.appendChild(a);
+        } catch (error) {status.textContent=`${file.name}: ${error.message}`;}
+      }
+    } finally {submit.disabled=false;}
+  });
+})();
