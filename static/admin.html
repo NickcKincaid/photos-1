@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; connect-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'"><meta name="referrer" content="same-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; connect-src 'self'; script-src 'self'; style-src 'self'; frame-src https://www.youtube-nocookie.com https://open.spotify.com; object-src 'none'; base-uri 'none'; form-action 'self'"><meta name="referrer" content="same-origin">
   <title>Editor — Photography</title>
   <link rel="stylesheet" href="/admin/admin.css">
   <script src="/admin/admin-processing.js" defer></script>
   <script src="/admin/admin.js" defer></script>
+  <script src="/admin/admin-note-format.js" defer></script>
   <script src="/admin/admin-notes.js" defer></script>
 </head>
 <body>
@@ -36,7 +37,7 @@
           <p class="muted">Images are resized on your device, credited, and stored in Cloudflare R2. Your originals remain untouched. Project information stays in GitHub.</p>
         </div>
         <div id="photos" class="photos"></div>
-        <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><button type="button" id="migrate-r2" hidden>Copy older photos to R2</button><button type="button" id="purge-github" hidden>Remove old GitHub copies</button><button type="button" id="delete-project" class="delete-project" hidden>Delete project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
+        <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><button type="button" id="delete-project" class="delete-project" hidden>Delete project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
       </form>
     </section>
   </main>
@@ -50,7 +51,20 @@
       <form id="note-form" hidden>
         <div class="note-edit-fields">
           <label>Title<input type="text" id="note-title" maxlength="120" required placeholder="Note title"></label>
-          <label>Text<textarea id="note-body" rows="13" maxlength="12000" required placeholder="Write your note here. Blank lines create paragraphs."></textarea></label>
+          <div class="note-editor-label">Text <span class="muted">Lightweight formatting, no HTML required</span></div>
+          <div class="note-toolbar" role="toolbar" aria-label="Note formatting">
+            <button type="button" data-note-format="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" data-note-format="italic" title="Italic (Ctrl+I)"><em>I</em></button>
+            <button type="button" data-note-format="heading" title="Heading">Heading</button>
+            <button type="button" data-note-format="bullet" title="Bullet list">List</button>
+            <button type="button" data-note-format="quote" title="Quotation">Quote</button>
+            <button type="button" data-note-format="link" title="Insert link">Link</button>
+            <button type="button" data-note-format="embed" title="Embed Spotify or YouTube">YouTube / Spotify</button>
+            <button type="button" id="note-preview-toggle" aria-pressed="false">Preview</button>
+          </div>
+          <label class="note-body-label"><span class="visually-hidden">Text</span><textarea id="note-body" rows="15" maxlength="12000" required placeholder="Write your note here. Paste a Spotify or YouTube URL on its own line to embed it."></textarea></label>
+          <div id="note-preview" class="note-preview note-body" hidden aria-label="Note preview"></div>
+          <p class="muted note-editor-help">Use **bold**, *italic*, # headings, - lists, > quotations, [text](https://example.com), or paste a Spotify/YouTube link on a separate line. Raw HTML isn't supported.</p>
           <label class="check"><input type="checkbox" id="note-published"> Publish this note</label>
           <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site.</p>
         </div>

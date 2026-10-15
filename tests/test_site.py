@@ -95,7 +95,7 @@ class PortfolioBuildTests(unittest.TestCase):
             'gallery': [], 'photo_details': [{'image': '/media/test/pic.jpg', 'id': 'c'*24}]}))
         self.site.run()
         page = (self.root / 'dist' / 'projects' / 'test' / 'index.html').read_text()
-        self.assertIn('href="?photo=' + 'c'*24 + '"', page)
+        self.assertIn('href="#photo=' + 'c'*24 + '"', page)
         self.assertIn('data-full-src="/media/test/pic.jpg', page)
         self.assertIn('project-bottom-inquiry', page)
         self.assertIn('mailto:nicholas.kincaid2@gmail.com', page)

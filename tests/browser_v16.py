@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory() as td:
     base=Path(td)
-    for item in ['build.py','photo_exif.py']: shutil.copy2(ROOT/item,base/item)
+    for item in ['build.py','photo_exif.py','note_format.py']: shutil.copy2(ROOT/item,base/item)
     shutil.copytree(ROOT/'static',base/'static')
     (base/'content'/'projects').mkdir(parents=True)
     (base/'content'/'notes').mkdir(parents=True)
@@ -47,8 +47,7 @@ with tempfile.TemporaryDirectory() as td:
             # A fresh deep link opens the same viewer; simulated URL because test
             # environment blocks navigation to HTTP and file URLs.
             patched=(dist/'site.js').read_text().replace(
-                "const id = new URL(location.href).searchParams.get('photo');",
-                "const id = new URL('https://nickckincaid.com/projects/test/?photo="+'c'*24+"').searchParams.get('photo');")
+                'const deepLink = selectedFromUrl();', 'const deepLink = 0;')
             deep=browser.new_page(viewport=size)
             deep.set_content(html)
             deep.add_style_tag(content=(dist/'style.css').read_text())
@@ -71,6 +70,7 @@ with tempfile.TemporaryDirectory() as td:
                 if (opts.method === 'POST') return {ok:true,json:async()=>({ok:true,slug:'test-note'})};
                 return {ok:true,json:async()=>({ok:true})};
             }; }''')
+            editor.add_script_tag(content=(dist/'admin'/'admin-note-format.js').read_text())
             editor.add_script_tag(content=(dist/'admin'/'admin-notes.js').read_text())
             editor.locator('#show-notes').click()
             editor.locator('#add-note').click()

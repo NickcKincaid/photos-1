@@ -17,6 +17,7 @@ from pathlib import Path
 from urllib.parse import urlparse, quote
 
 from photo_exif import read_exif
+from note_format import render_note
 
 ROOT = Path(__file__).resolve().parent
 CONTENT = ROOT / 'content'
@@ -323,7 +324,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     items = []
     for idx, image in enumerate(images, start=1):
         items.append(f'''<figure class="gallery-item">
-  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="?photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" aria-label="Open photograph {idx} in viewer">
+  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="#photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" aria-label="Open photograph {idx} in viewer">
     <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1, p)} alt="{esc(image_alt(p, image, p['title'] + ', photograph ' + str(idx)))}">
   </a>
   {photo_caption(idx, len(images), image, p)}
@@ -371,9 +372,7 @@ def load_notes() -> list[dict]:
 
 
 def note_content(note: dict) -> str:
-    # Notes are plain text, never interpreted as HTML or Markdown. Preserve paragraphs.
-    sections = re.split(r'\n\s*\n', note['body'].replace('\r\n', '\n'))
-    return '<div class="note-body">' + ''.join(f'<p>{esc(part.strip())}</p>' for part in sections if part.strip()) + '</div>'
+    return render_note(note['body'])
 
 
 def timestamp(note: dict) -> str:
@@ -429,7 +428,7 @@ def run() -> None:
     shutil.copy2(ROOT / 'static' / 'prepare.js', prep_dir / 'prepare.js')
     admin_dir = OUT / 'admin'
     admin_dir.mkdir(parents=True, exist_ok=True)
-    for src, dest in [('admin.html', 'index.html'), ('admin.css', 'admin.css'), ('admin.js', 'admin.js'), ('admin-notes.js', 'admin-notes.js'), ('admin-processing.js', 'admin-processing.js')]:
+    for src, dest in [('admin.html', 'index.html'), ('admin.css', 'admin.css'), ('admin.js', 'admin.js'), ('admin-note-format.js', 'admin-note-format.js'), ('admin-notes.js', 'admin-notes.js'), ('admin-processing.js', 'admin-processing.js')]:
         shutil.copy2(ROOT / 'static' / src, admin_dir / dest)
     if (ROOT / 'media').exists():
         shutil.copytree(ROOT / 'media', OUT / 'media', ignore=shutil.ignore_patterns('_unused'), dirs_exist_ok=True)

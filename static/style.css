@@ -124,3 +124,31 @@ body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: col
   .lightbox-image { width: 100%; height: 100%; max-width: 100%; max-height: 100%; }
   .lightbox-bottom { padding: 7px 12px 14px; min-height: 48px; }
 }
+
+/* V17: footer stays at the page bottom, even when Notes is empty. */
+html { min-height: 100%; }
+body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+body > main { flex: 1 0 auto; }
+.site-footer { margin-top: auto; flex-shrink: 0; }
+
+/* Give title and navigation room; on narrow phones use two deliberate rows. */
+.site-header { min-height: 60px; height: auto; padding-top: 15px; padding-bottom: 15px; gap: 30px; justify-content: space-between; }
+.site-nav { margin-left: auto; gap: clamp(20px, 3vw, 42px); white-space: nowrap; }
+@media (max-width: 600px) {
+  .site-header { min-height: 77px; padding-top: 12px; padding-bottom: 13px; display: flex; flex-wrap: wrap; gap: 10px 0; }
+  .brand { width: 100%; }
+  .site-nav { width: 100%; margin-left: 0; justify-content: flex-start; gap: clamp(24px, 8vw, 42px); }
+}
+
+/* Notes: typography remains <=12px, embeds are bounded within text width. */
+.note-body h2, .note-body h3 { font: 700 12px/1.45 var(--font); margin: 17px 0 6px; }
+.note-body ul, .note-body ol { padding-left: 20px; margin: 0 0 12px; }
+.note-body li { margin: 0 0 4px; }
+.note-body blockquote { margin: 8px 0 12px; padding-left: 12px; border-left: 1px solid #b0b3aa; color: var(--muted); }
+.note-body a { text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.note-body code { font-size: 11px; background: #eaeae5; padding: 1px 3px; }
+.note-body .note-embed { margin: 12px 0 17px; width: 100%; max-width: 680px; overflow: hidden; }
+.note-embed iframe { display: block; width: 100%; max-width: 100%; border: 0; background: #e8e9e4; }
+.note-embed-video { aspect-ratio: 16 / 9; }
+.note-embed-video iframe { height: 100%; }
+.note-embed-spotify iframe { min-height: 152px; }

@@ -4,7 +4,8 @@
     "/admin",
     "/admin/*",
     "/api/*",
-    "/media/*"
+    "/media/*",
+    "/projects/*"
   ],
   "exclude": []
 }

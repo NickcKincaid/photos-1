@@ -17,15 +17,18 @@
   let touchStart = null;
   const sourceURL = new URL(window.location.href);
   sourceURL.searchParams.delete('photo');
+  if (sourceURL.hash.startsWith('#photo=')) sourceURL.hash = '';
   const baseURL = sourceURL.pathname + sourceURL.search + sourceURL.hash;
 
   function urlFor(index) {
     const url = new URL(window.location.href);
-    url.searchParams.set('photo', items[index].dataset.photoId || String(index + 1));
+    url.searchParams.delete('photo');
+    url.hash = 'photo=' + encodeURIComponent(items[index].dataset.photoId || String(index + 1));
     return url.pathname + url.search + url.hash;
   }
   function selectedFromUrl() {
-    const id = new URL(location.href).searchParams.get('photo');
+    const url = new URL(location.href);
+    const id = url.hash.startsWith('#photo=') ? decodeURIComponent(url.hash.slice(7)) : url.searchParams.get('photo');
     if (!id) return -1;
     const byId = items.findIndex(item => item.dataset.photoId === id);
     if (byId !== -1) return byId;
@@ -154,16 +157,19 @@
     if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) navigate(dx < 0 ? 1 : -1);
   }, { passive: true });
 
-  window.addEventListener('popstate', () => {
+  function syncAddress() {
     const selected = selectedFromUrl();
     if (selected !== -1) {
       if (!dialog.open) dialog.showModal();
       show(selected);
     } else dismiss(true);
-  });
+  }
+  window.addEventListener('popstate', syncAddress);
+  window.addEventListener('hashchange', syncAddress);
   // Direct links work when opened in a fresh tab as well as after browser Back.
   const deepLink = selectedFromUrl();
   if (deepLink !== -1) {
+    if (new URL(location.href).searchParams.has('photo')) safeHistory('replaceState', null, urlFor(deepLink));
     lastFocus = items[deepLink];
     dialog.showModal();
     show(deepLink);
@@ -178,7 +184,7 @@
   });
   dialog.addEventListener('cancel', event => { event.preventDefault(); dismiss(); });
   dialog.addEventListener('close', () => {
-    if (new URL(location.href).searchParams.has('photo')) safeHistory('replaceState', null, baseURL);
+    if (selectedFromUrl() !== -1) safeHistory('replaceState', null, baseURL);
     image.removeAttribute('src');
     lastFocus?.focus({ preventScroll: true });
   });

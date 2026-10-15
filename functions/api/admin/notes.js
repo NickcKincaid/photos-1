@@ -33,7 +33,7 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   try {
-    const bytes = await readLimited(context.request, 18000);
+    const bytes = await readLimited(context.request, 55000);
     let input;
     try { input = JSON.parse(new TextDecoder('utf-8', {fatal:true}).decode(bytes)); }
     catch { bad('Invalid note data.'); }

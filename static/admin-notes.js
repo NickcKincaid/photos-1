@@ -6,6 +6,8 @@
   if (!pane || !projectPane) return;
   const tabs = [$('show-projects'), $('show-notes')];
   let notes = [], selected = null, dirty = false, busy = false, loaded = false;
+  let previewVisible = false;
+  let previewTimer = null;
   window.photoNotesHasPendingChanges = () => dirty || busy;
   const showStatus = (message, error=false) => { $('notes-status').textContent = message; $('notes-status').className = error ? 'status error' : 'status'; };
   const make = (tag, text='', className='') => { const el = document.createElement(tag); el.textContent = text; if(className)el.className = className; return el; };
@@ -26,6 +28,7 @@
     dirty = false;
     $('note-title').value = note?.title || '';
     $('note-body').value = note?.body || '';
+    if (previewVisible) renderPreview();
     $('note-published').checked = Boolean(note?.published);
     $('delete-note').hidden = !note?.slug;
     $('note-form').hidden = false;
@@ -67,8 +70,75 @@
   }
   tabs[0].addEventListener('click', () => switchTo('projects'));
   tabs[1].addEventListener('click', () => switchTo('notes'));
+  const noteArea = $('note-body');
+  const preview = $('note-preview');
+  function renderPreview() {
+    window.NoteFormatter?.render(preview, noteArea.value);
+    if (!noteArea.value.trim()) preview.textContent = 'Start writing to preview your note.';
+  }
+  $('note-preview-toggle').addEventListener('click', () => {
+    previewVisible = !previewVisible;
+    preview.hidden = !previewVisible;
+    $('note-preview-toggle').setAttribute('aria-pressed', String(previewVisible));
+    $('note-preview-toggle').textContent = previewVisible ? 'Hide preview' : 'Preview';
+    if (previewVisible) renderPreview();
+  });
+  function replaceSelection(prefix, suffix='', placeholder='text') {
+    const start = noteArea.selectionStart, end = noteArea.selectionEnd;
+    const selectedText = noteArea.value.slice(start, end) || placeholder;
+    const inserted = prefix + selectedText + suffix;
+    if (noteArea.value.length - (end-start) + inserted.length > noteArea.maxLength) {
+      showStatus('This note has reached the maximum length.', true);return;
+    }
+    noteArea.setRangeText(inserted, start, end, 'select');
+    const from = start + prefix.length;
+    noteArea.setSelectionRange(from,from+selectedText.length);
+    noteArea.focus();noteArea.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  function prefixLine(prefix) {
+    const start=noteArea.value.lastIndexOf('\n',noteArea.selectionStart-1)+1;
+    if (noteArea.value.length+prefix.length>noteArea.maxLength) return;
+    noteArea.setRangeText(prefix,start,start,'end');
+    noteArea.focus();noteArea.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  function addEmbed(url) {
+    if (!window.NoteFormatter?.embedSource(url)) {showStatus('Paste a valid YouTube or Spotify share link.',true);return;}
+    const start=noteArea.selectionStart, end=noteArea.selectionEnd;
+    const before=noteArea.value.slice(0,start),after=noteArea.value.slice(end);
+    const inserted = (before && !before.endsWith('\n\n')?'\n\n':'')+url.trim()+(after && !after.startsWith('\n\n')?'\n\n':'');
+    if (noteArea.value.length-(end-start)+inserted.length > noteArea.maxLength) {showStatus('The note is too long.',true);return;}
+    noteArea.setRangeText(inserted,start,end,'end');noteArea.focus();noteArea.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  document.querySelectorAll('[data-note-format]').forEach(button => button.addEventListener('click', () => {
+    if (busy) return;
+    switch(button.dataset.noteFormat) {
+      case 'bold': replaceSelection('**','**'); break;
+      case 'italic': replaceSelection('*','*'); break;
+      case 'heading': prefixLine('# '); break;
+      case 'bullet': prefixLine('- '); break;
+      case 'quote': prefixLine('> '); break;
+      case 'link': {
+        const url = window.prompt('Enter a web link (https://...) or email address (mailto:...):','https://');
+        if (url === null) break;
+        if (!/^(https?:\/\/|mailto:)[^\s]+$/.test(url.trim())) {showStatus('Use an http(s) or mailto URL.',true);break;}
+        replaceSelection('[',']('+url.trim()+')','link text');break;
+      }
+      case 'embed': {
+        const url = window.prompt('Paste a YouTube or Spotify share URL:','https://');
+        if (url !== null) addEmbed(url);break;
+      }
+    }
+  }));
+  noteArea.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && !event.altKey) {
+      const command=event.key.toLowerCase();
+      if (command === 'b' || command === 'i') {
+        event.preventDefault();replaceSelection(command === 'b'?'**':'*',command === 'b'?'**':'*');
+      }
+    }
+  });
   $('add-note').addEventListener('click', () => newSelection(null));
-  for (const id of ['note-title', 'note-body']) $(id).addEventListener('input', () => { dirty = true; });
+  for (const id of ['note-title', 'note-body']) $(id).addEventListener('input', () => { dirty = true; if (id === 'note-body' && previewVisible) { clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 250); } });
   $('note-published').addEventListener('change', () => { dirty = true; });
   window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
   $('note-form').addEventListener('submit', async e => {

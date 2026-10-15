@@ -89,3 +89,15 @@ test('limit note text and reject empty posts', async () => {
     assert.equal(mock.db.size,0);
   } finally {mock.restore();}
 });
+
+
+test('non-ASCII notes within character limit save without false request size failure',async () => {
+  const mock=githubMock();
+  try {
+    const body='写真'.repeat(4200);
+    const res=await onRequestPost(context('POST',{title:'Japanese note',body,published:false}));
+    assert.equal(res.status,200);
+    const data=await res.json();
+    assert.equal(mock.db.get(data.slug).note.body,body);
+  } finally {mock.restore();}
+});

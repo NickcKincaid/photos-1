@@ -42,7 +42,7 @@
     $('project-published').checked=project ? Boolean(project.published):false;
     $('editor-form').hidden=false;
     status(project ? 'Editing project. Changes appear after Cloudflare redeploys.' : 'New project. Add photos and save when ready.');
-    renderList();renderPhotos();updateDeleteState();updateMigrationState();
+    renderList();renderPhotos();updateDeleteState();
   }
   function updateOrderState() {
     const save = $('save-order');
@@ -112,17 +112,6 @@
     } catch(err) {status(err.message,'error');}
     finally {locked=false;$('publish').disabled=false;renderList();}
   });
-  function updateMigrationState() {
-    const button=$('migrate-r2');
-    if(!button)return;
-    button.hidden=!current?.slug || !photos.some(p=>p.kind==='existing' && p.meta?.storage!=='r2');
-    button.disabled=locked;
-    const purge=$('purge-github');
-    if(purge){
-      purge.hidden=!current?.slug || !photos.length || photos.some(p=>p.meta?.storage!=='r2');
-      purge.disabled=locked;
-    }
-  }
   function move(i,d) {const next=i+d;if(next<0 || next>=photos.length)return;[photos[i],photos[next]]=[photos[next],photos[i]];markDirty();renderPhotos();}
   function renderPhotos() {
     const container=$('photos');container.replaceChildren();
@@ -144,7 +133,6 @@
       }
       more.appendChild(grid);detail.appendChild(more);row.appendChild(detail);container.appendChild(row);
     });
-    updateMigrationState();
   }
   async function loadProjects(selectSlug) {
     const {projects:items}=await api('projects');projects=items;
@@ -222,41 +210,6 @@
       status(saved.cleanupWarning || 'Project saved. Cloudflare will publish shortly. Photographs are in R2.',saved.cleanupWarning?'error':'good');
     } catch(err){status(err.message,'error');}
     finally{locked=false;$('publish').disabled=false;renderList();renderPhotos();}
-  });
-  $('migrate-r2').addEventListener('click',async()=>{
-    if(locked || !current?.slug)return;
-    if(dirty || orderDirty){status('Save pending changes before migrating.','error');return;}
-    const source=photos.filter(p=>p.kind==='existing' && p.meta?.storage!=='r2');
-    if(!source.length)return;
-    if(!confirm(`Copy ${source.length} older photograph(s) to R2? This does not delete the GitHub originals.`))return;
-    locked=true;$('publish').disabled=true;updateMigrationState();
-    try {
-      for(const [i,p] of source.entries()) {
-        status(`Copying ${i+1}/${source.length} from GitHub to R2…`);
-        await api('migrate',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({slug:current.slug,path:p.path})});
-        p.meta.storage='r2';markDirty();
-      }
-      status('Photos copied to R2. Click Save project to finish migration. GitHub originals were not deleted.','good');
-    }catch(err){status('Migration stopped: '+err.message+'; copied images are safe. Save this project to record those already migrated.','error');}
-    finally {locked=false;$('publish').disabled=false;renderPhotos();}
-  });
-  $('purge-github').addEventListener('click',async()=>{
-    if(locked || !current?.slug)return;
-    if(dirty||orderDirty){status('Save changes and refresh before removing old GitHub copies.','error');return;}
-    const title=String(current.title||'').trim();
-    const typed=prompt(`After copying to R2, remove this project's current GitHub image copies?\n`+
-      'Existing R2 files are checked first. GitHub history is NOT erased.\n\n'+
-      `Type the project name to proceed: ${title}`);
-    if(typed===null)return;
-    if(typed.trim()!==title){status('Cancelled: project name did not match.','error');return;}
-    locked=true;$('publish').disabled=true;updateMigrationState();
-    try {
-      const result=await api('purge',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({slug:current.slug,revision:current.revision,confirmTitle:title})});
-      status(`Removed ${result.removed} current GitHub photograph(s); ${result.shared} shared photo(s) retained. Previous commits still contain old copies.`, 'good');
-    }catch(e){status('Cleanup cancelled: '+e.message,'error');}
-    finally{locked=false;$('publish').disabled=false;updateMigrationState();}
   });
   $('delete-project').addEventListener('click', async () => {
     if (locked || !current?.slug) return;
