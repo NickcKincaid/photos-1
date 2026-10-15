@@ -1,0 +1,14 @@
+{
+  "title": "test",
+  "published": true,
+  "order": 1,
+  "cover": "/media/test/test-01-c19be7aeafd243ffb616f3f3.jpg",
+  "gallery": [],
+  "photo_details": [
+    {
+      "image": "/media/test/test-01-c19be7aeafd243ffb616f3f3.jpg",
+      "id": "c48f117ebe1c41a29b0711c2",
+      "storage": "r2"
+    }
+  ]
+}
