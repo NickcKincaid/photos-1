@@ -57,7 +57,10 @@ def ordered_images(data: dict) -> list[tuple[str, Path]]:
     raw = [data.get('cover'), *(data.get('gallery') or [])]
     images: list[tuple[str, Path]] = []
     seen: set[Path] = set()
+    r2_urls = {p.get('image') for p in data.get('photo_details', []) if isinstance(p, dict) and p.get('storage') == 'r2'}
     for item in raw:
+        if item in r2_urls:
+            continue
         source = media_path(item)
         if source and source not in seen:
             seen.add(source)
@@ -74,7 +77,7 @@ def ensure_photo_ids(content: dict, images: list[tuple[str, Path]]) -> bool:
     # Drop stale metadata for removed photos. Old numbered paths may be reused
     # by a different image after reordering, so stale IDs would be dangerous.
     active = {url for url, _ in images}
-    clean = [p for p in details if isinstance(p, dict) and p.get('image') in active]
+    clean = [p for p in details if isinstance(p, dict) and (p.get('image') in active or p.get('storage') == 'r2')]
     changed = len(clean) != len(details)
     if changed:
         details[:] = clean

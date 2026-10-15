@@ -30,11 +30,11 @@
           <div class="upload-label"><strong>Photographs</strong><span class="muted">First photo = cover. Use arrows to reorder.</span></div>
           <label class="file-button" for="photo-files">+ Add photos</label>
           <input type="file" id="photo-files" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple>
-          <p class="muted">Drafts are unlisted, not private: your GitHub repository may be publicly readable.</p>
-          <p class="muted">Images are resized on your device to JPEG, usually below 2.6 MB each. Your originals remain untouched. New uploads are credited and numbered automatically after publishing.</p>
+          <p class="muted">Drafts are unlisted, not confidential. Anyone with the exact media URL may still view uploaded photographs.</p>
+          <p class="muted">Images are resized on your device, credited, and stored in Cloudflare R2. Your originals remain untouched. Project information stays in GitHub.</p>
         </div>
         <div id="photos" class="photos"></div>
-        <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
+        <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><button type="button" id="migrate-r2" hidden>Copy older photos to R2</button><button type="button" id="purge-github" hidden>Remove old GitHub copies</button><button type="button" id="delete-project" class="delete-project" hidden>Delete project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
       </form>
     </section>
   </main>

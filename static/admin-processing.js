@@ -77,6 +77,68 @@
   async function toBlob(canvas,quality) {
     return new Promise((resolve,reject) => canvas.toBlob(blob => blob?resolve(blob):reject(new Error('JPEG export failed')),'image/jpeg',quality));
   }
+  function cameraMetadata(jpeg) {
+    // Small read-only EXIF parser for the exposure fields that were previously
+    // extracted by Python from local GitHub files during a build.
+    const raw=exifSegment(jpeg);
+    if (!raw || raw.length < 24) return {};
+    try {
+      const start=10, view=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);
+      const le=raw[start]===0x49;
+      const u16=at=>view.getUint16(at,le), u32=at=>view.getUint32(at,le);
+      const valid=(at,n)=>at>=0 && n>=0 && at+n<=raw.length;
+      const kinds={1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
+      function fields(pos) {
+        if(!valid(pos,2)) return new Map();
+        const n=u16(pos);if(n>300 || !valid(pos+2,n*12+4))return new Map();
+        const items=new Map();
+        for(let i=0;i<n;i++){
+          const at=pos+2+i*12, tag=u16(at),type=u16(at+2),count=u32(at+4);
+          const bytes=(kinds[type]||0)*count;
+          if(!bytes || bytes>2000)continue;
+          const offset=bytes<=4?at+8:start+u32(at+8);
+          if(!valid(offset,bytes))continue;
+          if(type===2){const slice=raw.slice(offset,offset+bytes);items.set(tag,new TextDecoder('latin1').decode(slice).replace(/\0.*$/,'').trim());}
+          else if(type===3 && count===1)items.set(tag,u16(offset));
+          else if(type===4 && count===1)items.set(tag,u32(offset));
+          else if((type===5 || type===10) && count===1){
+            const a=type===5?u32(offset):view.getInt32(offset,le),b=type===5?u32(offset+4):view.getInt32(offset+4,le);
+            if(b) items.set(tag,a/b);
+          }
+        }
+        return items;
+      }
+      const root=fields(start+u32(start+4));
+      const exif=fields(start+(root.get(0x8769)||0));
+      const fmt=x=>Math.round(x*10)/10;
+      const out={};
+      if(root.get(0x0110))out.camera=root.get(0x0110);
+      if(exif.get(0xA434))out.lens=exif.get(0xA434);
+      if(exif.get(0x920A))out.focal_length=fmt(exif.get(0x920A))+' mm';
+      if(exif.get(0x829D))out.aperture='f/'+fmt(exif.get(0x829D));
+      if(exif.get(0x829A)){
+        const secs=exif.get(0x829A);out.shutter_speed=secs<1?'1/'+Math.round(1/secs):fmt(secs)+' s';
+      }
+      if(exif.get(0x8827))out.iso=String(exif.get(0x8827));
+      return out;
+    }catch{return {};}
+  }
+  async function variants(blob) {
+    const bitmap=await createImageBitmap(blob);
+    try {
+      const result=[];
+      for(const width of [640,1280]) {
+        const w=Math.min(width,bitmap.width);
+        if(result.some(x=>x.width===w))continue;
+        const h=Math.max(1,Math.round(bitmap.height*w/bitmap.width));
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(bitmap,0,0,w,h);
+        const thumb=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.78));
+        if(thumb && thumb.type==='image/webp')result.push({width:w,blob:thumb});
+      }
+      return result;
+    } finally {bitmap.close?.();}
+  }
   async function prepare(file) {
     // Safari/iPhone photo support: fall back to HTMLImageElement when needed.
     // Always use the browser's upright rendering, then neutralize EXIF Orientation.
@@ -100,9 +162,11 @@
     let size=Math.min(1,2800/Math.max(bitmap.width,bitmap.height));
     let buffer;
     let exif=null;
+    let camera={};
     if (/image\/jpeg/i.test(file.type) || /\.jpe?g$/i.test(file.name)) {
       const source=new Uint8Array(await file.arrayBuffer());
       exif=exifSegment(source);
+      camera=cameraMetadata(source);
     }
     const addon = 2+xmpPayload.length+(exif?.length||0);
     let dimensions='';
@@ -130,7 +194,7 @@
     prefix.push(buffer.subarray(2));
     const blob=new Blob(prefix,{type:'image/jpeg'});
     const filename=file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]+/g,'-')+'-web.jpg';
-    return {blob,filename,dimensions};
+    return {blob,filename,dimensions,meta:camera};
   }
   // Keep only a tiny editor preview in memory. Otherwise 90 prepared uploads
   // would pin up to ~234 MB of full-size JPEG blobs on a phone until navigation.
@@ -163,5 +227,5 @@
     if (!dataUrl.startsWith(prefix)) throw new Error('Photo encoder returned an unexpected format');
     return JSON.stringify({ content: dataUrl.slice(prefix.length), encoding: 'base64' });
   }
-  window.PhotoPrep = { prepare, preview, fmt, toGitHubBlobJSON };
+  window.PhotoPrep = { prepare, preview, variants, fmt, toGitHubBlobJSON };
 })();

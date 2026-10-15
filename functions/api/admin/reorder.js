@@ -7,6 +7,7 @@ export async function onRequestPost(context) {
     const bytes = await readLimited(context.request, 8000);
     const input = JSON.parse(new TextDecoder('utf-8', {fatal:true}).decode(bytes));
     const ordered = input?.slugs;
+    const expected = input?.revisions;
     if (!Array.isArray(ordered) || ordered.length > 40 ||
         ordered.some(v => typeof v !== 'string' || !/^[a-z0-9-]{1,65}$/.test(v)) ||
         new Set(ordered).size !== ordered.length) {
@@ -18,8 +19,15 @@ export async function onRequestPost(context) {
     if (all.length !== ordered.length || ordered.some(s=>!existing.has(s))) {
       return json({error:'Project list has changed. Refresh before saving order.'},409);
     }
+    if (!expected || typeof expected !== 'object' || Array.isArray(expected))
+      return json({error:'Refresh the editor before saving project order.'},409);
     const revisions = await Promise.all(ordered.map(async (slug,i)=>{
       const item = await gh(context, `/contents/content/projects/${slug}.json?ref=main`);
+      if (!/^[a-f0-9]{40}$/i.test(String(expected[slug] || '')) || item.sha !== expected[slug]) {
+        const error = Error('A project changed in GitHub. Refresh before saving order.');
+        error.status = 409;
+        throw error;
+      }
       const project = decodeContent(item.content);
       if (!project || typeof project !== 'object') throw Error('Invalid project document');
       project.order = i+1;

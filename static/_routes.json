@@ -1,5 +1,10 @@
 {
   "version": 1,
-  "include": ["/admin", "/admin/*", "/api/*"],
+  "include": [
+    "/admin",
+    "/admin/*",
+    "/api/*",
+    "/media/*"
+  ],
   "exclude": []
 }

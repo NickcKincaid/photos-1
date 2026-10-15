@@ -19,3 +19,10 @@
 #draft-preview-photos img{display:block;width:100%;height:auto}
 #draft-preview-photos figcaption{margin-top:4px;color:var(--muted);font-size:9px}
 @media(max-width:680px){.project-entry{min-width:170px;border:1px solid var(--line)}.sidebar #project-list{align-items:stretch}.project-entry .project-btn{min-width:100px}.project-move{min-width:24px}#draft-preview-photos{columns:1}}
+
+/* Destructive editing control: visually quiet, but separate from Save. */
+.actions{flex-wrap:wrap}
+.actions .delete-project{background:transparent;color:#a33228;border:1px solid #bba29f;margin-left:auto;padding:9px 12px}
+.actions .delete-project:hover{background:#a33228;color:#fff;border-color:#a33228}
+.actions .delete-project[hidden]{display:none}
+@media(max-width:680px){.actions .delete-project{margin-left:0}}

@@ -16,6 +16,7 @@ export async function gh(context, path, { method = 'GET', body = undefined } = {
   if (!res.ok) {
     if (res.status === 404) { const err = Error('Not found'); err.status = 404; throw err; }
     if (res.status === 409 || res.status === 422) { const err = Error('GitHub changed while saving. Refresh the editor and retry.'); err.status = 409; throw err; }
+    if (res.status === 403 || res.status === 429) { const err = Error('GitHub access is temporarily unavailable or rate-limited. Check the token and try again later.'); err.status = 503; throw err; }
     throw Error(`GitHub request failed (${res.status}). Verify token permissions and repository access.`);
   }
   return res.json();

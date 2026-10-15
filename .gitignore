@@ -1,0 +1,23 @@
+# Generated output; Cloudflare builds this itself.
+/dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+.coverage
+
+# Never commit credentials or local secrets.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Displaced photographs are recoverable from Git history; do not
+# re-commit archive copies that would grow the repository.
+/media/_unused/
+
+# OS/editor files.
+.DS_Store
+Thumbs.db
+.vscode/

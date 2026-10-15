@@ -3,6 +3,8 @@
   const $ = id => document.getElementById(id);
   const keys = [['camera','Camera'],['lens','Lens'],['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO'],['alt','Image description / alt text']];
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
+  let stagedSlug = null;
+  const slugify = value => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'untitled';
   const localURLs = new Set();
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }
   async function api(path, options={}) {
@@ -14,6 +16,11 @@
   function node(tag, className='', value='') { const el=document.createElement(tag);if(className)el.className=className;if(value)el.textContent=value;return el; }
   function cleanup() { for (const u of localURLs) URL.revokeObjectURL(u); localURLs.clear(); }
   function markDirty() { dirty = true; }
+  function updateDeleteState() {
+    const button = $('delete-project');
+    button.hidden = !current?.slug;
+    button.disabled = locked;
+  }
   window.addEventListener('beforeunload', event => { if (dirty || orderDirty) { event.preventDefault(); event.returnValue = ''; } });
   $('project-title').addEventListener('input', markDirty);
   $('project-order').addEventListener('input', markDirty);
@@ -21,7 +28,7 @@
   function openProject(project, force=false) {
     if (locked && !force) return;
     if (!force && dirty && !window.confirm('Discard unsaved changes to this project?')) return;
-    cleanup(); current=project || null;
+    cleanup(); current=project || null; stagedSlug = null;
     dirty = false;
     photos=[];
     if (project) {
@@ -34,7 +41,7 @@
     $('project-published').checked=project ? Boolean(project.published):false;
     $('editor-form').hidden=false;
     status(project ? 'Editing project. Changes appear after Cloudflare redeploys.' : 'New project. Add photos and save when ready.');
-    renderList();renderPhotos();
+    renderList();renderPhotos();updateDeleteState();updateMigrationState();
   }
   function updateOrderState() {
     const save = $('save-order');
@@ -89,14 +96,32 @@
     locked=true;updateOrderState();$('publish').disabled=true;
     try {
       status('Saving project order…');
-      await api('reorder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slugs:projects.map(p=>p.slug)})});
+      await api('reorder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        slugs:projects.map(p=>p.slug),revisions:Object.fromEntries(projects.map(p=>[p.slug,p.revision]))
+      })});
       orderDirty=false;
-      projects.forEach((p,i)=>{p.order=i+1;});
+      // Read the new GitHub SHA values after this commit. Leaving old revisions
+      // here would make the next legitimate project save fail as stale.
+      const fresh=await api('projects');
+      const bySlug=new Map(fresh.projects.map(p=>[p.slug,p]));
+      projects=projects.map((p,i)=>({...bySlug.get(p.slug),order:i+1}));
+      if(current?.slug) current=bySlug.get(current.slug)||current;
       $('project-order').value=current ? projects.find(p=>p.slug===current.slug)?.order ?? 1 : $('project-order').value;
       status('Project order saved. Cloudflare will republish shortly.','good');
     } catch(err) {status(err.message,'error');}
     finally {locked=false;$('publish').disabled=false;renderList();}
   });
+  function updateMigrationState() {
+    const button=$('migrate-r2');
+    if(!button)return;
+    button.hidden=!current?.slug || !photos.some(p=>p.kind==='existing' && p.meta?.storage!=='r2');
+    button.disabled=locked;
+    const purge=$('purge-github');
+    if(purge){
+      purge.hidden=!current?.slug || !photos.length || photos.some(p=>p.meta?.storage!=='r2');
+      purge.disabled=locked;
+    }
+  }
   function move(i,d) {const next=i+d;if(next<0 || next>=photos.length)return;[photos[i],photos[next]]=[photos[next],photos[i]];markDirty();renderPhotos();}
   function renderPhotos() {
     const container=$('photos');container.replaceChildren();
@@ -118,6 +143,7 @@
       }
       more.appendChild(grid);detail.appendChild(more);row.appendChild(detail);container.appendChild(row);
     });
+    updateMigrationState();
   }
   async function loadProjects(selectSlug) {
     const {projects:items}=await api('projects');projects=items;
@@ -127,6 +153,7 @@
   $('add-project').addEventListener('click',()=>openProject(null));
   $('photo-files').addEventListener('change', async e=>{
     const chosen=Array.from(e.target.files||[]);if(!chosen.length || locked)return;
+    if(!current?.slug && !$('project-title').value.trim()){status('Name your project before uploading photos.','error');$('photo-files').value='';return;}
     locked=true;$('publish').disabled=true;$('photo-files').disabled=true;
     try {
       for(const [i,file] of chosen.entries()) {
@@ -134,9 +161,22 @@
         const result=await window.PhotoPrep.prepare(file);
         const smallPreview=await window.PhotoPrep.preview(result.blob);
         const preview=URL.createObjectURL(smallPreview);localURLs.add(preview);
-        const encoded=await window.PhotoPrep.toGitHubBlobJSON(result.blob);
-        const upload=await api('upload',{method:'POST',headers:{'Content-Type':'application/json'},body:encoded});
-        photos.push({kind:'new',sha:upload.sha,meta:{},filename:file.name,preview});
+        const slug=current?.slug || slugify($('project-title').value.trim());
+        if (!current?.slug && !stagedSlug) stagedSlug=slug;
+        if (!current?.slug && stagedSlug!==slug) throw Error('Keep the original project name until you save these uploaded photos.');
+        const upload=await api('upload',{method:'POST',headers:{'Content-Type':'image/jpeg',
+          'X-Photo-Project':slug,'X-Photo-Position':String(photos.length+1)},body:result.blob});
+        const variants=[];
+        try {
+          for (const v of await window.PhotoPrep.variants(result.blob)) {
+            // Only upload thumbnails at their exact requested width.
+            if (![640,1280].includes(v.width)) continue;
+            const thumb=await api('upload',{method:'POST',headers:{'Content-Type':'image/webp',
+              'X-Photo-Project':slug,'X-Photo-Variant':String(v.width),'X-Photo-Source':upload.path},body:v.blob});
+            variants.push({url:thumb.path,width:thumb.width});
+          }
+        } catch (e) {status('Original uploaded. Thumbnail optimization skipped: '+e.message);}
+        photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:file.name,preview});
         markDirty();renderPhotos();
       }
       status(`${chosen.length} photo(s) prepared. Click Save project to publish them.`, 'good');
@@ -166,17 +206,85 @@
     const title=$('project-title').value.trim();
     if(!title){status('Enter a project title.','error');return;}
     locked=true;$('publish').disabled=true;
-    const input={slug:current?.slug||null,title,order:Number($('project-order').value),published:$('project-published').checked,
-      photos:photos.map(({kind,path,sha,meta})=>({kind,...(kind==='existing'?{path}:{sha}),meta}))};
+    if (!current?.slug && stagedSlug && slugify(title)!==stagedSlug) {
+      locked=false;$('publish').disabled=false;
+      status('The project name changed after uploading. Use the original name, save, then rename it.','error');return;
+    }
+    const input={slug:current?.slug||null,revision:current?.revision||null,title,order:Number($('project-order').value),published:$('project-published').checked,
+      photos:photos.map(({kind,path,sha,meta,variants})=>({kind,...(kind==='new'?{sha}:{path}),meta, ...(variants?{variants}:{})}))};
     try{
-      status('Saving photographs and project to GitHub…');
+      status('Saving project data in GitHub (photos are already in R2)…');
       const saved=await api('save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
       dirty=false;
       orderDirty=false;
       await loadProjects(saved.slug);
-      status('Saved to GitHub. Cloudflare will publish shortly. Automatic naming and copyright processing follows.','good');
+      status(saved.cleanupWarning || 'Project saved. Cloudflare will publish shortly. Photographs are in R2.',saved.cleanupWarning?'error':'good');
     } catch(err){status(err.message,'error');}
     finally{locked=false;$('publish').disabled=false;renderList();renderPhotos();}
+  });
+  $('migrate-r2').addEventListener('click',async()=>{
+    if(locked || !current?.slug)return;
+    if(dirty || orderDirty){status('Save pending changes before migrating.','error');return;}
+    const source=photos.filter(p=>p.kind==='existing' && p.meta?.storage!=='r2');
+    if(!source.length)return;
+    if(!confirm(`Copy ${source.length} older photograph(s) to R2? This does not delete the GitHub originals.`))return;
+    locked=true;$('publish').disabled=true;updateMigrationState();
+    try {
+      for(const [i,p] of source.entries()) {
+        status(`Copying ${i+1}/${source.length} from GitHub to R2…`);
+        await api('migrate',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({slug:current.slug,path:p.path})});
+        p.meta.storage='r2';markDirty();
+      }
+      status('Photos copied to R2. Click Save project to finish migration. GitHub originals were not deleted.','good');
+    }catch(err){status('Migration stopped: '+err.message+'; copied images are safe. Save this project to record those already migrated.','error');}
+    finally {locked=false;$('publish').disabled=false;renderPhotos();}
+  });
+  $('purge-github').addEventListener('click',async()=>{
+    if(locked || !current?.slug)return;
+    if(dirty||orderDirty){status('Save changes and refresh before removing old GitHub copies.','error');return;}
+    const title=String(current.title||'').trim();
+    const typed=prompt(`After copying to R2, remove this project's current GitHub image copies?\n`+
+      'Existing R2 files are checked first. GitHub history is NOT erased.\n\n'+
+      `Type the project name to proceed: ${title}`);
+    if(typed===null)return;
+    if(typed.trim()!==title){status('Cancelled: project name did not match.','error');return;}
+    locked=true;$('publish').disabled=true;updateMigrationState();
+    try {
+      const result=await api('purge',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({slug:current.slug,revision:current.revision,confirmTitle:title})});
+      status(`Removed ${result.removed} current GitHub photograph(s); ${result.shared} shared photo(s) retained. Previous commits still contain old copies.`, 'good');
+    }catch(e){status('Cleanup cancelled: '+e.message,'error');}
+    finally{locked=false;$('publish').disabled=false;updateMigrationState();}
+  });
+  $('delete-project').addEventListener('click', async () => {
+    if (locked || !current?.slug) return;
+    if (dirty || orderDirty) {
+      status('Save or discard unsaved changes before deleting this project.', 'error');
+      return;
+    }
+    const project = current;
+    const title = String(project.title || '').trim();
+    const typed = window.prompt(
+      `Delete "${title}" and its photographs from the website?\n` +
+      'This cannot be undone in the editor. Older copies may remain in Git history.\n\n' +
+      `Type the project name exactly to confirm: ${title}`
+    );
+    if (typed === null) return;
+    if (typed.trim() !== title) { status('Delete cancelled: project name did not match.', 'error'); return; }
+    locked = true;
+    $('publish').disabled = true;
+    updateDeleteState();
+    try {
+      status(`Deleting ${title} and its photographs from GitHub…`);
+      const result = await api('delete', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({slug:project.slug, revision:project.revision, confirmTitle:title})});
+      dirty=false;
+      orderDirty=false;
+      await loadProjects();
+      status(result.r2Warning || `Deleted ${title}. GitHub photos removed: ${result.deletedPhotos}; R2 objects removed: ${result.deletedR2 ?? 0}. Cloudflare will redeploy shortly.`,result.r2Warning?'error':'good');
+    } catch (err) { status('Delete failed: '+err.message, 'error'); }
+    finally { locked=false; $('publish').disabled=false; updateDeleteState(); renderList(); }
   });
   loadProjects().catch(err=>{status('Unable to load: '+err.message,'error');$('editor-form').hidden=true;});
 })();

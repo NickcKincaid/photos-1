@@ -1,94 +1,7 @@
-# Pages CMS configuration for the minimal photography portfolio.
-# This file controls the editing dashboard, not the public site's layout.
-media:
-  input: media
-  output: /media
-  categories: [image]
-  rename: safe
-
+# Legacy Pages CMS remains available only for the site title.
+# Use https://nickckincaid.com/admin/ to create projects or upload media;
+# that private dashboard stores new photographs in Cloudflare R2.
 content:
-  - name: projects
-    label: Photo projects
-    type: collection
-    path: content/projects
-    format: json
-    filename: "{primary}.json"
-    view:
-      fields: [title, published, order]
-      primary: title
-      sort: [order, title]
-      default:
-        sort: order
-        order: asc
-    fields:
-      - name: title
-        label: Project title
-        type: string
-        required: true
-        description: The only text shown beneath the project cover on the homepage and at the top of its page.
-      - name: order
-        label: Homepage order
-        type: number
-        description: Smaller numbers appear first (for example, 1 before 2).
-      - name: published
-        label: Show project publicly
-        type: boolean
-        description: Turn off to keep this project off your public website.
-      - name: cover
-        label: Cover photograph / first project photo
-        type: image
-        description: Appears on the homepage and first on the project's page.
-        required: true
-        options:
-          rename: safe
-          categories: [image]
-      - name: gallery
-        label: Additional project photographs
-        type: image
-        description: These appear after the cover photograph, in the order selected here.
-        options:
-          multiple: true
-          unique: true
-          rename: safe
-          categories: [image]
-      - name: photo_details
-        label: Camera metadata corrections (optional)
-        type: object
-        description: The site automatically reads embedded EXIF data when available. Only add entries here to supply missing or corrected camera settings.
-        list:
-          collapsible:
-            collapsed: true
-            summary: "{image}"
-        fields:
-          - name: image
-            label: Photograph to update
-            type: image
-            required: true
-            options:
-              categories: [image]
-          - name: camera
-            label: Camera
-            type: string
-          - name: lens
-            label: Lens
-            type: string
-          - name: focal_length
-            label: Focal length (e.g. 35 mm)
-            type: string
-          - name: aperture
-            label: Aperture (e.g. f/2.8)
-            type: string
-          - name: shutter_speed
-            label: Shutter speed (e.g. 1/250)
-            type: string
-          - name: iso
-            label: ISO (e.g. 400)
-            type: string
-          - name: alt
-            label: Photo description / alt text
-            type: string
-            description: Optional short description for accessibility and search engines. Not displayed under the photograph.
-
   - name: settings
     label: Site settings
     type: file
@@ -101,4 +14,3 @@ content:
         label: Website title (top left)
         type: string
         required: true
-        description: The only site-wide text visible in the header.

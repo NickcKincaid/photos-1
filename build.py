@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dependency-free static site generator for a Pages CMS photo portfolio.
+"""Dependency-free static site generator for a minimal photography portfolio.
 
 Run: python3 build.py
 Output: dist/
@@ -99,14 +99,29 @@ def optimized_images() -> dict:
     return _OPTIMIZED
 
 
-def image_attributes(value: str, sizes: str, eager: bool = False) -> str:
+def is_r2_image(image: str, project: dict) -> bool:
+    return any(isinstance(item, dict) and item.get('image') == image and
+               item.get('storage') == 'r2' for item in (project.get('photo_details') or []))
+
+
+def exists_image(image: str, project: dict) -> bool:
+    # R2 object existence was checked by the authenticated publishing API;
+    # Cloudflare's static build does not need R2 credentials or network access.
+    return bool(image) and (is_r2_image(image, project) or (ROOT / image.lstrip('/')).is_file())
+
+
+def image_attributes(value: str, sizes: str, eager: bool = False, project: dict | None = None) -> str:
     """Serve an optimized WebP when available, and the original if not."""
     original = media_href(value)
-    variants = optimized_images().get(value, [])
+    details = next((d for d in (project or {}).get('photo_details', [])
+                    if isinstance(d, dict) and d.get('image') == value), {})
+    remote_variants = bool(is_r2_image(value, project or {}) and details.get('variants'))
+    variants = details.get('variants') if remote_variants else optimized_images().get(value, [])
+    variants = variants if isinstance(variants, list) else []
     valid = [v for v in variants if isinstance(v, dict)
              and isinstance(v.get('width'), int) and v['width'] > 0
              and image_url(v.get('url', ''))
-             and (ROOT / v['url'].lstrip('/')).is_file()]
+             and (remote_variants or (ROOT / v['url'].lstrip('/')).is_file())]
     if valid:
         valid.sort(key=lambda v: v['width'])
         src = valid[0]['url']
@@ -146,8 +161,8 @@ def load_projects() -> list[dict]:
         seen.add(slug)
         cover = image_url(project.get('cover') or '')
         gallery = [image_url(item) for item in (project.get('gallery') or []) if image_url(item)]
-        gallery = [image for image in gallery if (ROOT / image.lstrip('/')).is_file()]
-        if cover and not (ROOT / cover.lstrip('/')).is_file():
+        gallery = [image for image in gallery if exists_image(image, project)]
+        if cover and not exists_image(cover, project):
             print(f'WARNING: Missing cover image in {path.name}: {cover}')
             cover = ''
         if not cover:
@@ -219,7 +234,7 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
 def cards(projects: list[dict]) -> str:
     blocks = []
     for i, p in enumerate(projects):
-        cover = (f'<img {image_attributes(p["cover"], IMAGE_SIZES_HOME, i == 0)} '
+        cover = (f'<img {image_attributes(p["cover"], IMAGE_SIZES_HOME, i == 0, p)} '
                  f'alt="{esc(image_alt(p, p["cover"], p["title"]))}" '
                  f'fetchpriority="{"high" if i == 0 else "auto"}">') if p['cover'] else ''
         blocks.append(f'''<article class="project-card">
@@ -245,7 +260,7 @@ def homepage(site: dict, projects: list[dict]) -> str:
 
 def photo_info(image: str, project: dict) -> str:
     "EXIF when present, plus per-photo optional CMS overrides."
-    info = read_exif(ROOT / image.lstrip('/')) if image else {}
+    info = read_exif(ROOT / image.lstrip('/')) if image and (ROOT / image.lstrip('/')).is_file() else {}
     for override in project.get('photo_details') or []:
         if not isinstance(override, dict) or image_url(override.get('image') or '') != image:
             continue
@@ -298,7 +313,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     for idx, image in enumerate(images, start=1):
         items.append(f'''<figure class="gallery-item">
   <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="{esc(media_href(image))}" aria-label="Open photograph {idx} in viewer">
-    <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1)} alt="{esc(image_alt(p, image, p['title'] + ', photograph ' + str(idx)))}">
+    <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1, p)} alt="{esc(image_alt(p, image, p['title'] + ', photograph ' + str(idx)))}">
   </a>
   {photo_caption(idx, len(images), image, p)}
 </figure>''')
@@ -349,7 +364,7 @@ def run() -> None:
         sitemap.append(f'<url><loc>{esc(site_url + route)}</loc></url>')
     sitemap.append('</urlset>')
     (OUT / 'sitemap.xml').write_text('\n'.join(sitemap) + '\n', encoding='utf-8')
-    (OUT / 'robots.txt').write_text(f'User-agent: *\nDisallow: /admin/\nDisallow: /api/\nSitemap: {site_url}/sitemap.xml\n', encoding='utf-8')
+    (OUT / 'robots.txt').write_text(f'User-agent: *\nDisallow: /admin/\nDisallow: /api/\nDisallow: /prepare/\nSitemap: {site_url}/sitemap.xml\n', encoding='utf-8')
     print(f'Built site: {len(projects)} published projects -> {OUT}')
 
 if __name__ == '__main__':

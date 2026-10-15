@@ -34,9 +34,13 @@
     if (/^[0-9]+$/.test(id)) { const number = Number(id); return number >= 1 && number <= items.length ? number - 1 : -1; }
     return -1;
   }
+  function safeHistory(method, state, url) {
+    // Embedded previews or non-http contexts can reject History API URL
+    // updates; the viewer should still remain fully usable.
+    try { history[method](state, '', url); } catch { /* leave URL unchanged */ }
+  }
   function updateAddress(index, firstOpen = false) {
-    if (firstOpen) history.pushState({ photoViewer: true }, '', urlFor(index));
-    else history.replaceState({ photoViewer: true }, '', urlFor(index));
+    safeHistory(firstOpen ? 'pushState' : 'replaceState', {photoViewer:true}, urlFor(index));
   }
 
   // The viewer uses an approximation of the photograph's dominant color.
@@ -99,7 +103,7 @@
   }
 
   function dismiss(fromHistory = false) {
-    if (!fromHistory && dialog.open) history.replaceState(null, '', baseURL);
+    if (!fromHistory && dialog.open) safeHistory('replaceState', null, baseURL);
     if (dialog.open) dialog.close();
   }
 
@@ -172,7 +176,7 @@
     }
   });
   dialog.addEventListener('close', () => {
-    if (new URL(location.href).searchParams.has('photo')) history.replaceState(null, '', baseURL);
+    if (new URL(location.href).searchParams.has('photo')) safeHistory('replaceState', null, baseURL);
     image.removeAttribute('src');
     lastFocus?.focus({ preventScroll: true });
   });
