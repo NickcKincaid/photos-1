@@ -1,6 +1,6 @@
 import { gh, getProject, slugify, errorResponse } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
-const fields = ['camera','lens','focal_length','aperture','shutter_speed','iso'];
+const fields = ['camera','lens','focal_length','aperture','shutter_speed','iso','alt'];
 export async function onRequestPost(context) {
   try {
     const bytes = await readLimited(context.request, 150000);
@@ -20,6 +20,9 @@ export async function onRequestPost(context) {
     }
     if (!Array.isArray(input.photos) || input.photos.length > 90) throw Error('Limit: 90 photos per project.');
     const original = [previous.cover, ...(previous.gallery || [])].filter(Boolean);
+    const knownDetails = new Map((previous.photo_details || []).filter(x => x && typeof x === 'object').map(x => [x.image, x]));
+    const usedIds = new Set();
+    const newId = () => crypto.randomUUID().replaceAll('-', '').slice(0, 24);
     const newRefs = [], treeEntries = [], details = [];
     const seenExisting = new Set(), seenNew = new Set();
     for (const item of input.photos) {
@@ -37,12 +40,17 @@ export async function onRequestPost(context) {
         treeEntries.push({ path: path.slice(1), mode:'100644', type:'blob', sha });
       } else throw Error('Unknown photo type');
       newRefs.push(path);
-      const info = { image: path };
+      const old = item.kind === 'existing' ? knownDetails.get(path) : null;
+      let permanentId = old && typeof old.id === 'string' && /^[0-9a-f]{24}$/.test(old.id) ? old.id : newId();
+      while (usedIds.has(permanentId)) permanentId = newId();
+      usedIds.add(permanentId);
+      const info = { image: path, id: permanentId };
+      if (old && typeof old.legacy_id === 'string' && /^[0-9a-f]{16}$/.test(old.legacy_id)) info.legacy_id = old.legacy_id;
       for (const field of fields) {
         const v = String(item.meta?.[field] || '').trim();
-        if (v) info[field] = v.slice(0, 180);
+        if (v) info[field] = v.slice(0, field === 'alt' ? 250 : 180);
       }
-      if (Object.keys(info).length > 1) details.push(info);
+      details.push(info);
     }
     const published = Boolean(input.published);
     if (published && !newRefs.length) throw Error('Add at least one photograph before publishing.');

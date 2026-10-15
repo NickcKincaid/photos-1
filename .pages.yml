@@ -84,6 +84,10 @@ content:
           - name: iso
             label: ISO (e.g. 400)
             type: string
+          - name: alt
+            label: Photo description / alt text
+            type: string
+            description: Optional short description for accessibility and search engines. Not displayed under the photograph.
 
   - name: settings
     label: Site settings

@@ -1,6 +1,12 @@
 // Small, dependency-free GitHub OAuth session for this one-owner portfolio.
 // Cookies are HttpOnly, Secure and signed with a dedicated Cloudflare secret.
 const SITE_ORIGIN = 'https://nickckincaid.com';
+// Override only for deliberate domain migrations; never derive OAuth redirects from Host headers.
+export function oauthOrigin(env) {
+  const origin = String(env.PUBLIC_SITE_ORIGIN || SITE_ORIGIN).replace(/\/$/, '');
+  if (!/^https:\/\/[a-zA-Z0-9.-]+(?::443)?$/.test(origin)) throw Error('Invalid PUBLIC_SITE_ORIGIN');
+  return origin;
+}
 const OWNER_LOGIN = 'nickckincaid';
 const enc = new TextEncoder();
 const b64 = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

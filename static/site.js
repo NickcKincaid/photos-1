@@ -9,10 +9,35 @@
   const closeButton = dialog.querySelector('.lightbox-close');
   const prevButton = dialog.querySelector('.lightbox-prev');
   const nextButton = dialog.querySelector('.lightbox-next');
+  const copyButton = dialog.querySelector('.lightbox-copy');
   const items = Array.from(document.querySelectorAll('[data-lightbox]'));
   if (!items.length) return;
   let current = 0;
   let lastFocus = null;
+  let touchStart = null;
+  const sourceURL = new URL(window.location.href);
+  sourceURL.searchParams.delete('photo');
+  const baseURL = sourceURL.pathname + sourceURL.search + sourceURL.hash;
+
+  function urlFor(index) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('photo', items[index].dataset.photoId || String(index + 1));
+    return url.pathname + url.search + url.hash;
+  }
+  function selectedFromUrl() {
+    const id = new URL(location.href).searchParams.get('photo');
+    if (!id) return -1;
+    const byId = items.findIndex(item => item.dataset.photoId === id);
+    if (byId !== -1) return byId;
+    const byLegacy = items.findIndex(item => item.dataset.photoLegacyId === id);
+    if (byLegacy !== -1) return byLegacy;
+    if (/^[0-9]+$/.test(id)) { const number = Number(id); return number >= 1 && number <= items.length ? number - 1 : -1; }
+    return -1;
+  }
+  function updateAddress(index, firstOpen = false) {
+    if (firstOpen) history.pushState({ photoViewer: true }, '', urlFor(index));
+    else history.replaceState({ photoViewer: true }, '', urlFor(index));
+  }
 
   // The viewer uses an approximation of the photograph's dominant color.
   // Sampling a tiny, same-origin canvas is much cheaper than an image-analysis library.
@@ -62,6 +87,7 @@
   function show(index) {
     current = (index + items.length) % items.length;
     const item = items[current];
+    if (copyButton) copyButton.textContent = 'Copy link';
     const thumb = item.querySelector('img');
     dialog.style.setProperty('--viewer-bg', '#252824');
     dialog.style.setProperty('--viewer-text', '#ffffff');
@@ -72,15 +98,18 @@
     if (image.complete && image.naturalWidth) updateViewerColor();
   }
 
-  function dismiss() {
+  function dismiss(fromHistory = false) {
+    if (!fromHistory && dialog.open) history.replaceState(null, '', baseURL);
     if (dialog.open) dialog.close();
   }
 
   items.forEach((item, index) => item.addEventListener('click', event => {
     event.preventDefault();
     lastFocus = item;
-    if (!dialog.open) dialog.showModal();
+    const opening = !dialog.open;
+    if (opening) dialog.showModal();
     show(index);
+    updateAddress(index, opening);
   }));
   image.addEventListener('load', updateViewerColor);
 
@@ -89,8 +118,52 @@
     event.stopPropagation();
     dismiss();
   });
-  prevButton.addEventListener('click', () => show(current - 1));
-  nextButton.addEventListener('click', () => show(current + 1));
+  function navigate(delta) {
+    show(current + delta);
+    updateAddress(current);
+  }
+  prevButton.addEventListener('click', () => navigate(-1));
+  nextButton.addEventListener('click', () => navigate(1));
+  copyButton?.addEventListener('click', async () => {
+    const target = new URL(urlFor(current), location.origin).href;
+    try {
+      await navigator.clipboard.writeText(target);
+      copyButton.textContent = 'Copied';
+      setTimeout(() => { copyButton.textContent = 'Copy link'; }, 1500);
+    } catch {
+      // Browsers without Clipboard API can still copy the address-bar URL.
+      copyButton.textContent = 'Copy URL above';
+      copyButton.focus();
+    }
+  });
+
+  // Swipe horizontally, while ignoring vertical gestures and taps.
+  dialog.addEventListener('touchstart', event => {
+    if (event.touches.length !== 1) return;
+    touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }, { passive: true });
+  dialog.addEventListener('touchend', event => {
+    if (!touchStart || event.changedTouches.length !== 1) return;
+    const dx = event.changedTouches[0].clientX - touchStart.x;
+    const dy = event.changedTouches[0].clientY - touchStart.y;
+    touchStart = null;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) navigate(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  window.addEventListener('popstate', () => {
+    const selected = selectedFromUrl();
+    if (selected !== -1) {
+      if (!dialog.open) dialog.showModal();
+      show(selected);
+    } else dismiss(true);
+  });
+  // Direct links work when opened in a fresh tab as well as after browser Back.
+  const deepLink = selectedFromUrl();
+  if (deepLink !== -1) {
+    dialog.showModal();
+    show(deepLink);
+  }
+
 
   // Clicking a blank part of the viewer closes it; clicking a photo does not.
   dialog.addEventListener('click', event => {
@@ -99,6 +172,7 @@
     }
   });
   dialog.addEventListener('close', () => {
+    if (new URL(location.href).searchParams.has('photo')) history.replaceState(null, '', baseURL);
     image.removeAttribute('src');
     lastFocus?.focus({ preventScroll: true });
   });
@@ -109,10 +183,10 @@
       dismiss();
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
-      show(current - 1);
+      navigate(-1);
     } else if (event.key === 'ArrowRight') {
       event.preventDefault();
-      show(current + 1);
+      navigate(1);
     }
   });
 })();

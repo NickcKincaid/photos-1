@@ -17,6 +17,7 @@ import re
 import shutil
 import sys
 import tempfile
+import secrets
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -64,6 +65,42 @@ def ordered_images(data: dict) -> list[tuple[str, Path]]:
     return images
 
 
+def ensure_photo_ids(content: dict, images: list[tuple[str, Path]]) -> bool:
+    """Persist unique photo links before any renaming or metadata rewriting."""
+    details = content.get('photo_details')
+    if not isinstance(details, list):
+        details = []
+        content['photo_details'] = details
+    # Drop stale metadata for removed photos. Old numbered paths may be reused
+    # by a different image after reordering, so stale IDs would be dangerous.
+    active = {url for url, _ in images}
+    clean = [p for p in details if isinstance(p, dict) and p.get('image') in active]
+    changed = len(clean) != len(details)
+    if changed:
+        details[:] = clean
+    previous = {p.get('image'): p for p in details if isinstance(p.get('image'), str)}
+    seen = set()
+    for url, source in images:
+        entry = previous.get(url)
+        if entry is None:
+            entry = {'image': url}
+            details.append(entry)
+            previous[url] = entry
+            changed = True
+        token = entry.get('id')
+        if not isinstance(token, str) or not re.fullmatch(r'[0-9a-f]{24}', token) or token in seen:
+            token = secrets.token_hex(12)
+            while token in seen:
+                token = secrets.token_hex(12)
+            entry['id'] = token
+            changed = True
+        seen.add(token)
+        if not isinstance(entry.get('legacy_id'), str) or not re.fullmatch(r'[0-9a-f]{16}', entry['legacy_id']):
+            entry['legacy_id'] = hashlib.sha256(source.read_bytes()).hexdigest()[:16]
+            changed = True
+    return changed
+
+
 def replace_refs(value: object, replacements: dict[str, str]) -> object:
     """Rewrite exact image references recursively, including photo_details[].image."""
     if isinstance(value, str):
@@ -79,7 +116,7 @@ def main() -> int:
     if not PROJECTS.is_dir():
         print(f'No content/projects directory at {PROJECTS}', file=sys.stderr)
         return 1
-    docs: list[tuple[Path, dict, dict[str, str]]] = []
+    docs: list[tuple[Path, dict, dict[str, str], bool]] = []
     transfers: dict[Path, Path] = {}  # destination -> source; support shared source images
     source_paths: set[Path] = set()
     prefix_owners: dict[str, Path] = {}
@@ -90,6 +127,7 @@ def main() -> int:
         if not isinstance(content, dict):
             raise ValueError(f'{project_file.name}: project JSON must be an object')
         images = ordered_images(content)
+        changed_ids = ensure_photo_ids(content, images) if images else False
         if not images:
             continue
         prefix = slugify(str(content.get('title') or project_file.stem))
@@ -111,7 +149,7 @@ def main() -> int:
                 raise ValueError(f'Two different photographs would map to {dest}')
             transfers[dest] = source
             source_paths.add(source)
-        docs.append((project_file, content, replacements))
+        docs.append((project_file, content, replacements, changed_ids))
 
     # Identify old numbered filenames displaced when a middle photo was removed.
     # Archive ONLY our own numbered filenames, never unrelated files in media/.
@@ -168,9 +206,9 @@ def main() -> int:
             if source not in required_destinations and source.exists():
                 source.unlink()
 
-        for project_file, content, replacements in docs:
+        for project_file, content, replacements, changed_ids in docs:
             updated = replace_refs(content, replacements)
-            if updated == content:
+            if not changed_ids and updated == content:
                 continue
             project_file.write_text(json.dumps(updated, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
             changed_refs += 1

@@ -132,6 +132,25 @@
     const filename=file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]+/g,'-')+'-web.jpg';
     return {blob,filename,dimensions};
   }
+  // Keep only a tiny editor preview in memory. Otherwise 90 prepared uploads
+  // would pin up to ~234 MB of full-size JPEG blobs on a phone until navigation.
+  async function preview(blob) {
+    let image;
+    try {
+      image = await createImageBitmap(blob);
+      const scale = Math.min(1, 360 / Math.max(image.width, image.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+      const thumb = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.72));
+      return thumb || blob;
+    } catch {
+      return blob; // Older browsers still get a functional preview.
+    } finally {
+      image?.close?.();
+    }
+  }
   function fmt(n) {return (n/1_000_000).toFixed(2)+' MB';}
   async function toGitHubBlobJSON(blob) {
     const dataUrl = await new Promise((resolve, reject) => {
@@ -144,5 +163,5 @@
     if (!dataUrl.startsWith(prefix)) throw new Error('Photo encoder returned an unexpected format');
     return JSON.stringify({ content: dataUrl.slice(prefix.length), encoding: 'base64' });
   }
-  window.PhotoPrep = { prepare, fmt, toGitHubBlobJSON };
+  window.PhotoPrep = { prepare, preview, fmt, toGitHubBlobJSON };
 })();

@@ -14,7 +14,9 @@
   <main>
     <div class="sidebar">
       <div class="sidebar-head"><strong>Projects</strong><button type="button" id="add-project">+ New project</button></div>
+      <p class="muted ordering-help">Drag projects to reorder on desktop, or use the arrows on mobile.</p>
       <div id="project-list" aria-label="Projects"><p class="muted">Loading…</p></div>
+      <button type="button" id="save-order" hidden disabled>Save project order</button>
     </div>
     <section class="editor" aria-label="Project editor">
       <p class="status" role="status" id="status">Loading projects…</p>
@@ -32,9 +34,14 @@
           <p class="muted">Images are resized on your device to JPEG, usually below 2.6 MB each. Your originals remain untouched. New uploads are credited and numbered automatically after publishing.</p>
         </div>
         <div id="photos" class="photos"></div>
-        <div class="actions"><button id="publish" type="submit">Save project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
+        <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
       </form>
     </section>
   </main>
+  <dialog class="draft-preview" id="draft-preview" aria-label="Unpublished project preview">
+    <div class="draft-preview-header"><span>Preview — not published</span><button id="close-preview" type="button">Close ×</button></div>
+    <h1 id="draft-preview-title"></h1>
+    <div id="draft-preview-photos"></div>
+  </dialog>
 </body>
 </html>
