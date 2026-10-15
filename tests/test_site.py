@@ -60,6 +60,47 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertNotIn('/projects/private/', sitemap)
         self.assertFalse((self.root / 'dist' / 'projects' / 'private').exists())
 
+    def test_notes_are_published_in_order_with_safe_html_and_timestamps(self):
+        notes = self.root / 'content' / 'notes'
+        notes.mkdir(parents=True)
+        (notes / 'latest.json').write_text(json.dumps({
+            'title': '<Note One>', 'body': 'First <script>alert(1)</script>\n\nNext paragraph',
+            'published': True, 'published_at': '2026-10-15T20:35:00Z'}))
+        (notes / 'older.json').write_text(json.dumps({
+            'title': 'Older note', 'body': 'Hello', 'published': True,
+            'published_at': '2026-10-14T10:00:00Z'}))
+        (notes / 'draft.json').write_text(json.dumps({
+            'title': 'Secret draft', 'body': 'Should not appear',
+            'published': False, 'published_at': None}))
+        self.site.run()
+        listing = (self.root / 'dist' / 'notes' / 'index.html').read_text()
+        detail = (self.root / 'dist' / 'notes' / 'latest' / 'index.html').read_text()
+        sitemap = (self.root / 'dist' / 'sitemap.xml').read_text()
+        self.assertLess(listing.index('&lt;Note One&gt;'), listing.index('Older note'))
+        self.assertIn('15 Oct 2026', listing)
+        self.assertIn('20:35 UTC', listing)
+        self.assertIn('&lt;script&gt;', detail)
+        self.assertNotIn('<script>alert(1)</script>', detail)
+        self.assertNotIn('Secret draft', listing)
+        self.assertNotIn('/notes/draft/', sitemap)
+        self.assertIn('/notes/latest/', sitemap)
+        self.assertTrue((self.root / 'dist' / 'inquire' / 'index.html').exists())
+        self.assertIn('Nicholas Kincaid', detail)
+        self.assertIn('Notes', listing)
+
+    def test_photo_links_open_viewer_not_raw_media(self):
+        (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')
+        (self.root / 'content' / 'projects' / 'test.json').write_text(json.dumps({
+            'title': 'Test', 'published': True, 'cover': '/media/test/pic.jpg',
+            'gallery': [], 'photo_details': [{'image': '/media/test/pic.jpg', 'id': 'c'*24}]}))
+        self.site.run()
+        page = (self.root / 'dist' / 'projects' / 'test' / 'index.html').read_text()
+        self.assertIn('href="?photo=' + 'c'*24 + '"', page)
+        self.assertIn('data-full-src="/media/test/pic.jpg', page)
+        self.assertIn('project-bottom-inquiry', page)
+        self.assertIn('mailto:nicholas.kincaid2@gmail.com', page)
+        self.assertIn('Projects', page)
+
     def test_rejects_remote_or_traversal_photo_references(self):
         for unsafe in ('https://example.com/photo.jpg','/media/../secrets.jpg',
                        'javascript:alert(1)','/media/a\\b.jpg'):

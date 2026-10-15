@@ -8,10 +8,12 @@
   <link rel="stylesheet" href="/admin/admin.css">
   <script src="/admin/admin-processing.js" defer></script>
   <script src="/admin/admin.js" defer></script>
+  <script src="/admin/admin-notes.js" defer></script>
 </head>
 <body>
   <header class="top"><a href="/">← Portfolio</a><span>Photography / editor</span><a class="private" href="/api/auth/logout">Sign out</a></header>
-  <main>
+  <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button></nav>
+  <main id="projects-pane">
     <div class="sidebar">
       <div class="sidebar-head"><strong>Projects</strong><button type="button" id="add-project">+ New project</button></div>
       <p class="muted ordering-help">Drag projects to reorder on desktop, or use the arrows on mobile.</p>
@@ -35,6 +37,24 @@
         </div>
         <div id="photos" class="photos"></div>
         <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><button type="button" id="migrate-r2" hidden>Copy older photos to R2</button><button type="button" id="purge-github" hidden>Remove old GitHub copies</button><button type="button" id="delete-project" class="delete-project" hidden>Delete project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
+      </form>
+    </section>
+  </main>
+  <main id="notes-pane" hidden>
+    <aside class="sidebar" aria-label="Existing notes">
+      <div class="sidebar-head"><strong>Notes</strong><button id="add-note" type="button">+ New note</button></div>
+      <div id="notes-list"><p class="muted">Open Notes to load posts.</p></div>
+    </aside>
+    <section class="editor" aria-label="Notes editor">
+      <p class="status" role="status" id="notes-status">Select a note or create one.</p>
+      <form id="note-form" hidden>
+        <div class="note-edit-fields">
+          <label>Title<input type="text" id="note-title" maxlength="120" required placeholder="Note title"></label>
+          <label>Text<textarea id="note-body" rows="13" maxlength="12000" required placeholder="Write your note here. Blank lines create paragraphs."></textarea></label>
+          <label class="check"><input type="checkbox" id="note-published"> Publish this note</label>
+          <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site.</p>
+        </div>
+        <div class="actions"><button id="save-note" type="submit">Save note</button><button id="delete-note" type="button" class="delete-project" hidden>Delete note</button><a href="/notes/" target="_blank" rel="noopener">View notes ↗</a></div>
       </form>
     </section>
   </main>

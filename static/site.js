@@ -96,7 +96,7 @@
     dialog.style.setProperty('--viewer-bg', '#252824');
     dialog.style.setProperty('--viewer-text', '#ffffff');
     image.alt = thumb ? thumb.alt : 'Project photograph';
-    image.src = item.getAttribute('href');
+    image.src = item.dataset.fullSrc || item.getAttribute('href');
     counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(items.length).padStart(2, '0')}`;
     metadata.textContent = item.getAttribute('data-meta') || '';
     if (image.complete && image.naturalWidth) updateViewerColor();
@@ -164,6 +164,7 @@
   // Direct links work when opened in a fresh tab as well as after browser Back.
   const deepLink = selectedFromUrl();
   if (deepLink !== -1) {
+    lastFocus = items[deepLink];
     dialog.showModal();
     show(deepLink);
   }
@@ -175,6 +176,7 @@
       dismiss();
     }
   });
+  dialog.addEventListener('cancel', event => { event.preventDefault(); dismiss(); });
   dialog.addEventListener('close', () => {
     if (new URL(location.href).searchParams.has('photo')) safeHistory('replaceState', null, baseURL);
     image.removeAttribute('src');

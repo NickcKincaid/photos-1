@@ -4,6 +4,7 @@
   const keys = [['camera','Camera'],['lens','Lens'],['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO'],['alt','Image description / alt text']];
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
   let stagedSlug = null;
+  window.photoEditorHasPendingChanges = () => dirty || orderDirty || locked;
   const slugify = value => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'untitled';
   const localURLs = new Set();
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }

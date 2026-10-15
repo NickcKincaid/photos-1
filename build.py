@@ -11,7 +11,7 @@ import hashlib
 import json
 import re
 import shutil
-from datetime import date
+from datetime import date, datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse, quote
@@ -182,12 +182,23 @@ def load_projects() -> list[dict]:
     return sorted(projects, key=lambda item: (item['order'], item['title'].lower()))
 
 
-def nav(site: dict, home: bool) -> str:
-    # The brand is the only visible navigation; it also returns to the homepage.
+def nav(site: dict, active: str = '') -> str:
+    menu = [('Projects', '/', 'projects'), ('Notes', '/notes/', 'notes'), ('Inquire', '/inquire/', 'inquire')]
+    links = ''.join(f'<a href="{href}"{" aria-current=\"page\"" if active == key else ""}>{label}</a>'
+                    for label, href, key in menu)
     return f'''<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header page">
-  <a class="brand" href="/" aria-label="{esc(site['name'])} — home">{esc(site['name'])}</a>
-</header>''' 
+  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><strong>{esc(site['name'])}</strong></a>
+  <nav class="site-nav" aria-label="Main navigation">{links}</nav>
+</header>'''
+
+
+def footer(site: dict) -> str:
+    return f'''<footer class="site-footer page">
+  <a href="/inquire/">Contact</a>
+  <span>© {date.today().year} {esc(site['name'])}</span>
+</footer>'''
+ 
 
 def document(title: str, description: str, site: dict, body: str, cover: str = '',
              path: str = '/', kind: str = 'website', structured: dict | None = None) -> str:
@@ -247,10 +258,10 @@ def cards(projects: list[dict]) -> str:
 def homepage(site: dict, projects: list[dict]) -> str:
     work = (f'<div class="works-grid">{cards(projects)}</div>' if projects
             else '<p class="empty-state">No projects yet.</p>')
-    body = f'''{nav(site, True)}<main id="main" class="page home-main">
+    body = f'''{nav(site, 'projects')}<main id="main" class="page home-main">
   <h1 class="visually-hidden">Projects</h1>
   <section aria-label="Projects" id="work">{work}</section>
-</main>'''
+</main>{footer(site)}'''
     return document(str(site['name']), str(site.get('intro', 'Photography portfolio')), site, body,
                     projects[0]['cover'] if projects else '', '/', structured={
                     '@context': 'https://schema.org', '@type': 'CollectionPage',
@@ -312,30 +323,101 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     items = []
     for idx, image in enumerate(images, start=1):
         items.append(f'''<figure class="gallery-item">
-  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="{esc(media_href(image))}" aria-label="Open photograph {idx} in viewer">
+  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="?photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" aria-label="Open photograph {idx} in viewer">
     <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1, p)} alt="{esc(image_alt(p, image, p['title'] + ', photograph ' + str(idx)))}">
   </a>
   {photo_caption(idx, len(images), image, p)}
 </figure>''')
     gallery = f'<div class="project-photos{ " project-photos-single" if len(items) == 1 else ""}">{"".join(items)}</div>' if items else ''
-    body = f'''{nav(site, False)}<main id="main" class="page project-main">
+    body = f'''{nav(site, 'projects')}<main id="main" class="page project-main">
   <div class="project-heading">
     <h1 class="project-title">{esc(p['title'])}</h1>
-    <a class="project-inquiry" href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}" aria-label="Email inquiry about {esc(p['title'])}">inquiry ↗</a>
   </div>
   {gallery}
-</main>{lightbox()}'''
+  <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
+</main>{footer(site)}{lightbox()}'''
     return document(p['title'], str(p.get('description') or f'Photographs from {p["title"]} by Nicholas Kincaid.'), site, body,
                     images[0] if images else '', p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'CreativeWork', 'name': p['title'],
                      'url': SITE_URL + p['url'], 'creator': {'@type': 'Person', 'name': 'Nicholas Kincaid'},
                      'image': [SITE_URL + photo for photo in images]})
 
+
+def clean_time(raw: str) -> datetime | None:
+    if not isinstance(raw, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace('Z', '+00:00'))
+        return parsed.astimezone(timezone.utc) if parsed.tzinfo else None
+    except (ValueError, OverflowError):
+        return None
+
+
+def load_notes() -> list[dict]:
+    entries = []
+    for path in sorted((CONTENT / 'notes').glob('*.json')):
+        note = read_json(path)
+        when = clean_time(note.get('published_at'))
+        if not note.get('published') or not when:
+            continue
+        title = str(note.get('title') or '').strip()
+        text = str(note.get('body') or '').strip()
+        if not title or not text:
+            continue
+        entries.append({'slug': slugify(path.stem), 'title': title,
+                        'body': text, 'published_at': when,
+                        'url': '/notes/' + slugify(path.stem) + '/'})
+    return sorted(entries, key=lambda n: (n['published_at'], n['slug']), reverse=True)
+
+
+def note_content(note: dict) -> str:
+    # Notes are plain text, never interpreted as HTML or Markdown. Preserve paragraphs.
+    sections = re.split(r'\n\s*\n', note['body'].replace('\r\n', '\n'))
+    return '<div class="note-body">' + ''.join(f'<p>{esc(part.strip())}</p>' for part in sections if part.strip()) + '</div>'
+
+
+def timestamp(note: dict) -> str:
+    published = note['published_at']
+    iso = published.strftime('%Y-%m-%dT%H:%M:%SZ')
+    shown = published.strftime('%d %b %Y · %H:%M UTC')
+    return f'<time datetime="{iso}">{shown}</time>'
+
+
+def notes_page(site: dict, notes: list[dict]) -> str:
+    pieces = []
+    for n in notes:
+        pieces.append(f'''<article class="note-entry" id="{esc(n['slug'])}">
+  <div class="note-heading"><h2><a href="{esc(n['url'])}">{esc(n['title'])}</a></h2>{timestamp(n)}</div>
+  {note_content(n)}
+</article>''')
+    body = f'''{nav(site, 'notes')}<main id="main" class="page notes-main">
+  <h1 class="visually-hidden">Notes</h1>
+  {''.join(pieces) if pieces else '<p class="empty-state">No notes yet.</p>'}
+</main>{footer(site)}'''
+    return document('Notes', 'Notes by Nicholas Kincaid.', site, body, path='/notes/')
+
+
+def note_page(site: dict, note: dict) -> str:
+    body = f'''{nav(site, 'notes')}<main id="main" class="page notes-main">
+  <article class="note-entry"><div class="note-heading"><h1>{esc(note['title'])}</h1>{timestamp(note)}</div>
+  {note_content(note)}</article>
+</main>{footer(site)}'''
+    return document(note['title'], note['body'][:155], site, body, path=note['url'], kind='article')
+
+
+def inquire_page(site: dict) -> str:
+    body = f'''{nav(site, 'inquire')}<main id="main" class="page inquire-main">
+  <h1>Inquire</h1>
+  <a href="mailto:nicholas.kincaid2@gmail.com">nicholas.kincaid2@gmail.com ↗</a>
+</main>{footer(site)}'''
+    return document('Inquire', 'Photography inquiries and contact for Nicholas Kincaid.', site, body, path='/inquire/')
+
 def run() -> None:
     site = read_json(CONTENT / 'site.json')
     if not site.get('name'):
         raise ValueError('Set name in content/site.json')
     projects = load_projects()
+    notes = load_notes()
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
@@ -347,7 +429,7 @@ def run() -> None:
     shutil.copy2(ROOT / 'static' / 'prepare.js', prep_dir / 'prepare.js')
     admin_dir = OUT / 'admin'
     admin_dir.mkdir(parents=True, exist_ok=True)
-    for src, dest in [('admin.html', 'index.html'), ('admin.css', 'admin.css'), ('admin.js', 'admin.js'), ('admin-processing.js', 'admin-processing.js')]:
+    for src, dest in [('admin.html', 'index.html'), ('admin.css', 'admin.css'), ('admin.js', 'admin.js'), ('admin-notes.js', 'admin-notes.js'), ('admin-processing.js', 'admin-processing.js')]:
         shutil.copy2(ROOT / 'static' / src, admin_dir / dest)
     if (ROOT / 'media').exists():
         shutil.copytree(ROOT / 'media', OUT / 'media', ignore=shutil.ignore_patterns('_unused'), dirs_exist_ok=True)
@@ -356,16 +438,26 @@ def run() -> None:
         outdir = OUT / 'projects' / p['slug']
         outdir.mkdir(parents=True, exist_ok=True)
         (outdir / 'index.html').write_text(project_page(site, p, idx, projects), encoding='utf-8')
-    # The publishing API never exposes unlisted/draft projects here.
+    notes_out = OUT / 'notes'
+    notes_out.mkdir(parents=True, exist_ok=True)
+    (notes_out / 'index.html').write_text(notes_page(site, notes), encoding='utf-8')
+    for note in notes:
+        outdir = notes_out / note['slug']
+        outdir.mkdir(parents=True, exist_ok=True)
+        (outdir / 'index.html').write_text(note_page(site, note), encoding='utf-8')
+    inquire_out = OUT / 'inquire'
+    inquire_out.mkdir(parents=True, exist_ok=True)
+    (inquire_out / 'index.html').write_text(inquire_page(site), encoding='utf-8')
+    # The publishing API never exposes unlisted/draft projects or notes here.
     site_url = SITE_URL
     sitemap = ['<?xml version="1.0" encoding="utf-8"?>',
                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for route in ['/', *(p['url'] for p in projects)]:
+    for route in ['/', '/notes/', '/inquire/', *(p['url'] for p in projects), *(n['url'] for n in notes)]:
         sitemap.append(f'<url><loc>{esc(site_url + route)}</loc></url>')
     sitemap.append('</urlset>')
     (OUT / 'sitemap.xml').write_text('\n'.join(sitemap) + '\n', encoding='utf-8')
     (OUT / 'robots.txt').write_text(f'User-agent: *\nDisallow: /admin/\nDisallow: /api/\nDisallow: /prepare/\nSitemap: {site_url}/sitemap.xml\n', encoding='utf-8')
-    print(f'Built site: {len(projects)} published projects -> {OUT}')
+    print(f'Built site: {len(projects)} projects, {len(notes)} published notes -> {OUT}')
 
 if __name__ == '__main__':
     run()
