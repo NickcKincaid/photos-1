@@ -15,7 +15,10 @@ function photoRequest(type,bytes,variant=false) {
 }
 function bucket() {
  const saved=new Map();
- return {saved, async put(key,data){saved.set(key,new Uint8Array(await new Response(data).arrayBuffer()));},
+ return {saved, async put(key,data){
+   if (data instanceof ReadableStream) throw Error('Provided readable stream must have a known length');
+   saved.set(key,new Uint8Array(await new Response(data).arrayBuffer()));
+ },
    async head(key){return saved.has(key)?{size:saved.get(key).length}:null;},
    async delete(key){saved.delete(key);}};
 }
@@ -27,6 +30,28 @@ test('upload accepts an actual JPEG and writes to R2',async()=>{
  const result=await response.json();
  assert.match(result.path,/^\/media\/test\/test-01-[a-f0-9]{24}\.jpg$/);
  assert.deepEqual([...b.saved.values()][0],bytes);
+});
+
+test('upload stays within the 3 MB limit even when no Content-Length is provided',async()=>{
+ const b=bucket();
+ const bytes=new Uint8Array(3_000_001);
+ bytes.set([255,216,255]);
+ const response=await upload({request:photoRequest('image/jpeg',bytes),env:{PHOTO_BUCKET:b}});
+ assert.equal(response.status,413);
+ assert.equal(b.saved.size,0);
+});
+
+test('upload rejects an empty body instead of creating a zero-byte R2 file',async()=>{
+ const b=bucket();
+ const response=await upload({request:photoRequest('image/jpeg',new Uint8Array()),env:{PHOTO_BUCKET:b}});
+ assert.equal(response.status,400);
+ assert.equal(b.saved.size,0);
+});
+
+test('upload reports a missing R2 binding without a generic 502',async()=>{
+ const response=await upload({request:photoRequest('image/jpeg',new Uint8Array([255,216,255])),env:{}});
+ assert.equal(response.status,503);
+ assert.match((await response.json()).error,/PHOTO_BUCKET/);
 });
 
 test('upload rejects misleading MIME type without persisting an object',async()=>{

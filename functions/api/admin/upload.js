@@ -1,6 +1,6 @@
 // Upload prepared JPEGs and WebP thumbnails directly to private R2.
 // No GitHub blob writes; the repository stores only project JSON.
-import {json} from '../../../admin-lib/session.js';
+import {json, readLimited} from '../../../admin-lib/session.js';
 const PROJECT = /^[a-z0-9-]{1,65}$/;
 const ORIGINAL = /^media\/([a-z0-9-]{1,65})\/\1-[0-9]{2,3}-[a-f0-9]{24}\.jpg$/;
 const MAX = 3_000_000;
@@ -31,43 +31,26 @@ export async function onRequestPost(context) {
       const number = String(ordinal).padStart(2,'0');
       key = `media/${project}/${project}-${number}-${crypto.randomUUID().replaceAll('-','').slice(0,24)}.jpg`;
     }
-    let total = 0;
-    // A Content-Type header alone is untrusted. Verify the JPEG/WebP file
-    // signature before persisting anything, even when stream chunks are tiny.
-    const signatureLength = variant ? 12 : 3;
-    const signature = new Uint8Array(signatureLength);
-    let signatureBytes = 0;
-    const limited = req.body.pipeThrough(new TransformStream({
-      transform(chunk, controller) {
-        total += chunk.byteLength;
-        if (total > MAX) throw new Error('Image exceeds the 3 MB upload limit.');
-        const take = Math.min(signatureLength - signatureBytes, chunk.byteLength);
-        if (take > 0) {
-          signature.set(chunk.subarray(0, take), signatureBytes);
-          signatureBytes += take;
-        }
-        if (signatureBytes === signatureLength) {
-          const valid = variant
-            ? signature[0] === 82 && signature[1] === 73 && signature[2] === 70 && signature[3] === 70 &&
-              signature[8] === 87 && signature[9] === 69 && signature[10] === 66 && signature[11] === 80
-            : signature[0] === 0xff && signature[1] === 0xd8 && signature[2] === 0xff;
-          if (!valid) throw new Error('File content is not the expected image format.');
-        }
-        controller.enqueue(chunk);
-      },
-      flush() {
-        if (signatureBytes < signatureLength) throw new Error('Image file is incomplete.');
-      },
-    }));
-    await context.env.PHOTO_BUCKET.put(key, limited, {httpMetadata:{contentType:expected},
+    // An R2 binding cannot accept a TransformStream with unknown length.
+    // Buffer only the already-compressed, strictly capped (3 MB) photo so
+    // put() receives a Uint8Array whose length is known to workerd.
+    const image = await readLimited(req, MAX);
+    if (!image.byteLength) return json({error:'Empty image.'},400);
+    const jpeg = image.length >= 3 && image[0] === 0xff && image[1] === 0xd8 && image[2] === 0xff;
+    const webp = image.length >= 12 && image[0] === 82 && image[1] === 73 &&
+      image[2] === 70 && image[3] === 70 && image[8] === 87 &&
+      image[9] === 69 && image[10] === 66 && image[11] === 80;
+    if (!(variant ? webp : jpeg)) return json({error:'File content is not the expected image format.'},415);
+    await context.env.PHOTO_BUCKET.put(key, image, {httpMetadata:{contentType:expected},
       customMetadata:{creator:'Nicholas Kincaid',copyright:'Copyright Nicholas Kincaid. All rights reserved.'}});
-    if (!total) {await context.env.PHOTO_BUCKET.delete(key);return json({error:'Empty image.'},400);}
     return json({path:'/'+key, storage:'r2', ...(variant?{width:Number(variant)}:{})});
   } catch (error) {
     const message = String(error?.message || '');
-    const tooLarge = /3 MB|upload size limit/i.test(message);
+    const tooLarge = error?.status === 413 || /3 MB|upload size limit/i.test(message);
     const invalid = /image format|incomplete/i.test(message);
-    return json({error:tooLarge || invalid ? message : 'R2 upload failed. Check your bucket binding and try again.'},
+    // Server-only diagnostics. Never log image bytes, session cookies or tokens.
+    if (!tooLarge && !invalid) console.error('Photography R2 upload error:', error?.name || 'Error', message);
+    return json({error:tooLarge || invalid ? message : 'R2 upload failed. Check Cloudflare Pages Function logs and your PHOTO_BUCKET binding.'},
       tooLarge ? 413 : invalid ? 415 : 502);
   }
 }

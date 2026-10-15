@@ -9,7 +9,7 @@
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }
   async function api(path, options={}) {
     const response = await fetch('/api/admin/'+path, { credentials:'same-origin', cache:'no-store', ...options });
-    let body; try { body=await response.json(); } catch { throw Error(`Server returned ${response.status}; verify your Cloudflare configuration.`); }
+    let body; try { body=await response.json(); } catch { throw Error(`Cloudflare returned HTTP ${response.status} before the uploader could respond. Check Pages Functions logs for /api/admin/upload.`); }
     if (!response.ok) throw Error(body.error || `Request failed (${response.status})`);
     return body;
   }
