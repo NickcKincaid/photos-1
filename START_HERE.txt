@@ -1,0 +1,13 @@
+Photography Dashboard v11a - Github owner correction
+
+Your Cloudflare logs show repository owner NickcKincaid, but the V11 code used NickKincaid. Without this fix, successful GitHub OAuth sign-in would be rejected and photo publishing would target the wrong repository.
+
+GitHub Desktop installation:
+1. Download and extract this ZIP.
+2. In GitHub Desktop: Repository > Show in Explorer.
+3. Copy admin-lib and functions folders from the extracted ZIP into photos-1. Choose Replace files when prompted. Do not erase your existing folders.
+4. Also copy ADMIN_SETUP.md if you want the corrected setup instructions.
+5. In GitHub Desktop commit with summary Fix GitHub account for admin login, then Push origin.
+6. Wait for Cloudflare Pages to finish deploying.
+
+After this, follow ADMIN_SETUP.md for the GitHub OAuth app and four Cloudflare secrets. Never commit or share the secret values.

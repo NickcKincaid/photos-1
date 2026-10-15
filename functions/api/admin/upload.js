@@ -2,7 +2,7 @@
 // The previous version encoded 2.6 MB in the Cloudflare Function itself; that
 // used too much CPU for the Workers Free plan (10 ms / request).
 import { json } from '../../../admin-lib/session.js';
-const API = 'https://api.github.com/repos/NickKincaid/photos-1/git/blobs';
+const API = 'https://api.github.com/repos/NickcKincaid/photos-1/git/blobs';
 const LIMIT = 3_800_000; // 2.6 MB JPEG encoded as JSON/base64 = approx 3.47 MB.
 export async function onRequestPost(context) {
   const req = context.request;

@@ -1,6 +1,6 @@
 import { json } from './session.js';
-const API = 'https://api.github.com/repos/NickKincaid/photos-1';
-export const GH_OWNER = 'NickKincaid', GH_REPO = 'photos-1';
+const API = 'https://api.github.com/repos/NickcKincaid/photos-1';
+export const GH_OWNER = 'NickcKincaid', GH_REPO = 'photos-1';
 export const BRANCH = 'main';
 export const slugify = value => (String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 65) || 'untitled');
 export async function gh(context, path, { method = 'GET', body = undefined } = {}) {

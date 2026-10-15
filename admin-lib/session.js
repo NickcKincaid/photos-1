@@ -1,7 +1,7 @@
 // Small, dependency-free GitHub OAuth session for this one-owner portfolio.
 // Cookies are HttpOnly, Secure and signed with a dedicated Cloudflare secret.
 const SITE_ORIGIN = 'https://photos-1.pages.dev';
-const OWNER_LOGIN = 'nickkincaid';
+const OWNER_LOGIN = 'nickckincaid';
 const enc = new TextEncoder();
 const b64 = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 function un64(value) {

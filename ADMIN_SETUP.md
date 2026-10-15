@@ -7,7 +7,7 @@ The update contains working dashboard and backend code, but it is **not yet depl
 
 ## Step 1. Upload the update
 
-Open https://github.com/NickKincaid/photos-1 on `main`. Extract the ZIP and upload ALL its extracted folders/files through **Add file > Upload files**. Preserve the directory structure.
+Open https://github.com/NickcKincaid/photos-1 on `main`. Extract the ZIP and upload ALL its extracted folders/files through **Add file > Upload files**. Preserve the directory structure.
 
 The package contains these files:
 
@@ -34,7 +34,7 @@ On GitHub, go to **Settings > Developer settings > OAuth Apps > New OAuth App**.
 | Homepage URL | `https://photos-1.pages.dev/` |
 | Authorization callback URL | `https://photos-1.pages.dev/api/auth/callback` |
 
-Save it. Copy the **Client ID**. Click **Generate a new client secret** and copy the **Client Secret**. Never add the secret to GitHub files or share it in chat. Only the actual authenticated GitHub account **NickKincaid** can enter the dashboard, even if somebody else authorizes the OAuth app.
+Save it. Copy the **Client ID**. Click **Generate a new client secret** and copy the **Client Secret**. Never add the secret to GitHub files or share it in chat. Only the actual authenticated GitHub account **NickcKincaid** can enter the dashboard, even if somebody else authorizes the OAuth app.
 
 This login integration requests only GitHub's `read:user` OAuth permission to identify you. The private publishing token in step 3 is separate and is never sent to your browser.
 
@@ -44,7 +44,7 @@ Go to GitHub **Settings > Developer settings > Personal access tokens > Fine-gra
 
 Choose:
 
-- Resource owner: **NickKincaid**.
+- Resource owner: **NickcKincaid**.
 - Repository access: **Only select repositories > photos-1**.
 - Repository permissions: **Contents > Read and write**.
 - Expiration: Choose a reasonable expiration (for example 90 days). You'll need to replace this secret when it expires.
@@ -72,7 +72,7 @@ Open an incognito/private browser window:
 
 1. `https://photos-1.pages.dev/` should display your public photography site normally.
 2. `https://photos-1.pages.dev/admin/` should **redirect to GitHub sign-in/authorization**, not let you upload as a guest.
-3. After authorizing with your personal NickKincaid GitHub account, you should return to `/admin/` and see your projects.
+3. After authorizing with your personal NickcKincaid GitHub account, you should return to `/admin/` and see your projects.
 4. Sign out; while logged out, `https://photos-1.pages.dev/api/admin/projects` must return a `401` JSON response (or another access-denied response), NOT your project data.
 5. Login sessions expire after 24 hours. Click Sign out in the editor to end a session earlier.
 
@@ -95,7 +95,7 @@ Removing a photo from a gallery does NOT permanently erase its bytes from Git hi
 
 ## Security model and limitations
 
-- OAuth authorizes only the GitHub user `NickKincaid`. The OAuth callback verifies the identity with GitHub's own API.
+- OAuth authorizes only the GitHub user `NickcKincaid`. The OAuth callback verifies the identity with GitHub's own API.
 - The backend creates a signed `HttpOnly`, `Secure`, `SameSite=Lax` session cookie for 24 hours. It verifies the signature and session expiry on **both** admin HTML/assets and ALL admin API requests, including uploads. It checks same-origin on upload/save requests to prevent cross-site writes. Hiding `/admin/` by itself would not be secure; this implementation does not rely on hiding it.
 - Publishing tokens and OAuth client secrets are stored only as Cloudflare encrypted secrets. Even if somebody views the site source, they cannot read the token.
 - The browser warns before discarding unsaved project changes.
