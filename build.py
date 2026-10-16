@@ -189,7 +189,7 @@ def nav(site: dict, active: str = '') -> str:
                     for label, href, key in menu)
     return f'''<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header page">
-  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><img class="brand-mark" src="/favicon-192x192.png?v=962b3e77bf" width="36" height="36" alt="" aria-hidden="true" decoding="async"><strong>{esc(site['name'])}</strong></a>
+  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><strong>{esc(site['name'])}</strong></a>
   <nav class="site-nav" aria-label="Main navigation">{links}</nav>
 </header>'''
 
@@ -342,6 +342,7 @@ def lightbox(project_title: str = '') -> str:
     <div class="lightbox-top"><span class="lightbox-project">{esc(project_title)}</span><button class="lightbox-close" type="button" aria-label="Close photo viewer">Close &times;</button></div>
     <div class="lightbox-stage"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photo">&#8592;</button>
       <img class="lightbox-image" alt="" decoding="async">
+      <p class="lightbox-unavailable" role="status" hidden>This photograph is temporarily unavailable.</p>
       <button class="lightbox-nav lightbox-next" type="button" aria-label="Next photo">&#8594;</button>
     </div>
     <div class="lightbox-bottom"><span class="lightbox-counter" aria-live="polite"></span><span class="lightbox-metadata"></span><div class="lightbox-actions"><button class="lightbox-zoom" type="button" aria-label="Zoom photograph" aria-pressed="false">Zoom</button><a class="lightbox-download" href="#" download aria-label="Download this photograph">Download</a><button class="lightbox-copy" type="button" aria-label="Copy link to this photograph">Copy link</button></div></div>

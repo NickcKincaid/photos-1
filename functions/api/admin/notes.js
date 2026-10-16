@@ -1,6 +1,6 @@
 // Private note management. The existing /api/admin/* middleware verifies the
 // signed GitHub-owner session and rejects cross-origin writes.
-import { gh, decodeContent, errorResponse, slugify } from '../../../admin-lib/github.js';
+import { gh, decodeContent, errorResponse, slugify, mapInBatches } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
 
 const SLUG = /^[a-z0-9-]{1,65}$/;
@@ -17,7 +17,7 @@ export async function onRequestGet(context) {
     if (!Array.isArray(files)) bad('Unable to list notes.');
     const names = files.filter(f => f.type === 'file' && /^[a-z0-9-]{1,65}\.json$/.test(f.name));
     if (names.length > 80) bad('The notes editor currently supports up to 80 notes.', 413);
-    const notes = await Promise.all(names.map(async file => {
+    const notes = await mapInBatches(names, 6, async file => {
       const item = await gh(context, `${NOTE_DIR}/${encodeURIComponent(file.name)}?ref=main`);
       if (!SHA.test(item.sha || '')) bad('Unexpected GitHub note revision.');
       const note = decodeContent(item.content);
@@ -25,7 +25,7 @@ export async function onRequestGet(context) {
         title: String(note.title || ''), body: String(note.body || ''),
         published: note.published === true,
         published_at: note.published_at || null};
-    }));
+    });
     notes.sort((a,b) => (b.published_at || '').localeCompare(a.published_at || '') || a.title.localeCompare(b.title));
     return json({notes});
   } catch (error) { return errorResponse(error); }

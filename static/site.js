@@ -35,6 +35,8 @@
   const downloadLink = dialog.querySelector('.lightbox-download');
   const zoomButton = dialog.querySelector('.lightbox-zoom');
   const stage=dialog.querySelector('.lightbox-stage');
+  const unavailable = dialog.querySelector('.lightbox-unavailable');
+  let triedThumbnailFallback = false;
   const items = Array.from(document.querySelectorAll('[data-lightbox]'));
   if (!items.length) return;
   let current = 0;
@@ -108,7 +110,10 @@
   }
   function selectedFromUrl() {
     const url = new URL(location.href);
-    const id = url.hash.startsWith('#photo=') ? decodeURIComponent(url.hash.slice(7)) : url.searchParams.get('photo');
+    let id;
+    try { id = url.hash.startsWith('#photo=') ? decodeURIComponent(url.hash.slice(7)) : url.searchParams.get('photo'); }
+    catch { return -1; } // Malformed percent-escapes must not break the gallery.
+
     if (!id) return -1;
     const byId = items.findIndex(item => item.dataset.photoId === id);
     if (byId !== -1) return byId;
@@ -162,6 +167,9 @@
     current = (index + items.length) % items.length;
     const item = items[current];
     if (copyButton) copyButton.textContent = 'Copy link';
+    triedThumbnailFallback = false;
+    if (unavailable) unavailable.hidden = true;
+    if (downloadLink) downloadLink.hidden = false;
     const thumb = item.querySelector('img');
     dialog.style.setProperty('--viewer-glow', '30, 33, 32');
     image.classList.remove('is-loaded');
@@ -202,6 +210,20 @@
   image.addEventListener('load', () => {
     image.classList.add('is-loaded');
     updateViewerColor();
+  });
+  image.addEventListener('error', () => {
+    if (!dialog.open) return;
+    const thumb = items[current]?.querySelector('img');
+    const fallback = thumb?.currentSrc || thumb?.src;
+    if (!triedThumbnailFallback && fallback && fallback !== image.src) {
+      triedThumbnailFallback = true;
+      if (downloadLink) downloadLink.hidden = true; // Full-size source failed.
+      image.src = fallback;
+      return;
+    }
+    image.classList.remove('is-loaded');
+    if (unavailable) unavailable.hidden = false;
+    if (downloadLink) downloadLink.hidden = true;
   });
 
   closeButton.addEventListener('click', event => {

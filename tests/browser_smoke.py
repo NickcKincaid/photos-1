@@ -15,7 +15,7 @@ from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory() as td:
     base=Path(td)
-    for p in ['build.py','photo_exif.py']:
+    for p in ['build.py','photo_exif.py','note_format.py']:
         shutil.copy2(ROOT/p,base/p)
     shutil.copytree(ROOT/'static',base/'static')
     (base/'content'/'projects').mkdir(parents=True)

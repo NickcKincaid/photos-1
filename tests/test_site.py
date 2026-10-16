@@ -35,6 +35,16 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertTrue((self.root / 'dist' / 'admin' / 'index.html').is_file())
         self.assertFalse((self.root / 'dist' / 'content').exists())
 
+    def test_header_is_text_only_while_favicon_is_retained(self):
+        self.site.run()
+        home = (self.root / 'dist' / 'index.html').read_text()
+        self.assertNotIn('class="brand-mark"', home)
+        self.assertIn('class="brand"', home)
+        self.assertIn('<strong>Nicholas Kincaid</strong>', home)
+        self.assertIn('rel="icon"', home)
+        self.assertTrue((self.root / 'dist' / 'favicon.ico').exists())
+        self.assertIn('lightbox-unavailable', self.site.lightbox('Test project'))
+
     def test_project_pages_and_unlisted_draft(self):
         (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')
         projects = self.root / 'content' / 'projects'
