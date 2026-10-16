@@ -28,7 +28,7 @@ test('upload accepts an actual JPEG and writes to R2',async()=>{
  const response=await upload({request:photoRequest('image/jpeg',bytes),env:{PHOTO_BUCKET:b}});
  assert.equal(response.status,200);
  const result=await response.json();
- assert.match(result.path,/^\/media\/test\/test-01-[a-f0-9]{24}\.jpg$/);
+ assert.match(result.path,/^\/media\/test\/[a-f0-9]{24}\/test-01\.jpg$/);
  assert.deepEqual([...b.saved.values()][0],bytes);
 });
 
@@ -62,9 +62,11 @@ test('upload rejects misleading MIME type without persisting an object',async()=
 });
 
 test('upload rejects WebP that is not actually a RIFF/WEBP',async()=>{
- const b=bucket(); const source='media/test/test-01-'+ 'a'.repeat(24)+'.jpg';
+ const b=bucket(); const source='media/test/'+ 'a'.repeat(24)+'/test-01.jpg';
  b.saved.set(source,new Uint8Array([255,216,255]));
- const response=await upload({request:photoRequest('image/webp',new Uint8Array(25),true),env:{PHOTO_BUCKET:b}});
+ const req = new Request('https://nickckincaid.com/api/admin/upload',{method:'POST',headers:{'content-type':'image/webp',
+   'X-Photo-Project':'test','X-Photo-Variant':'640','X-Photo-Source':source},body:new Uint8Array(25)});
+ const response=await upload({request:req,env:{PHOTO_BUCKET:b}});
  assert.equal(response.status,415);
  assert.equal(b.saved.size,1);
 });
@@ -171,4 +173,83 @@ test('media handler blocks non-image paths before touching bucket',async()=>{
    env:{PHOTO_BUCKET:{async get(){throw Error('Unexpected R2 call');}}}
  });
  assert.equal(response.status,404);
+});
+
+
+test('two uploads in the same slot get clean names without overwriting each other',async()=>{
+ const b=bucket();const bytes=new Uint8Array([255,216,255,224,0,2,255,217]);
+ const results=[];
+ for(let i=0;i<2;i++){
+   const resp=await upload({request:photoRequest('image/jpeg',bytes),env:{PHOTO_BUCKET:b}});
+   assert.equal(resp.status,200);results.push((await resp.json()).path);
+ }
+ assert.notEqual(results[0],results[1]);
+ for(const path of results)assert.match(path,/^\/media\/test\/[a-f0-9]{24}\/test-01\.jpg$/);
+ assert.equal(b.saved.size,2);
+});
+
+test('new-style thumbnails are accepted and stored alongside their original',async()=>{
+ const b=bucket();const jpeg=new Uint8Array([255,216,255,224,0,2,255,217]);
+ const resp=await upload({request:photoRequest('image/jpeg',jpeg),env:{PHOTO_BUCKET:b}});
+ const original=(await resp.json()).path.slice(1);
+ const webp=new Uint8Array([82,73,70,70,0,0,0,0,87,69,66,80,0,0]);
+ const req=new Request('https://nickckincaid.com/api/admin/upload',{method:'POST',headers:{
+   'content-type':'image/webp','X-Photo-Project':'test','X-Photo-Variant':'640',
+   'X-Photo-Source':original},body:webp});
+ const result=await upload({request:req,env:{PHOTO_BUCKET:b}});
+ assert.equal(result.status,200);const parsed=await result.json();
+ assert.equal(parsed.path,'/'+original.replace(/\.jpg$/,'-640.webp'));
+});
+
+test('saved project retains a validated homepage crop',async()=>{
+ const gh=mockGithub();try{
+   const req=new Request('https://nickckincaid.com/api/admin/save',{method:'POST',headers:{'content-type':'application/json'},
+     body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:false,order:1,
+       cover_position:{x:28,y:74},photos:[]})});
+   const result=await save({request:req,env:{GITHUB_TOKEN:'test'}});
+   assert.equal(result.status,200);
+   const entry=gh.trees[0].tree.find(i=>i.path==='content/projects/tokyo.json');
+   assert.deepEqual(JSON.parse(entry.content).cover_position,{x:28,y:74});
+ }finally{gh.restore();}
+});
+
+test('unsafe crop values are rejected before GitHub writes',async()=>{
+ for(const value of [{x:-1,y:50},{x:101,y:50},{x:'0; background:red',y:55},{x:50.5,y:50},null]){
+   if(value===null)continue; // omitted crop is a backwards-compatible default.
+   const gh=mockGithub();try{
+     const req=new Request('https://nickckincaid.com/api/admin/save',{method:'POST',headers:{'content-type':'application/json'},
+       body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:false,order:1,
+         cover_position:value,photos:[]})});
+     assert.equal((await save({request:req,env:{GITHUB_TOKEN:'test'}})).status,400);
+     assert.equal(gh.trees.length,0);
+   }finally{gh.restore();}
+ }
+});
+
+test('old R2 keys download with clean basename without renaming stored objects',async()=>{
+ const {onRequestGet}=await import('../functions/media/[[all]].js');
+ const key='media/test/test-01-'+ 'c'.repeat(24)+'.jpg';
+ const resp=await onRequestGet({request:new Request('https://nickckincaid.com/'+key),env:{PHOTO_BUCKET:{
+   async get(k){assert.equal(k,key);return {body:new Response(new Uint8Array([255,216,255])).body,
+    httpMetadata:{contentType:'image/jpeg'}};}
+ }}});
+ assert.equal(resp.headers.get('content-disposition'),'inline; filename="test-01.jpg"');
+});
+
+test('project save accepts new clean-name R2 original and thumbnail paths',async()=>{
+ const gh=mockGithub();try{
+   const uuid='7'.repeat(24);
+   const path=`/media/tokyo/${uuid}/tokyo-01.jpg`;
+   const variant=`/media/tokyo/${uuid}/tokyo-01-640.webp`;
+   const req=new Request('https://nickckincaid.com/api/admin/save',{method:'POST',headers:{'content-type':'application/json'},
+     body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:true,order:1,
+       cover_position:{x:73,y:12},photos:[{kind:'r2',path,meta:{iso:'100',storage:'r2'},variants:[{url:variant,width:640}]}]})});
+   const resp=await save({request:req,env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(key){return {size:10}}}}});
+   assert.equal(resp.status,200,await resp.clone().text());
+   const entry=gh.trees[0].tree.find(t=>t.path==='content/projects/tokyo.json');
+   const project=JSON.parse(entry.content);
+   assert.equal(project.cover,path);
+   assert.deepEqual(project.photo_details[0].variants,[{url:variant,width:640}]);
+   assert.deepEqual(project.cover_position,{x:73,y:12});
+ }finally{gh.restore();}
 });

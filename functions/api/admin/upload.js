@@ -2,7 +2,8 @@
 // No GitHub blob writes; the repository stores only project JSON.
 import {json, readLimited} from '../../../admin-lib/session.js';
 const PROJECT = /^[a-z0-9-]{1,65}$/;
-const ORIGINAL = /^media\/([a-z0-9-]{1,65})\/\1-[0-9]{2,3}-[a-f0-9]{24}\.jpg$/;
+// Accept existing hash-suffixed keys and new clean filenames in private unique folders.
+const ORIGINAL = /^media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))\.jpg$/;
 const MAX = 3_000_000;
 export async function onRequestPost(context) {
   try {
@@ -29,7 +30,11 @@ export async function onRequestPost(context) {
       const ordinal = Number(req.headers.get('X-Photo-Position'));
       if (!Number.isInteger(ordinal) || ordinal < 1 || ordinal > 999) return json({error:'Invalid photo position.'},400);
       const number = String(ordinal).padStart(2,'0');
-      key = `media/${project}/${project}-${number}-${crypto.randomUUID().replaceAll('-','').slice(0,24)}.jpg`;
+      // Keep a unique R2 object key without appending the ID to the filename.
+      // Reusing /project/project-01.jpg would overwrite a published photo while
+      // an edit is still in progress, or when a user reorders and uploads again.
+      const uniqueFolder = crypto.randomUUID().replaceAll('-','').slice(0,24);
+      key = `media/${project}/${uniqueFolder}/${project}-${number}.jpg`;
     }
     // An R2 binding cannot accept a TransformStream with unknown length.
     // Buffer only the already-compressed, strictly capped (3 MB) photo so

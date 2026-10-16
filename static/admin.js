@@ -4,6 +4,36 @@
   const keys = [['camera','Camera'],['lens','Lens'],['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO'],['alt','Image description / alt text']];
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
   let stagedSlug = null;
+  let coverPosition={x:50,y:50};
+  function validCoverPosition(pos) {
+    return pos && Number.isInteger(pos.x) && Number.isInteger(pos.y) &&
+      pos.x>=0 && pos.x<=100 && pos.y>=0 && pos.y<=100 ? {x:pos.x,y:pos.y} : {x:50,y:50};
+  }
+  function setCropPosition(x, y, mark=false) {
+    coverPosition={x:Math.max(0,Math.min(100,Math.round(x))),y:Math.max(0,Math.min(100,Math.round(y)))};
+    $('crop-x').value=String(coverPosition.x);
+    $('crop-y').value=String(coverPosition.y);
+    $('crop-x-value').textContent=coverPosition.x+'%';
+    $('crop-y-value').textContent=coverPosition.y+'%';
+    $('cover-crop-image').style.objectPosition=coverPosition.x+'% '+coverPosition.y+'%';
+    if (mark) markDirty();
+  }
+  function updateCoverCrop() {
+    const panel=$('cover-crop');
+    panel.hidden=!photos.length;
+    if (!photos.length) return;
+    const cover=photos[0];
+    $('cover-crop-image').src=cover.preview || cover.path;
+    setCropPosition(coverPosition.x,coverPosition.y);
+  }
+  $('crop-x').addEventListener('input',()=>setCropPosition(Number($('crop-x').value),coverPosition.y,true));
+  $('crop-y').addEventListener('input',()=>setCropPosition(coverPosition.x,Number($('crop-y').value),true));
+  $('crop-reset').addEventListener('click',()=>setCropPosition(50,50,true));
+  $('cover-crop-preview').addEventListener('click',e=>{
+    const r=e.currentTarget.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    setCropPosition(100*(e.clientX-r.left)/r.width,100*(e.clientY-r.top)/r.height,true);
+  });
   window.photoEditorHasPendingChanges = () => dirty || orderDirty || locked;
   const slugify = value => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'untitled';
   const localURLs = new Set();
@@ -32,6 +62,7 @@
     if (!force && dirty && !window.confirm('Discard unsaved changes to this project?')) return;
     cleanup(); current=project || null; stagedSlug = null;
     dirty = false;
+    coverPosition=validCoverPosition(project?.cover_position);
     photos=[];
     if (project) {
       const overrides=new Map((project.photo_details || []).map(x => [x.image, x]));
@@ -114,17 +145,18 @@
     } catch(err) {status(err.message,'error');}
     finally {locked=false;$('publish').disabled=false;renderList();}
   });
-  function move(i,d) {const next=i+d;if(next<0 || next>=photos.length)return;[photos[i],photos[next]]=[photos[next],photos[i]];markDirty();renderPhotos();}
+  function move(i,d) {const next=i+d;if(next<0 || next>=photos.length)return;[photos[i],photos[next]]=[photos[next],photos[i]];if(i===0 || next===0)coverPosition={x:50,y:50};markDirty();renderPhotos();}
   function renderPhotos() {
+    updateCoverCrop();
     const container=$('photos');container.replaceChildren();
     if(!photos.length) {container.appendChild(node('p','empty','No photographs yet. Add images above.'));return;}
     photos.forEach((photo,i)=>{
       const row=node('div','photo-row');const img=node('img');img.alt=`Photograph ${i+1}`;
       img.src=photo.preview || photo.path;img.loading='lazy';row.appendChild(img);
-      const detail=node('div','photo-details');const name=node('p','photo-name',(i===0?'Cover · ':'')+String(i+1).padStart(2,'0')+' — '+(photo.filename || photo.path?.split('/').pop() || 'New photo'));
+      const detail=node('div','photo-details');const name=node('p','photo-name',(i===0?'Cover · ':'')+String(i+1).padStart(2,'0')+' — '+(photo.filename || photo.path?.split('/').pop()?.replace(/-([a-f0-9]{24})(?=\.jpg$)/,'') || 'New photo'));
       detail.appendChild(name);
       const buttons=node('div','photo-buttons');
-      for(const [title,func] of [['↑',()=>move(i,-1)],['↓',()=>move(i,1)],['Remove',()=>{photos.splice(i,1);markDirty();renderPhotos();}]]) {
+      for(const [title,func] of [['↑',()=>move(i,-1)],['↓',()=>move(i,1)],['Remove',()=>{photos.splice(i,1);if(i===0)coverPosition={x:50,y:50};markDirty();renderPhotos();}]]) {
         const b=node('button','',title);b.type='button';b.disabled=locked;b.addEventListener('click',func);buttons.appendChild(b);
       }
       detail.appendChild(buttons);
@@ -167,7 +199,7 @@
             variants.push({url:thumb.path,width:thumb.width});
           }
         } catch (e) {status('Original uploaded. Thumbnail optimization skipped: '+e.message);}
-        photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:file.name,preview});
+        photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:upload.path.split('/').pop(),preview});
         markDirty();renderPhotos();
       }
       status(`${chosen.length} photo(s) prepared. Click Save project to publish them.`, 'good');
@@ -210,7 +242,7 @@
       locked=false;$('publish').disabled=false;
       status('The project name changed after uploading. Use the original name, save, then rename it.','error');return;
     }
-    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,order:Number($('project-order').value),published:$('project-published').checked,
+    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,cover_position:coverPosition,order:Number($('project-order').value),published:$('project-published').checked,
       photos:photos.map(({kind,path,sha,meta,variants})=>({kind,...(kind==='new'?{sha}:{path}),meta, ...(variants?{variants}:{})}))};
     try{
       status('Saving project data in GitHub (photos are already in R2)…');

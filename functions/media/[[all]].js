@@ -25,6 +25,9 @@ async function handle(context, headOnly) {
         // Use a short TTL: migrated images may initially share URLs with static copies.
         'Cache-Control': 'public, max-age=3600',
       });
+      const legacy = /^media\/([a-z0-9-]{1,65})\/\1-([0-9]{2,3})-[a-f0-9]{24}\.jpg$/i.exec(key);
+      if (legacy) headers.set('Content-Disposition', `inline; filename="${legacy[1]}-${legacy[2]}.jpg"`);
+      // New keys already end with a readable project-01.jpg filename.
       if (object.etag) headers.set('ETag', `"${object.etag.replace(/"/g, '')}"`);
       if (typeof object.size === 'number') headers.set('Content-Length', String(object.size));
       return new Response(headOnly ? null : object.body, {status:200,headers});

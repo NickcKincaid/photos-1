@@ -24,7 +24,7 @@ function r2Keys(project) {
     keys.add(original);
     for (const variant of entry.variants || []) {
       const key = typeof variant?.url === 'string' ? variant.url.slice(1) : '';
-      if (/^media\/[a-z0-9-]{1,65}\/[a-z0-9-]+-[0-9]{2,3}-[a-f0-9]{24}-(640|1280)\.webp$/.test(key) &&
+      if (/^media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))-(640|1280)\.webp$/.test(key) &&
           key.startsWith(original.slice(0,-4) + '-')) keys.add(key);
     }
   }

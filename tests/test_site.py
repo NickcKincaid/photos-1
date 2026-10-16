@@ -145,3 +145,17 @@ class PortfolioBuildTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class CoverCropTests(unittest.TestCase):
+    def test_css_position_in_homepage(self):
+        import build
+        snippet=build.cards([{'cover':'/media/x/test.jpg','url':'/projects/x/', 'title':'Example','photo_details':[],
+            'cover_position':{'x':18,'y':85}}])
+        self.assertIn('object-position: 18% 85%', snippet)
+        self.assertIn('project-card-media', snippet)
+
+    def test_bad_crop_falls_back_to_center(self):
+        import build
+        for pos in ({'x':'0;background:red','y':33},{'x':-1,'y':110},None):
+            self.assertEqual(build.cover_position({'cover_position':pos}),(50,50))

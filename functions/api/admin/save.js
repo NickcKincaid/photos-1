@@ -1,8 +1,8 @@
 import { gh, getProject, decodeContent, slugify, errorResponse } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
 const fields = ['camera','lens','focal_length','aperture','shutter_speed','iso','alt'];
-const R2_IMAGE = /^\/media\/([a-z0-9-]{1,65})\/\1-[0-9]{2,3}-[a-f0-9]{24}\.jpg$/;
-const R2_VARIANT = /^\/media\/[a-z0-9-]{1,65}\/[a-z0-9-]+-[0-9]{2,3}-[a-f0-9]{24}-(640|1280)\.webp$/;
+const R2_IMAGE = /^\/media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))\.jpg$/;
+const R2_VARIANT = /^\/media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))-(640|1280)\.webp$/;
 function validVariants(value, original, slug) {
   if (value == null) return [];
   if (!Array.isArray(value) || value.length > 2) throw Error('Invalid photo thumbnails.');
@@ -27,6 +27,14 @@ export async function onRequestPost(context) {
     if (input.blurb != null && typeof input.blurb !== 'string') throw Error('Invalid project blurb.');
     if (String(input.blurb || '').length > 1000) throw Error('Project blurb must be 1,000 characters or less.');
     const blurb = String(input.blurb || '').trim().replace(/\r\n?/g, '\n');
+    // Homepage crop is an object-position percentage, not a destructive crop.
+    // Validate both values before storing them in markup/CSS.
+    const coverPosition = input.cover_position == null ? {x:50,y:50} : input.cover_position;
+    if (!coverPosition || typeof coverPosition !== 'object' || Array.isArray(coverPosition) ||
+        !Number.isInteger(coverPosition.x) || !Number.isInteger(coverPosition.y) ||
+        coverPosition.x < 0 || coverPosition.x > 100 || coverPosition.y < 0 || coverPosition.y > 100) {
+      throw Error('Invalid homepage cover position (expected percentages from 0 to 100).');
+    }
     const create = !input.slug;
     const slug = create ? slugify(title) : String(input.slug);
     if (!/^[a-z0-9-]{1,65}$/.test(slug)) throw Error('Invalid project slug');
@@ -100,7 +108,7 @@ export async function onRequestPost(context) {
     if (published && !newRefs.length) throw Error('Add at least one photograph before publishing.');
     const order = Number(input.order);
     if (!Number.isSafeInteger(order) || order < 0 || order > 999999) throw Error('Homepage order must be a whole number between 0 and 999999.');
-    const next = { ...previous, title, blurb, published, order, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
+    const next = { ...previous, title, blurb, published, order, cover_position: coverPosition, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
     // One atomic Git commit for all changes to this project, including new files.
     const ref = await gh(context, '/git/ref/heads/main');
     const head = await gh(context, `/git/commits/${ref.object.sha}`);

@@ -243,10 +243,22 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
 </html>'''
 
 
+def cover_position(project: dict) -> tuple[int, int]:
+    pos = project.get('cover_position')
+    if not isinstance(pos, dict):
+        return 50, 50
+    values = (pos.get('x'), pos.get('y'))
+    if any(type(v) is not int or not 0 <= v <= 100 for v in values):
+        return 50, 50
+    return values
+
+
 def cards(projects: list[dict]) -> str:
     blocks = []
     for i, p in enumerate(projects):
+        crop_x, crop_y = cover_position(p)
         cover = (f'<img {image_attributes(p["cover"], IMAGE_SIZES_HOME, i == 0, p)} '
+                 f'style="object-position: {crop_x}% {crop_y}%" '
                  f'alt="{esc(image_alt(p, p["cover"], p["title"]))}" '
                  f'fetchpriority="{"high" if i == 0 else "auto"}">') if p['cover'] else ''
         blocks.append(f'''<article class="project-card">
