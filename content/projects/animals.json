@@ -13,8 +13,7 @@
     "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
     "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
     "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
-    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
-    "/media/animals/1f27b036a7d14462b4540b4d/animals-06.jpg"
+    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg"
   ],
   "photo_details": [
     {
@@ -70,17 +69,6 @@
       "aperture": "f/5.6",
       "shutter_speed": "1/200",
       "iso": "280"
-    },
-    {
-      "image": "/media/animals/1f27b036a7d14462b4540b4d/animals-06.jpg",
-      "id": "1839c27156ab4a62b9f4cf96",
-      "storage": "r2",
-      "camera": "NIKON Z 6",
-      "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "115 mm",
-      "aperture": "f/5.6",
-      "shutter_speed": "1/200",
-      "iso": "500"
     }
   ]
 }
