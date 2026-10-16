@@ -168,7 +168,21 @@ body > main { flex: 1 0 auto; }
   touch-action: manipulation;
   transition: color .15s ease, opacity .15s ease;
 }
-.lightbox-close { min-width: 54px; min-height: 40px; padding: 9px 0 9px 9px; text-align: right; white-space: nowrap; }
+.lightbox-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 54px;
+  min-height: 40px;
+  padding: 0;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+.lightbox-close-label,
+.lightbox-close-symbol { display: inline-flex; align-items: center; justify-content: center; height: 16px; line-height: 1; }
+.lightbox-close-symbol { width: 12px; font-size: 12px; }
 .lightbox-nav { font: 400 12px/1 var(--font); min-width: 38px; min-height: 46px; }
 .lightbox-copy, .lightbox-download { white-space: nowrap; padding: 8px 0 8px 10px; text-decoration: none; }
 .lightbox-actions { display: flex; align-items: center; gap: clamp(10px, 1.8vw, 24px); flex: 0 0 auto; }

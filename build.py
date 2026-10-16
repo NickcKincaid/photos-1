@@ -339,7 +339,7 @@ def download_filename(project_title: str, position: int, count: int, image: str)
 def lightbox(project_title: str = '') -> str:
     return f'''<dialog id="lightbox" class="lightbox" aria-label="Photo viewer">
   <div class="lightbox-inner">
-    <div class="lightbox-top"><span class="lightbox-project">{esc(project_title)}</span><button class="lightbox-close" type="button" aria-label="Close photo viewer">Close &times;</button></div>
+    <div class="lightbox-top"><span class="lightbox-project">{esc(project_title)}</span><button class="lightbox-close" type="button" aria-label="Close photo viewer"><span class="lightbox-close-label">Close</span><span class="lightbox-close-symbol" aria-hidden="true">&times;</span></button></div>
     <div class="lightbox-stage"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photo">&#8592;</button>
       <img class="lightbox-image" alt="" decoding="async">
       <p class="lightbox-unavailable" role="status" hidden>This photograph is temporarily unavailable.</p>
