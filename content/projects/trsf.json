@@ -1,0 +1,19 @@
+{
+  "title": "trsf",
+  "blurb": "",
+  "published": false,
+  "order": 5,
+  "cover_position": {
+    "x": 50,
+    "y": 50
+  },
+  "cover": "/media/trsf/725d7b2fb78c406596c0f347/trsf-01.jpg",
+  "gallery": [],
+  "photo_details": [
+    {
+      "image": "/media/trsf/725d7b2fb78c406596c0f347/trsf-01.jpg",
+      "id": "cd35cb15b2604ff0986b4e33",
+      "storage": "r2"
+    }
+  ]
+}
