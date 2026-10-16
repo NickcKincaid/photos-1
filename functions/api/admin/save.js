@@ -136,7 +136,7 @@ export async function onRequestPost(context) {
         for (const d of removed) {
           if (protectedPaths.has(d.image)) continue;
           const key=d.image.slice(1);
-          if (!/^media\/[a-z0-9-]{1,65}\/[a-zA-Z0-9_.-]+\.(?:jpe?g|png|webp|tiff?)$/i.test(key)) continue;
+          if (!R2_IMAGE.test('/'+key)) continue;
           keys.push(key);
           for (const v of d.variants || []) {
             const variant = typeof v?.url === 'string' ? v.url.slice(1) : '';

@@ -47,10 +47,25 @@
   function node(tag, className='', value='') { const el=document.createElement(tag);if(className)el.className=className;if(value)el.textContent=value;return el; }
   function cleanup() { for (const u of localURLs) URL.revokeObjectURL(u); localURLs.clear(); }
   function markDirty() { dirty = true; }
+  const legacyR2Name = path => /^\/media\/([a-z0-9-]{1,65})\/\1-[0-9]{2,3}-[a-f0-9]{24}\.jpg$/.test(path || '');
+  function oldPhotoPaths(project) {
+    if (!project?.slug) return [];
+    const details = new Map((project.photo_details || []).map(d => [d.image, d]));
+    return [project.cover, ...(project.gallery || [])].filter(p =>
+      legacyR2Name(p) && details.get(p)?.storage === 'r2');
+  }
+  function updateStandardizeState() {
+    const button = $('standardize-photos');
+    const count = oldPhotoPaths(current).length;
+    button.hidden = count === 0;
+    button.disabled = locked;
+    if (count) button.textContent = `Standardize ${count} old photo filename${count===1?'':'s'}`;
+  }
   function updateDeleteState() {
     const button = $('delete-project');
     button.hidden = !current?.slug;
     button.disabled = locked;
+    updateStandardizeState();
   }
   window.addEventListener('beforeunload', event => { if (dirty || orderDirty) { event.preventDefault(); event.returnValue = ''; } });
   $('project-title').addEventListener('input', markDirty);
@@ -253,6 +268,44 @@
       status(saved.cleanupWarning || 'Project saved. Cloudflare will publish shortly. Photographs are in R2.',saved.cleanupWarning?'error':'good');
     } catch(err){status(err.message,'error');}
     finally{locked=false;$('publish').disabled=false;renderList();renderPhotos();}
+  });
+  $('standardize-photos').addEventListener('click', async () => {
+    if (locked || !current?.slug) return;
+    if (dirty || orderDirty) {
+      status('Save or discard edits and project ordering before standardizing names.', 'error');
+      return;
+    }
+    const project = current;
+    const legacy = oldPhotoPaths(project);
+    if (!legacy.length) return;
+    if (!window.confirm(`Copy ${legacy.length} older photo${legacy.length===1?'':'s'} to clean filenames?\n\nThe project will switch to the new names in one publish. Existing R2 files will be retained as a safety backup.`)) return;
+    locked = true;
+    $('publish').disabled = true;
+    $('photo-files').disabled = true;
+    updateDeleteState();
+    renderList();renderPhotos();
+    try {
+      const mappings = [];
+      for (let i = 0; i < legacy.length; i++) {
+        status(`Copying and verifying photograph ${i+1} of ${legacy.length}…`);
+        const mapping = await api('standardize', {method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'prepare',slug:project.slug,revision:project.revision,oldPath:legacy[i]})});
+        mappings.push(mapping);
+      }
+      status('All new filenames verified. Publishing updated project references…');
+      const result = await api('standardize', {method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'commit',slug:project.slug,revision:project.revision,mappings})});
+      dirty = false;
+      await loadProjects(project.slug);
+      status(`Standardized ${result.migrated} photo filename(s). Cloudflare is deploying. Old R2 copies were kept for safety.`, 'good');
+    } catch (error) {
+      status('Migration stopped safely: '+error.message+' Existing project photos were not deleted. Retry after checking the error.', 'error');
+    } finally {
+      locked = false;
+      $('publish').disabled = false;
+      $('photo-files').disabled = false;
+      updateDeleteState();renderList();renderPhotos();
+    }
   });
   $('delete-project').addEventListener('click', async () => {
     if (locked || !current?.slug) return;

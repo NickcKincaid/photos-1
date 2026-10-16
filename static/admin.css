@@ -87,3 +87,7 @@ main[hidden] { display: none !important; }
 .cover-crop-sliders input{width:100%;accent-color:var(--ink);margin-bottom:9px}
 .cover-crop-sliders button{justify-self:start}
 @media(max-width:680px){.cover-crop-controls{gap:12px}.cover-crop-preview{width:min(220px,60vw)}}
+/* One-time, non-destructive naming migration for older R2 photos. */
+.actions #standardize-photos{background:transparent;color:var(--ink);border:1px solid var(--line);padding:9px 12px}
+.actions #standardize-photos:hover{border-color:var(--ink)}
+.actions #standardize-photos[hidden]{display:none}
