@@ -282,15 +282,15 @@ def photo_info(image: str, project: dict) -> str:
                 info[key] = str(value).strip()
         break
     fragments = []
-    for key in ('camera', 'lens', 'focal_length', 'aperture', 'shutter_speed', 'iso'):
+    # The public website intentionally shows only exposure essentials. Camera,
+    # lens, aperture and other EXIF fields are preserved in the underlying file.
+    for key in ('focal_length', 'shutter_speed', 'iso'):
         value = str(info.get(key) or '').strip()
         if not value:
             continue
         # Avoid duplicating units when entered manually in the CMS.
         if key == 'focal_length' and value.replace('.', '', 1).isdigit():
             value += ' mm'
-        if key == 'aperture' and not value.lower().startswith('f/'):
-            value = 'f/' + value
         if key == 'shutter_speed' and not value.lower().endswith(('s', 'sec', 'seconds')):
             value += ' s'
         if key == 'iso' and not value.upper().startswith('ISO'):
@@ -305,10 +305,10 @@ def photo_caption(index: int, count: int, image: str, project: dict, css_class: 
     return (f'<figcaption class="{css_class}">{esc(details)}</figcaption>'
             if details else '')
 
-def lightbox() -> str:
-    return '''<dialog id="lightbox" class="lightbox" aria-label="Photo viewer">
+def lightbox(project_title: str = '') -> str:
+    return f'''<dialog id="lightbox" class="lightbox" aria-label="Photo viewer">
   <div class="lightbox-inner">
-    <div class="lightbox-top"><span></span><button class="lightbox-close" type="button" aria-label="Close photo viewer">CLOSE &times;</button></div>
+    <div class="lightbox-top"><span class="lightbox-project">{esc(project_title)}</span><button class="lightbox-close" type="button" aria-label="Close photo viewer">Close &times;</button></div>
     <div class="lightbox-stage"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photo">&#8592;</button>
       <img class="lightbox-image" alt="" decoding="async">
       <button class="lightbox-nav lightbox-next" type="button" aria-label="Next photo">&#8594;</button>
@@ -350,7 +350,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
   </div>
   {gallery}
   <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
-</main>{footer(site)}{lightbox()}'''
+</main>{footer(site)}{lightbox(p['title'])}'''
     return document(p['title'], str(p.get('blurb') or p.get('description') or f'Photographs from {p["title"]} by Nicholas Kincaid.'), site, body,
                     images[0] if images else '', p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'CreativeWork', 'name': p['title'],

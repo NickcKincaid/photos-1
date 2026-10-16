@@ -46,48 +46,34 @@
     safeHistory(firstOpen ? 'pushState' : 'replaceState', {photoViewer:true}, urlFor(index));
   }
 
-  // The viewer uses an approximation of the photograph's dominant color.
-  // Sampling a tiny, same-origin canvas is much cheaper than an image-analysis library.
+  // Gallery-style atmosphere: a fixed charcoal background with only a
+  // restrained hint of the current image color. Never paint the entire screen
+  // its dominant hue: that can be distracting or reduce control contrast.
   function updateViewerColor() {
     if (!dialog.open || !image.complete || !image.naturalWidth) return;
     try {
       const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 32;
+      canvas.width = canvas.height = 20;
       const context = canvas.getContext('2d', { willReadFrequently: true });
       if (!context) return;
-      context.drawImage(image, 0, 0, 32, 32);
-      const pixels = context.getImageData(0, 0, 32, 32).data;
-      const histogram = new Map();
-      const sum = [0, 0, 0];
+      context.drawImage(image, 0, 0, 20, 20);
+      const pixels = context.getImageData(0, 0, 20, 20).data;
+      const total = [0, 0, 0];
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i + 3] < 230) continue;
-        const rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];
-        rgb.forEach((v, c) => { sum[c] += v; });
-        count += 1;
-        const key = `${rgb[0] >> 5}-${rgb[1] >> 5}-${rgb[2] >> 5}`;
-        const bin = histogram.get(key) || { count: 0, rgb: [0, 0, 0] };
-        bin.count += 1;
-        rgb.forEach((v, c) => { bin.rgb[c] += v; });
-        histogram.set(key, bin);
+        if (pixels[i + 3] < 180) continue;
+        for (let c = 0; c < 3; c++) total[c] += pixels[i + c];
+        count++;
       }
       if (!count) return;
-      let dominant = null;
-      for (const bin of histogram.values()) {
-        if (!dominant || bin.count > dominant.count) dominant = bin;
-      }
-      const avg = sum.map(v => v / count);
-      const chosen = dominant && dominant.count > 20
-        ? dominant.rgb.map(v => v / dominant.count)
-        : avg;
-      // Mix the most frequent tone with the overall image tone; reduce intensity
-      // a little so controls remain readable and the photograph is the focus.
-      const color = chosen.map((v, i) => Math.round(v * 0.64 + avg[i] * 0.24 + 115 * 0.12));
-      const luminance = 0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2];
-      dialog.style.setProperty('--viewer-bg', `rgb(${color.join(', ')})`);
-      dialog.style.setProperty('--viewer-text', luminance > 118 ? '#181a17' : '#ffffff');
-    } catch (error) {
-      // Unsupported formats and unusual browser security settings use the default.
+      const avg = total.map(v => v / count);
+      const gray = avg[0] * .2126 + avg[1] * .7152 + avg[2] * .0722;
+      // Desaturate the sampled hue before blending it into the neutral stage.
+      const accent = avg.map(v => Math.round(v * .38 + gray * .62));
+      dialog.style.setProperty('--viewer-glow', accent.join(', '));
+    } catch {
+      // Unsupported image formats and cross-origin canvas restrictions fall
+      // back to the same restrained neutral background.
     }
   }
 
@@ -96,13 +82,16 @@
     const item = items[current];
     if (copyButton) copyButton.textContent = 'Copy link';
     const thumb = item.querySelector('img');
-    dialog.style.setProperty('--viewer-bg', '#252824');
-    dialog.style.setProperty('--viewer-text', '#ffffff');
+    dialog.style.setProperty('--viewer-glow', '30, 33, 32');
+    image.classList.remove('is-loaded');
     image.alt = thumb ? thumb.alt : 'Project photograph';
     image.src = item.dataset.fullSrc || item.getAttribute('href');
     counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(items.length).padStart(2, '0')}`;
     metadata.textContent = item.getAttribute('data-meta') || '';
-    if (image.complete && image.naturalWidth) updateViewerColor();
+    if (image.complete && image.naturalWidth) {
+      image.classList.add('is-loaded');
+      updateViewerColor();
+    }
   }
 
   function dismiss(fromHistory = false) {
@@ -118,7 +107,10 @@
     show(index);
     updateAddress(index, opening);
   }));
-  image.addEventListener('load', updateViewerColor);
+  image.addEventListener('load', () => {
+    image.classList.add('is-loaded');
+    updateViewerColor();
+  });
 
   closeButton.addEventListener('click', event => {
     event.preventDefault();
@@ -185,6 +177,7 @@
   dialog.addEventListener('cancel', event => { event.preventDefault(); dismiss(); });
   dialog.addEventListener('close', () => {
     if (selectedFromUrl() !== -1) safeHistory('replaceState', null, baseURL);
+    image.classList.remove('is-loaded');
     image.removeAttribute('src');
     lastFocus?.focus({ preventScroll: true });
   });
