@@ -15,7 +15,7 @@
     "/media/cdmx/029adcc6ab4a4a69b167e072/cdmx-03.jpg",
     "/media/cdmx/e9192a8055cc4de593c95111/cdmx-06.jpg",
     "/media/cdmx/bb316a20da41432990e2b00c/cdmx-07.jpg",
-    "/media/cdmx/b9d1210affb54608b71717ff/cdmx-07.jpg"
+    "/media/cdmx/0e4ae4fb9cb94257914e456a/cdmx-07.jpg"
   ],
   "photo_details": [
     {
@@ -79,15 +79,15 @@
       "iso": "640"
     },
     {
-      "image": "/media/cdmx/b9d1210affb54608b71717ff/cdmx-07.jpg",
-      "id": "e438bef5c58d448db6599947",
+      "image": "/media/cdmx/0e4ae4fb9cb94257914e456a/cdmx-07.jpg",
+      "id": "d4484e5c0b874a3b8b93e3e9",
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
       "focal_length": "40 mm",
-      "aperture": "f/2",
-      "shutter_speed": "1/1250",
-      "iso": "51200"
+      "aperture": "f/4.5",
+      "shutter_speed": "1/8000",
+      "iso": "500"
     }
   ]
 }
