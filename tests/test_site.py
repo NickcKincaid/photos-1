@@ -35,6 +35,19 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertTrue((self.root / 'dist' / 'admin' / 'index.html').is_file())
         self.assertFalse((self.root / 'dist' / 'content').exists())
 
+    def test_every_referenced_admin_script_is_published(self):
+        # Catch missing JS assets before they silently disable dashboard controls.
+        import re
+        self.site.run()
+        admin_dir = self.root / 'dist' / 'admin'
+        markup = (admin_dir / 'index.html').read_text(encoding='utf-8')
+        sources = re.findall(r'<script\b[^>]*\bsrc=["\'](/admin/[A-Za-z0-9._-]+\.js)["\']', markup)
+        self.assertIn('/admin/admin-storage.js', sources)
+        self.assertIn('/admin/admin-drafts.js', sources)
+        for source in sources:
+            with self.subTest(source=source):
+                self.assertTrue((admin_dir / source.rsplit('/', 1)[-1]).is_file(), source)
+
     def test_header_is_text_only_while_favicon_is_retained(self):
         self.site.run()
         home = (self.root / 'dist' / 'index.html').read_text()

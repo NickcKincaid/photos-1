@@ -474,8 +474,18 @@ def run() -> None:
     shutil.copy2(ROOT / 'static' / 'prepare.js', prep_dir / 'prepare.js')
     admin_dir = OUT / 'admin'
     admin_dir.mkdir(parents=True, exist_ok=True)
-    for src, dest in [('admin.html', 'index.html'), ('admin.css', 'admin.css'), ('admin.js', 'admin.js'), ('admin-note-format.js', 'admin-note-format.js'), ('admin-notes.js', 'admin-notes.js'), ('admin-processing.js', 'admin-processing.js')]:
+    # Keep the deployed editor's assets in sync with the HTML. Previously,
+    # admin-storage.js and admin-drafts.js were referenced but never copied,
+    # leaving Storage & Backups and browser-local draft recovery inoperative.
+    for src, dest in [('admin.html', 'index.html'), ('admin.css', 'admin.css')]:
         shutil.copy2(ROOT / 'static' / src, admin_dir / dest)
+    admin_scripts = [ROOT / 'static' / 'admin.js', *sorted((ROOT / 'static').glob('admin-*.js'))]
+    for script in admin_scripts:
+        shutil.copy2(script, admin_dir / script.name)
+    admin_html = (admin_dir / 'index.html').read_text(encoding='utf-8')
+    for required in re.findall(r'<script\b[^>]*\bsrc=[\"\'](/admin/[A-Za-z0-9._-]+\.js)[\"\']', admin_html):
+        if not (admin_dir / required.rsplit('/', 1)[-1]).is_file():
+            raise FileNotFoundError(f'Admin page references missing script: {required}')
     if (ROOT / 'media').exists():
         shutil.copytree(ROOT / 'media', OUT / 'media', ignore=shutil.ignore_patterns('_unused'), dirs_exist_ok=True)
     (OUT / 'index.html').write_text(homepage(site, projects), encoding='utf-8')
