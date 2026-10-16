@@ -64,7 +64,11 @@
     {
       "image": "/media/landscapes/2f30b61f18c74e5c92f9c72f/landscapes-04.jpg",
       "id": "79e7ab27956c4ccc85ab8d9b",
-      "storage": "r2"
+      "storage": "r2",
+      "focal_length": "250mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/2000",
+      "iso": "100"
     },
     {
       "image": "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg",
