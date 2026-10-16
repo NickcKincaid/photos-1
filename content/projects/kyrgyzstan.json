@@ -66,5 +66,9 @@
       "shutter_speed": "1/250",
       "iso": "100"
     }
-  ]
+  ],
+  "cover_position": {
+    "x": 50,
+    "y": 50
+  }
 }
