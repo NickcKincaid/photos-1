@@ -1,0 +1,45 @@
+{
+  "title": "Handmade Watusi Horn Table",
+  "published": true,
+  "order": 1,
+  "cover": "/media/handmade-watusi-horn-table/handmade-watusi-horn-table-01-00232f36de234e2c905d50cb.jpg",
+  "gallery": [
+    "/media/handmade-watusi-horn-table/handmade-watusi-horn-table-02-a6a074de135d4f228739b8d5.jpg",
+    "/media/handmade-watusi-horn-table/handmade-watusi-horn-table-03-07c2d14201e5493cb6188790.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/handmade-watusi-horn-table/handmade-watusi-horn-table-01-00232f36de234e2c905d50cb.jpg",
+      "id": "9d251b0c93ac49e6beacd62b",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "66 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/500",
+      "iso": "160"
+    },
+    {
+      "image": "/media/handmade-watusi-horn-table/handmade-watusi-horn-table-02-a6a074de135d4f228739b8d5.jpg",
+      "id": "f4110d924f6248b7ba308521",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "69 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/500",
+      "iso": "125"
+    },
+    {
+      "image": "/media/handmade-watusi-horn-table/handmade-watusi-horn-table-03-07c2d14201e5493cb6188790.jpg",
+      "id": "b183782f8c8b4884a7037a2d",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/400",
+      "iso": "220"
+    }
+  ]
+}
