@@ -1,9 +1,70 @@
 {
   "title": "Kyrgyzstan",
   "blurb": "",
-  "published": false,
+  "published": true,
   "order": 3,
-  "cover": "",
-  "gallery": [],
-  "photo_details": []
+  "cover": "/media/kyrgyzstan/kyrgyzstan-01-cd0dff362ff94b35b9404ab5.jpg",
+  "gallery": [
+    "/media/kyrgyzstan/kyrgyzstan-02-8fe4938fc1194b1799c2bac5.jpg",
+    "/media/kyrgyzstan/kyrgyzstan-03-57a197dbe71c4319972527a0.jpg",
+    "/media/kyrgyzstan/kyrgyzstan-04-27ac443d2ce94e649e4270ee.jpg",
+    "/media/kyrgyzstan/kyrgyzstan-05-a8974d874c1747ca85326968.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/kyrgyzstan/kyrgyzstan-01-cd0dff362ff94b35b9404ab5.jpg",
+      "id": "92c25a0180484e6890ac758b",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/10",
+      "shutter_speed": "1/250",
+      "iso": "400"
+    },
+    {
+      "image": "/media/kyrgyzstan/kyrgyzstan-02-8fe4938fc1194b1799c2bac5.jpg",
+      "id": "7c306e6868274a17a79265fa",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/250",
+      "iso": "125"
+    },
+    {
+      "image": "/media/kyrgyzstan/kyrgyzstan-03-57a197dbe71c4319972527a0.jpg",
+      "id": "8791d81f4cba4b338e43a205",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "53 mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/400",
+      "iso": "125"
+    },
+    {
+      "image": "/media/kyrgyzstan/kyrgyzstan-04-27ac443d2ce94e649e4270ee.jpg",
+      "id": "4bfe527acda34daebef677c1",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "38 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/250",
+      "iso": "100"
+    },
+    {
+      "image": "/media/kyrgyzstan/kyrgyzstan-05-a8974d874c1747ca85326968.jpg",
+      "id": "fa3cb87aac5b4ac490ae504a",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "61 mm",
+      "aperture": "f/10",
+      "shutter_speed": "1/250",
+      "iso": "160"
+    }
+  ]
 }
