@@ -104,11 +104,13 @@ export async function onRequestPost(context) {
       }
       details.push(info);
     }
+    const socialImage = String(input.social_image || '');
+    if (socialImage && !newRefs.includes(socialImage)) throw Error('Choose a sharing image from this project.');
     const published = Boolean(input.published);
     if (published && !newRefs.length) throw Error('Add at least one photograph before publishing.');
     const order = Number(input.order);
     if (!Number.isSafeInteger(order) || order < 0 || order > 999999) throw Error('Homepage order must be a whole number between 0 and 999999.');
-    const next = { ...previous, title, blurb, published, order, cover_position: coverPosition, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
+    const next = { ...previous, title, blurb, published, order, social_image: socialImage, cover_position: coverPosition, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
     // One atomic Git commit for all changes to this project, including new files.
     const ref = await gh(context, '/git/ref/heads/main');
     const head = await gh(context, `/git/commits/${ref.object.sha}`);

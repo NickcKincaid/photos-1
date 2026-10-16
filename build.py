@@ -209,6 +209,8 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
     canonical = site_url + path
     og_cover = image_url(cover)
     og_image = (f'<meta property="og:image" content="{esc(site_url + og_cover)}">\n'
+                f'  <meta property="og:image:alt" content="{esc(title + " — photograph by Nicholas Kincaid")}">\n'
+                f'  <meta name="twitter:image" content="{esc(site_url + og_cover)}">\n'
                 f'  <meta name="twitter:card" content="summary_large_image">') if og_cover else '<meta name="twitter:card" content="summary">'
     full_title = title if path == '/' else f'{title} — {site["name"]}'
     safe_desc = description.strip() or f'Photography by {site["name"]}.'
@@ -276,7 +278,7 @@ def homepage(site: dict, projects: list[dict]) -> str:
   <section aria-label="Projects" id="work">{work}</section>
 </main>{footer(site)}'''
     return document(str(site['name']), str(site.get('intro', 'Photography portfolio')), site, body,
-                    projects[0]['cover'] if projects else '', '/', structured={
+                    (projects[0].get('social_image') if projects[0].get('social_image') in [projects[0]['cover'], *projects[0]['gallery']] else projects[0]['cover']) if projects else '', '/', structured={
                     '@context': 'https://schema.org', '@type': 'CollectionPage',
                     'name': site['name'], 'url': SITE_URL + '/',
                     'creator': {'@type': 'Person', 'name': 'Nicholas Kincaid'},
@@ -339,7 +341,7 @@ def lightbox(project_title: str = '') -> str:
       <img class="lightbox-image" alt="" decoding="async">
       <button class="lightbox-nav lightbox-next" type="button" aria-label="Next photo">&#8594;</button>
     </div>
-    <div class="lightbox-bottom"><span class="lightbox-counter" aria-live="polite"></span><span class="lightbox-metadata"></span><div class="lightbox-actions"><a class="lightbox-download" href="#" download aria-label="Download this photograph">Download</a><button class="lightbox-copy" type="button" aria-label="Copy link to this photograph">Copy link</button></div></div>
+    <div class="lightbox-bottom"><span class="lightbox-counter" aria-live="polite"></span><span class="lightbox-metadata"></span><div class="lightbox-actions"><button class="lightbox-zoom" type="button" aria-label="Zoom photograph" aria-pressed="false">Zoom</button><a class="lightbox-download" href="#" download aria-label="Download this photograph">Download</a><button class="lightbox-copy" type="button" aria-label="Copy link to this photograph">Copy link</button></div></div>
   </div>
 </dialog>'''
 
@@ -378,7 +380,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
   <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
 </main>{footer(site)}{lightbox(p['title'])}'''
     return document(p['title'], str(p.get('blurb') or p.get('description') or f'Photographs from {p["title"]} by Nicholas Kincaid.'), site, body,
-                    images[0] if images else '', p['url'], 'article',
+                    p.get('social_image') if p.get('social_image') in images else (images[0] if images else ''), p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'CreativeWork', 'name': p['title'],
                      'url': SITE_URL + p['url'], 'creator': {'@type': 'Person', 'name': 'Nicholas Kincaid'},
                      'image': [SITE_URL + photo for photo in images]})
@@ -422,7 +424,7 @@ def timestamp(note: dict) -> str:
     return f'<time datetime="{iso}" data-local-published title="Published {shown}">{shown}</time>'
 
 
-def notes_page(site: dict, notes: list[dict]) -> str:
+def notes_page(site: dict, notes: list[dict], share_cover: str = '') -> str:
     pieces = []
     for n in notes:
         pieces.append(f'''<article class="note-entry" id="{esc(n['slug'])}">
@@ -433,23 +435,23 @@ def notes_page(site: dict, notes: list[dict]) -> str:
   <h1 class="visually-hidden">Notes</h1>
   {''.join(pieces) if pieces else '<p class="empty-state">No notes yet.</p>'}
 </main>{footer(site)}'''
-    return document('Notes', 'Notes by Nicholas Kincaid.', site, body, path='/notes/')
+    return document('Notes', 'Notes by Nicholas Kincaid.', site, body, cover=share_cover, path='/notes/')
 
 
-def note_page(site: dict, note: dict) -> str:
+def note_page(site: dict, note: dict, share_cover: str = '') -> str:
     body = f'''{nav(site, 'notes')}<main id="main" class="page notes-main">
   <article class="note-entry"><div class="note-heading"><h1>{esc(note['title'])}</h1>{timestamp(note)}</div>
   {note_content(note)}</article>
 </main>{footer(site)}'''
-    return document(note['title'], note['body'][:155], site, body, path=note['url'], kind='article')
+    return document(note['title'], note['body'][:155], site, body, cover=share_cover, path=note['url'], kind='article')
 
 
-def inquire_page(site: dict) -> str:
+def inquire_page(site: dict, share_cover: str = '') -> str:
     body = f'''{nav(site, 'inquire')}<main id="main" class="page inquire-main">
   <h1>Inquire</h1>
   <a href="mailto:nicholas.kincaid2@gmail.com">nicholas.kincaid2@gmail.com ↗</a>
 </main>{footer(site)}'''
-    return document('Inquire', 'Photography inquiries and contact for Nicholas Kincaid.', site, body, path='/inquire/')
+    return document('Inquire', 'Photography inquiries and contact for Nicholas Kincaid.', site, body, cover=share_cover, path='/inquire/')
 
 def run() -> None:
     site = read_json(CONTENT / 'site.json')
@@ -479,14 +481,14 @@ def run() -> None:
         (outdir / 'index.html').write_text(project_page(site, p, idx, projects), encoding='utf-8')
     notes_out = OUT / 'notes'
     notes_out.mkdir(parents=True, exist_ok=True)
-    (notes_out / 'index.html').write_text(notes_page(site, notes), encoding='utf-8')
+    (notes_out / 'index.html').write_text(notes_page(site, notes, projects[0]['cover'] if projects else ''), encoding='utf-8')
     for note in notes:
         outdir = notes_out / note['slug']
         outdir.mkdir(parents=True, exist_ok=True)
-        (outdir / 'index.html').write_text(note_page(site, note), encoding='utf-8')
+        (outdir / 'index.html').write_text(note_page(site, note, projects[0]['cover'] if projects else ''), encoding='utf-8')
     inquire_out = OUT / 'inquire'
     inquire_out.mkdir(parents=True, exist_ok=True)
-    (inquire_out / 'index.html').write_text(inquire_page(site), encoding='utf-8')
+    (inquire_out / 'index.html').write_text(inquire_page(site, projects[0]['cover'] if projects else ''), encoding='utf-8')
     # The publishing API never exposes unlisted/draft projects or notes here.
     site_url = SITE_URL
     sitemap = ['<?xml version="1.0" encoding="utf-8"?>',

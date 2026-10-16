@@ -2,9 +2,9 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const pane = $('notes-pane'), projectPane = $('projects-pane');
+  const pane = $('notes-pane'), projectPane = $('projects-pane'), storagePane=$('storage-pane');
   if (!pane || !projectPane) return;
-  const tabs = [$('show-projects'), $('show-notes')];
+  const tabs = [$('show-projects'), $('show-notes'), $('show-storage')];
   let notes = [], selected = null, dirty = false, busy = false, loaded = false;
   let previewVisible = false;
   let previewTimer = null;
@@ -22,6 +22,30 @@
   function canDiscard(message='Discard unsaved changes to this note?') {
     return !dirty || window.confirm(message);
   }
+  function noteKey() { return selected?.slug || 'new'; }
+  function persistDraft() {
+    if(!dirty || busy || $('note-form').hidden) return;
+    window.PortfolioDrafts?.save('note',noteKey(),selected?.revision,{
+      title:$('note-title').value,body:$('note-body').value,published:$('note-published').checked
+    });
+  }
+  function tryRestoreDraft(note) {
+    const draft=window.PortfolioDrafts?.read('note',noteKey());
+    if (!draft) return;
+    const stale=Boolean(note?.revision && draft.revision && note.revision!==draft.revision);
+    const question=stale
+      ? 'A local note draft exists, but the GitHub version has changed. Restore the local text anyway? Review before saving.'
+      : 'Recover your unsaved note from this browser?';
+    if (!window.confirm(question)) {window.PortfolioDrafts.clear('note',noteKey());return;}
+    $('note-title').value=String(draft.value.title||'').slice(0,120);
+    $('note-body').value=String(draft.value.body||'').slice(0,12000);
+    $('note-published').checked=Boolean(draft.value.published);
+    dirty=true;
+    showStatus('Local draft recovered. Review and save to publish.');
+    if(previewVisible) renderPreview();
+  }
+  setInterval(persistDraft,1800);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)persistDraft();});
   function newSelection(note, force=false) {
     if ((busy && !force) || (!force && !canDiscard())) return false;
     selected = note || null;
@@ -33,6 +57,7 @@
     $('delete-note').hidden = !note?.slug;
     $('note-form').hidden = false;
     showStatus(note ? (note.published ? 'Published note. Changes will redeploy after saving.' : 'Unpublished draft.') : 'New note. Publication time is set when you publish.');
+    tryRestoreDraft(note);
     renderList();
     return true;
   }
@@ -58,18 +83,23 @@
   }
   function switchTo(section) {
     if (busy) return;
-    if (section === 'notes' && window.photoEditorHasPendingChanges?.() &&
+    if (section !== 'projects' && window.photoEditorHasPendingChanges?.() &&
         !window.confirm('Your project has unsaved changes. Switch to Notes anyway?')) return;
-    if (section === 'projects' && !canDiscard('Your note has unsaved changes. Switch to Projects anyway?')) return;
+    if (section !== 'notes' && !canDiscard('Your note has unsaved changes. Switch away anyway?')) return;
     const isNotes = section === 'notes';
+    const isStorage = section === 'storage';
     pane.hidden = !isNotes;
-    projectPane.hidden = isNotes;
-    tabs[0].setAttribute('aria-pressed', String(!isNotes));
+    projectPane.hidden = section !== 'projects';
+    storagePane.hidden = !isStorage;
+    tabs[0].setAttribute('aria-pressed', String(section === 'projects'));
     tabs[1].setAttribute('aria-pressed', String(isNotes));
+    tabs[2].setAttribute('aria-pressed', String(isStorage));
     if (isNotes && !loaded) load().catch(e => showStatus(e.message, true));
+    if (isStorage) window.dispatchEvent(new Event('photo-storage-open'));
   }
   tabs[0].addEventListener('click', () => switchTo('projects'));
   tabs[1].addEventListener('click', () => switchTo('notes'));
+  tabs[2].addEventListener('click', () => switchTo('storage'));
   const noteArea = $('note-body');
   const preview = $('note-preview');
   function renderPreview() {
@@ -152,6 +182,7 @@
       const saved = await api('POST', {slug:selected?.slug || null, revision:selected?.revision || null,
         title, body, published:$('note-published').checked});
       dirty = false;
+      window.PortfolioDrafts?.clear('note',noteKey());
       await load(saved.slug, true);
       showStatus('Note saved. Cloudflare will update the public Notes page shortly.');
     } catch (error) { showStatus(error.message, true); }
@@ -167,6 +198,7 @@
     try {
       await api('DELETE', {slug:selected.slug, revision:selected.revision, confirmTitle:selected.title});
       dirty = false;
+      window.PortfolioDrafts?.clear('note',noteKey());
       await load(null, true);
       showStatus('Note deleted. Cloudflare will redeploy shortly.');
     } catch (error) { showStatus(error.message, true); }

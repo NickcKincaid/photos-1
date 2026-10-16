@@ -33,11 +33,68 @@
   const nextButton = dialog.querySelector('.lightbox-next');
   const copyButton = dialog.querySelector('.lightbox-copy');
   const downloadLink = dialog.querySelector('.lightbox-download');
+  const zoomButton = dialog.querySelector('.lightbox-zoom');
+  const stage=dialog.querySelector('.lightbox-stage');
   const items = Array.from(document.querySelectorAll('[data-lightbox]'));
   if (!items.length) return;
   let current = 0;
   let lastFocus = null;
   let touchStart = null;
+  let zoom = 1, panX = 0, panY = 0, pinch = null, didPinch = false;
+  const pointers = new Map();
+  let lastTap = 0, lastTouchToggle = 0;
+  function applyZoom() {
+    // Restrict panning to the scaled image stage, so it cannot disappear completely.
+    const maxX = Math.max(0, (zoom - 1) * image.clientWidth / 2);
+    const maxY = Math.max(0, (zoom - 1) * image.clientHeight / 2);
+    panX = Math.max(-maxX,Math.min(maxX,panX));
+    panY = Math.max(-maxY,Math.min(maxY,panY));
+    image.style.transform = zoom <= 1 ? '' : `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    dialog.classList.toggle('is-zoomed',zoom>1.01);
+    if(zoomButton) {zoomButton.textContent=zoom>1.01?'Fit':'Zoom';zoomButton.setAttribute('aria-pressed',String(zoom>1.01));}
+  }
+  function resetZoom() {zoom=1;panX=0;panY=0;pinch=null;didPinch=false;pointers.clear();applyZoom();}
+  function zoomTo(value) {zoom=Math.max(1,Math.min(5,value));if(zoom===1){panX=0;panY=0;}applyZoom();}
+  function toggleZoom() {
+    if(zoom>1.01) {resetZoom();return;}
+    // Magnify at most to the photo's native pixel resolution (100%) when available.
+    const fittedWidth=Math.min(image.clientWidth,image.clientHeight*image.naturalWidth/(image.naturalHeight||1));
+    const nativeRatio=fittedWidth>0?image.naturalWidth/fittedWidth:2;
+    zoomTo(Math.max(1.5,Math.min(5,nativeRatio)));
+  }
+  zoomButton?.addEventListener('click', toggleZoom);
+  image.addEventListener('dblclick', event => {event.preventDefault();if(Date.now()-lastTouchToggle>450) toggleZoom();});
+  image.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='mouse' && zoom<=1) return;
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    try{image.setPointerCapture(event.pointerId);}catch{}
+    if(pointers.size===2){
+      const [a,b]=Array.from(pointers.values());
+      pinch={distance:Math.hypot(a.x-b.x,a.y-b.y)||1,scale:zoom};didPinch=true;
+    }
+  });
+  image.addEventListener('pointermove',event=>{
+    const prior=pointers.get(event.pointerId);if(!prior)return;
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(pointers.size===2 && pinch) {
+      const [a,b]=Array.from(pointers.values());
+      zoomTo(pinch.scale*Math.hypot(a.x-b.x,a.y-b.y)/pinch.distance);
+    } else if(zoom>1.01) {
+      panX+=event.clientX-prior.x;panY+=event.clientY-prior.y;applyZoom();
+    }
+  });
+  image.addEventListener('pointerup',event=>{
+    const original=pointers.get(event.pointerId);
+    if(event.pointerType==='touch' && !didPinch && pointers.size===1 && original &&
+        Math.hypot(original.x-event.clientX, original.y-event.clientY)<12) {
+      const now=Date.now();
+      if(now-lastTap<310){toggleZoom();lastTouchToggle=now;lastTap=0;}else lastTap=now;
+    }
+    pointers.delete(event.pointerId);
+    if(pointers.size<2)pinch=null;
+    if(!pointers.size) setTimeout(()=>{didPinch=false;},100);
+  });
+  image.addEventListener('pointercancel',event=>{pointers.delete(event.pointerId);pinch=null;});
   const sourceURL = new URL(window.location.href);
   sourceURL.searchParams.delete('photo');
   if (sourceURL.hash.startsWith('#photo=')) sourceURL.hash = '';
@@ -101,6 +158,7 @@
   }
 
   function show(index) {
+    resetZoom();
     current = (index + items.length) % items.length;
     const item = items[current];
     if (copyButton) copyButton.textContent = 'Copy link';
@@ -128,6 +186,7 @@
   }
 
   function dismiss(fromHistory = false) {
+    resetZoom();
     if (!fromHistory && dialog.open) safeHistory('replaceState', null, baseURL);
     if (dialog.open) dialog.close();
   }
@@ -176,6 +235,7 @@
   }, { passive: true });
   dialog.addEventListener('touchend', event => {
     if (!touchStart || event.changedTouches.length !== 1) return;
+    if (zoom > 1.01 || didPinch) {touchStart=null;return;}
     const dx = event.changedTouches[0].clientX - touchStart.x;
     const dy = event.changedTouches[0].clientY - touchStart.y;
     touchStart = null;
@@ -210,6 +270,7 @@
   dialog.addEventListener('cancel', event => { event.preventDefault(); dismiss(); });
   dialog.addEventListener('close', () => {
     if (selectedFromUrl() !== -1) safeHistory('replaceState', null, baseURL);
+    resetZoom();
     image.classList.remove('is-loaded');
     image.removeAttribute('src');
     lastFocus?.focus({ preventScroll: true });

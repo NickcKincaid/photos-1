@@ -1,0 +1,36 @@
+name: Weekly metadata backup
+
+on:
+  schedule:
+    - cron: '23 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate metadata JSON
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          files = sorted(Path('content').rglob('*.json'))
+          for file in files:
+              json.loads(file.read_text(encoding='utf-8'))
+          print(f'Validated {len(files)} JSON documents')
+          PY
+      - name: Save small snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: metadata-${{ github.run_number }}
+          path: |
+            content/site.json
+            content/projects/*.json
+            content/notes/*.json
+          if-no-files-found: error
+          retention-days: 30

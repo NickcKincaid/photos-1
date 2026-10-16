@@ -234,3 +234,13 @@ body > main { flex: 1 0 auto; }
 .notes-main { display: flex; flex-direction: column; align-items: stretch; }
 .notes-main > .note-entry { width: 100%; max-width: 720px; flex: 0 0 auto; }
 .note-heading time { white-space: normal; }
+
+/* V24: accessible click/double-tap/pinch photo zoom. Fit remains the default. */
+.lightbox-zoom {appearance:none;border:0;background:transparent;color:#c8cdca;
+  font:400 10px/1.4 var(--font);cursor:pointer;min-height:35px;padding:8px 0 8px 10px}
+.lightbox-zoom:hover,.lightbox-zoom:focus-visible {color:#fff}
+.lightbox-image {transform-origin:50% 50%;touch-action:none;user-select:none;-webkit-user-select:none;cursor:zoom-in;will-change:transform}
+.lightbox.is-zoomed .lightbox-image {cursor:grab}
+.lightbox.is-zoomed .lightbox-image:active {cursor:grabbing}
+.lightbox.is-zoomed .lightbox-nav {opacity:.35}
+@media(max-width:600px) {.lightbox-actions{gap:8px}.lightbox-zoom{padding-left:6px}}

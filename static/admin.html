@@ -7,13 +7,15 @@
   <title>Editor — Photography</title>
   <link rel="stylesheet" href="/admin/admin.css">
   <script src="/admin/admin-processing.js" defer></script>
+  <script src="/admin/admin-drafts.js" defer></script>
   <script src="/admin/admin.js" defer></script>
   <script src="/admin/admin-note-format.js" defer></script>
   <script src="/admin/admin-notes.js" defer></script>
+  <script src="/admin/admin-storage.js" defer></script>
 </head>
 <body>
   <header class="top"><a href="/">← Portfolio</a><span>Photography / editor</span><a class="private" href="/api/auth/logout">Sign out</a></header>
-  <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button></nav>
+  <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button><button id="show-storage" type="button" aria-pressed="false">Storage &amp; backups</button></nav>
   <main id="projects-pane">
     <div class="sidebar">
       <div class="sidebar-head"><strong>Projects</strong><button type="button" id="add-project">+ New project</button></div>
@@ -55,6 +57,14 @@
           </div>
         </section>
         <div id="photos" class="photos"></div>
+        <label class="sharing-preview-field" for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span>
+          <select id="social-image"><option value="">Use homepage cover</option></select>
+          <div id="social-preview" class="social-preview" hidden aria-label="Approximate social sharing card preview">
+            <img id="social-preview-image" alt="Preview of selected sharing photograph">
+            <span id="social-preview-title"></span>
+          </div>
+          <small class="muted">Approximate preview. Social apps may crop differently or cache an older image.</small>
+        </label>
         <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><button type="button" id="delete-project" class="delete-project" hidden>Delete project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
       </form>
     </section>
@@ -84,10 +94,30 @@
           <div id="note-preview" class="note-preview note-body" hidden aria-label="Note preview"></div>
           <p class="muted note-editor-help">Use **bold**, *italic*, # headings, - lists, > quotations, [text](https://example.com), or paste a Spotify/YouTube link on a separate line. Raw HTML isn't supported.</p>
           <label class="check"><input type="checkbox" id="note-published"> Publish this note</label>
-          <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site.</p>
+          <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site. Unsaved text is backed up locally in this browser.</p>
         </div>
         <div class="actions"><button id="save-note" type="submit">Save note</button><button id="delete-note" type="button" class="delete-project" hidden>Delete note</button><a href="/notes/" target="_blank" rel="noopener">View notes ↗</a></div>
       </form>
+    </section>
+  </main>
+  <main id="storage-pane" class="storage-page" hidden>
+    <section class="storage-panel" aria-label="Storage and backups">
+      <h1>Storage &amp; backups</h1>
+      <p class="muted">Cloudflare R2 storage totals include optimized thumbnails. These figures are read from your private bucket when requested.</p>
+      <button id="storage-refresh" type="button">Check R2 storage</button>
+      <p id="storage-status" class="status" role="status">Not checked yet.</p>
+      <dl class="storage-stats" id="storage-stats" hidden>
+        <div><dt>Objects stored</dt><dd id="storage-objects">—</dd></div>
+        <div><dt>Photographs</dt><dd id="storage-photos">—</dd></div>
+        <div><dt>Storage used</dt><dd id="storage-bytes">—</dd></div>
+        <div><dt>Estimated Standard storage cost / month</dt><dd id="storage-cost">—</dd></div>
+      </dl>
+      <p class="muted" id="storage-caveat">Storage estimate excludes request charges. The free allowance, if eligible, is reflected in the estimate.</p>
+      <h2>Lightweight backups</h2>
+      <p>Weekly GitHub Actions snapshots contain project settings and Notes JSON. They do not duplicate your R2 photos or original camera files.</p>
+      <button id="download-metadata" type="button">Download a metadata backup now</button>
+      <p id="backup-status" class="status" role="status"></p>
+      <a href="https://github.com/NickcKincaid/photos-1/actions/workflows/backup-metadata.yml" target="_blank" rel="noopener noreferrer">View weekly backups on GitHub ↗</a>
     </section>
   </main>
   <dialog class="draft-preview" id="draft-preview" aria-label="Unpublished project preview">

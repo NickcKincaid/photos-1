@@ -5,6 +5,7 @@
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
   let stagedSlug = null;
   let coverPosition={x:50,y:50};
+  let socialImage='';
   function validCoverPosition(pos) {
     return pos && Number.isInteger(pos.x) && Number.isInteger(pos.y) &&
       pos.x>=0 && pos.x<=100 && pos.y>=0 && pos.y<=100 ? {x:pos.x,y:pos.y} : {x:50,y:50};
@@ -47,6 +48,39 @@
   function node(tag, className='', value='') { const el=document.createElement(tag);if(className)el.className=className;if(value)el.textContent=value;return el; }
   function cleanup() { for (const u of localURLs) URL.revokeObjectURL(u); localURLs.clear(); }
   function markDirty() { dirty = true; }
+  function draftKey() {return current?.slug || 'new';}
+  function persistDraft() {
+    if (!dirty || locked || $('editor-form').hidden) return;
+    const snapshot={title:$('project-title').value,blurb:$('project-blurb').value,
+      order:$('project-order').value,published:$('project-published').checked,
+      crop:{...coverPosition},socialImage,
+      stagedSlug, photos:photos.map(({kind,path,meta,variants})=>({kind,path,meta,variants}))};
+    window.PortfolioDrafts?.save('project',draftKey(),current?.revision,snapshot);
+  }
+  function tryRestoreDraft(project) {
+    const draft=window.PortfolioDrafts?.read('project',draftKey());
+    if(!draft) return;
+    const stale=Boolean(project?.revision && draft.revision && project.revision!==draft.revision);
+    const question=stale
+      ? 'An unsaved local project draft exists, but GitHub has a newer version. Restore your local changes anyway? Review them before saving.'
+      : 'Recover the unsaved changes to this project from this browser?';
+    if(!window.confirm(question)) {window.PortfolioDrafts.clear('project',draftKey());return;}
+    const v=draft.value;
+    $('project-title').value=String(v.title||'').slice(0,120);
+    $('project-blurb').value=String(v.blurb||'').slice(0,1000);
+    $('project-order').value=v.order ?? $('project-order').value;
+    $('project-published').checked=Boolean(v.published);
+    coverPosition=validCoverPosition(v.crop);
+    socialImage=typeof v.socialImage==='string' ? v.socialImage : '';
+    if(!project && typeof v.stagedSlug==='string' && /^[a-z0-9-]{1,65}$/.test(v.stagedSlug)) stagedSlug=v.stagedSlug;
+    if(Array.isArray(v.photos) && v.photos.length<=90 && v.photos.every(p=>
+        ['existing','r2'].includes(p.kind) && /^\/media\/[a-zA-Z0-9_./-]+\.(?:jpg|jpeg|webp|png)$/i.test(p.path||'') && !(p.path||'').includes('..'))) {
+      photos=v.photos.map(p=>({...p,preview:null}));
+    }
+    dirty=true;status('Recovered local draft. Review and click Save project to publish.','good');
+  }
+  setInterval(persistDraft,1800);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)persistDraft();});
   // Presentation names follow the current editor order; R2 storage paths and
   // stable photo IDs never change when the gallery is reordered.
   function displayFilename(photo, index) {
@@ -76,7 +110,7 @@
       if (flag) flag.textContent = 'Unsaved changes';
     }
   }
-  $('project-title').addEventListener('input', () => { markDirty(); refreshPhotoLabels(); });
+  $('project-title').addEventListener('input', () => { markDirty(); refreshPhotoLabels(); updateSocialPreview(); });
   $('project-blurb').addEventListener('input', markDirty);
   $('project-order').addEventListener('input', markDirty);
   $('project-published').addEventListener('change', markDirty);
@@ -86,6 +120,7 @@
     cleanup(); current=project || null; stagedSlug = null;
     dirty = false;
     coverPosition=validCoverPosition(project?.cover_position);
+    socialImage=typeof project?.social_image==='string' ? project.social_image : '';
     photos=[];
     if (project) {
       const overrides=new Map((project.photo_details || []).map(x => [x.image, x]));
@@ -98,6 +133,7 @@
     $('project-published').checked=project ? Boolean(project.published):false;
     $('editor-form').hidden=false;
     status(project ? 'Editing project. Changes appear after Cloudflare redeploys.' : 'New project. Add photos and save when ready.');
+    tryRestoreDraft(project);
     renderList();renderPhotos();updateDeleteState();
   }
   function updateOrderState() {
@@ -171,8 +207,29 @@
     finally {locked=false;$('publish').disabled=false;renderList();}
   });
   function move(i,d) {const next=i+d;if(next<0 || next>=photos.length)return;[photos[i],photos[next]]=[photos[next],photos[i]];if(i===0 || next===0)coverPosition={x:50,y:50};markDirty();renderPhotos();}
+  function updateSocialPreview() {
+    const box=$('social-preview');if(!box)return;
+    const chosen=photos.find(p=>p.path===socialImage)||photos[0];
+    box.hidden=!chosen;
+    if(!chosen)return;
+    $('social-preview-image').src=chosen.preview || chosen.path;
+    $('social-preview-title').textContent=$('project-title').value.trim()||current?.title||'Untitled';
+  }
+  function renderSocialImages() {
+    const field=$('social-image');if(!field)return;
+    field.replaceChildren();
+    const def=node('option','','Use homepage cover');def.value='';field.appendChild(def);
+    photos.forEach((photo,i)=>{
+      const opt=node('option','',displayFilename(photo,i));opt.value=photo.path;field.appendChild(opt);
+    });
+    if(!photos.some(p=>p.path===socialImage)) socialImage='';
+    field.value=socialImage;
+    updateSocialPreview();
+  }
+  $('social-image').addEventListener('change', e=>{socialImage=e.target.value;markDirty();updateSocialPreview();});
   function renderPhotos() {
     updateCoverCrop();
+    renderSocialImages();
     const container=$('photos');container.replaceChildren();
     if(!photos.length) {container.appendChild(node('p','empty','No photographs yet. Add images above.'));return;}
     photos.forEach((photo,i)=>{
@@ -275,13 +332,14 @@
       locked=false;$('publish').disabled=false;
       status('The project name changed after uploading. Use the original name, save, then rename it.','error');return;
     }
-    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,cover_position:coverPosition,order:Number($('project-order').value),published:$('project-published').checked,
+    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,social_image:socialImage,cover_position:coverPosition,order:Number($('project-order').value),published:$('project-published').checked,
       photos:photos.map(({kind,path,sha,meta,variants})=>({kind,...(kind==='new'?{sha}:{path}),meta, ...(variants?{variants}:{})}))};
     try{
       status('Saving project data in GitHub (photos are already in R2)…');
       const saved=await api('save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
       dirty=false;
       orderDirty=false;
+      window.PortfolioDrafts?.clear('project',draftKey());
       await loadProjects(saved.slug);
       status(saved.cleanupWarning || 'Project saved. Cloudflare will publish shortly. Photographs are in R2.',saved.cleanupWarning?'error':'good');
     } catch(err){status(err.message,'error');}
@@ -311,6 +369,7 @@
         body:JSON.stringify({slug:project.slug, revision:project.revision, confirmTitle:title})});
       dirty=false;
       orderDirty=false;
+      window.PortfolioDrafts?.clear('project',draftKey());
       await loadProjects();
       status(result.r2Warning || `Deleted ${title}. GitHub photos removed: ${result.deletedPhotos}; R2 objects removed: ${result.deletedR2 ?? 0}. Cloudflare will redeploy shortly.`,result.r2Warning?'error':'good');
     } catch (err) { status('Delete failed: '+err.message, 'error'); }

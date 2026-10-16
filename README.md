@@ -50,3 +50,14 @@ reordering photos never moves the stored images. The retired one-time R2 filenam
 migration interface and old GitHub-image-processing workflow have been removed.
 
 For upgrades, see `UPGRADE_V23.md`.
+
+
+## V24 — Reliability and publishing tools
+
+- Browser-local autosave and recovery in the Projects and Notes editors (not automatic publication).
+- Authenticated, on-demand R2 storage inventory and lightweight metadata export.
+- Optional project image selection for social sharing cards.
+- Fit-to-screen photograph viewer with optional zoom, pinch, and pan.
+- Weekly GitHub Actions backup artifacts (JSON only; photographs are excluded).
+
+See `UPGRADE_V24.md` for installation, privacy considerations and post-deployment checks.
