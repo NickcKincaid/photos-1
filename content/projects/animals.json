@@ -1,0 +1,73 @@
+{
+  "title": "Animals",
+  "blurb": "",
+  "published": false,
+  "order": 6,
+  "social_image": "",
+  "cover_position": {
+    "x": 50,
+    "y": 50
+  },
+  "cover": "/media/animals/bc0da06ffa064f36ab41b04e/animals-01.jpg",
+  "gallery": [
+    "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
+    "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
+    "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
+    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
+    "/media/animals/1f27b036a7d14462b4540b4d/animals-06.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/animals/bc0da06ffa064f36ab41b04e/animals-01.jpg",
+      "id": "0d803f3a04fd4fa49e4572d9",
+      "storage": "r2"
+    },
+    {
+      "image": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
+      "id": "cdafa967ec854b8aad0965d2",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/4",
+      "shutter_speed": "1/125",
+      "iso": "2500"
+    },
+    {
+      "image": "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
+      "id": "c0202e40c9a345a29c3d8a53",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "0.0 mm f/0.0",
+      "shutter_speed": "1/160",
+      "iso": "640"
+    },
+    {
+      "image": "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
+      "id": "78b4219d52c1411a83fc842d",
+      "storage": "r2"
+    },
+    {
+      "image": "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
+      "id": "a958d7631e694f90aa29d772",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/200",
+      "iso": "280"
+    },
+    {
+      "image": "/media/animals/1f27b036a7d14462b4540b4d/animals-06.jpg",
+      "id": "1839c27156ab4a62b9f4cf96",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "115 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/200",
+      "iso": "500"
+    }
+  ]
+}
