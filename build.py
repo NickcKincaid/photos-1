@@ -318,6 +318,15 @@ def lightbox() -> str:
 </dialog>'''
 
 
+def project_blurb(value: object) -> str:
+    """A little text, placed in the gallery's remaining space (no title or decoration)."""
+    if not isinstance(value, str) or not value.strip():
+        return ''
+    text = value.strip()[:1000].replace('\r\n', '\n').replace('\r', '\n')
+    paragraphs = [f'<p>{esc(segment.strip())}</p>' for segment in re.split(r'\n\s*\n', text) if segment.strip()]
+    return f'<aside class="project-blurb" aria-label="About this project">{"".join(paragraphs)}</aside>' if paragraphs else ''
+
+
 def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     images = [p['cover']] if p['cover'] else []
     images.extend(img for img in p['gallery'] if img and img != p['cover'])
@@ -329,7 +338,12 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
   </a>
   {photo_caption(idx, len(images), image, p)}
 </figure>''')
-    gallery = f'<div class="project-photos{ " project-photos-single" if len(items) == 1 else ""}">{"".join(items)}</div>' if items else ''
+    # The blurb participates in the same masonry flow as the photographs, naturally
+    # sitting in open column space after the final image on wide screens. It stacks
+    # below the photographs on narrow screens. An empty blurb adds zero markup.
+    blurb = project_blurb(p.get('blurb'))
+    gallery = (f'<div class="project-photos{ " project-photos-single" if len(items) == 1 else ""}">'
+               f'{"".join(items)}{blurb}</div>') if items else ''
     body = f'''{nav(site, 'projects')}<main id="main" class="page project-main">
   <div class="project-heading">
     <h1 class="project-title">{esc(p['title'])}</h1>
@@ -337,7 +351,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
   {gallery}
   <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
 </main>{footer(site)}{lightbox()}'''
-    return document(p['title'], str(p.get('description') or f'Photographs from {p["title"]} by Nicholas Kincaid.'), site, body,
+    return document(p['title'], str(p.get('blurb') or p.get('description') or f'Photographs from {p["title"]} by Nicholas Kincaid.'), site, body,
                     images[0] if images else '', p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'CreativeWork', 'name': p['title'],
                      'url': SITE_URL + p['url'], 'creator': {'@type': 'Person', 'name': 'Nicholas Kincaid'},

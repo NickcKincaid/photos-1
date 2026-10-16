@@ -71,6 +71,7 @@ test('upload rejects WebP that is not actually a RIFF/WEBP',async()=>{
 
 function mockGithub(project={title:'Tokyo',published:false,cover:'',gallery:[],photo_details:[],order:1}) {
  const calls=[];
+ const trees=[];
  const original=globalThis.fetch;
  globalThis.fetch=async function(url,opts={}) {
    calls.push([new URL(url).pathname,opts.method||'GET']);
@@ -81,12 +82,12 @@ function mockGithub(project={title:'Tokyo',published:false,cover:'',gallery:[],p
      return jsonResponse([{type:'file',name:'tokyo.json',sha:SHA}]);
    if(path.endsWith('/git/ref/heads/main'))return jsonResponse({object:{sha:ANOTHER}});
    if(path.endsWith('/git/commits/'+ANOTHER))return jsonResponse({tree:{sha:SHA}});
-   if(path.endsWith('/git/trees'))return jsonResponse({sha:ANOTHER});
+   if(path.endsWith('/git/trees')) { trees.push(JSON.parse(opts.body)); return jsonResponse({sha:ANOTHER}); }
    if(path.endsWith('/git/commits'))return jsonResponse({sha:ANOTHER});
    if(path.endsWith('/git/refs/heads/main'))return jsonResponse({object:{sha:ANOTHER}});
    throw Error('Unexpected mock call '+path);
  };
- return {calls,restore:()=>{globalThis.fetch=original;}};
+ return {calls,trees,restore:()=>{globalThis.fetch=original;}};
 }
 function saveRequest(revision){return new Request('https://nickckincaid.com/api/admin/save',{
  method:'POST',headers:{'content-type':'application/json'},
@@ -107,6 +108,36 @@ test('current revision allows saving project data',async()=>{
  assert.equal((await response.json()).ok,true);
  assert.equal(gh.calls.some(([path])=>path.endsWith('/git/trees')),true);
  }finally{gh.restore();}
+});
+
+test('optional project blurb is saved independently of legacy descriptions',async()=>{
+ const gh=mockGithub({title:'Tokyo',description:'Older hidden description',published:false,cover:'',gallery:[],photo_details:[],order:1});
+ try {
+   const response=await save({request:new Request('https://nickckincaid.com/api/admin/save', {
+     method:'POST',headers:{'content-type':'application/json'},
+     body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:false,order:1,
+        blurb:'A handmade project.\n\nMaterials and process.',photos:[]})}),
+     env:{GITHUB_TOKEN:'test'}});
+   assert.equal(response.status,200);
+   const entry=gh.trees[0].tree.find(item=>item.path==='content/projects/tokyo.json');
+   const saved=JSON.parse(entry.content);
+   assert.equal(saved.blurb,'A handmade project.\n\nMaterials and process.');
+   assert.equal(saved.description,'Older hidden description');
+ } finally { gh.restore(); }
+});
+
+test('invalid or oversized project blurb is rejected before committing',async()=>{
+ for (const blurb of ['a'.repeat(1001), {html:'<script>'}]) {
+   const gh=mockGithub();
+   try {
+     const response=await save({request:new Request('https://nickckincaid.com/api/admin/save', {
+       method:'POST',headers:{'content-type':'application/json'},
+       body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:false,order:1,
+         blurb,photos:[]})}),env:{GITHUB_TOKEN:'test'}});
+     assert.equal(response.status,400);
+     assert.equal(gh.trees.length,0);
+   } finally { gh.restore(); }
+ }
 });
 
 test('reorder refuses stale project revisions',async()=>{

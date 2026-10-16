@@ -24,6 +24,7 @@
   }
   window.addEventListener('beforeunload', event => { if (dirty || orderDirty) { event.preventDefault(); event.returnValue = ''; } });
   $('project-title').addEventListener('input', markDirty);
+  $('project-blurb').addEventListener('input', markDirty);
   $('project-order').addEventListener('input', markDirty);
   $('project-published').addEventListener('change', markDirty);
   function openProject(project, force=false) {
@@ -38,6 +39,7 @@
       photos=paths.map(path=>({kind:'existing',path,meta:{...(overrides.get(path)||{})}}));
     }
     $('project-title').value=project?.title || '';
+    $('project-blurb').value=typeof project?.blurb === 'string' ? project.blurb : '';
     $('project-order').value=Number.isFinite(Number(project?.order)) ? Number(project.order): (projects.length+1);
     $('project-published').checked=project ? Boolean(project.published):false;
     $('editor-form').hidden=false;
@@ -185,6 +187,15 @@
       if(caption)fig.appendChild(node('figcaption','',caption));
       gallery.appendChild(fig);
     }
+    const blurb = $('project-blurb').value.trim();
+    if (blurb) {
+      const aside = node('aside', 'draft-preview-blurb');
+      aside.setAttribute('aria-label', 'About this project');
+      for (const paragraph of blurb.split(/\n\s*\n/).filter(s => s.trim())) {
+        aside.appendChild(node('p', '', paragraph.trim()));
+      }
+      gallery.appendChild(aside);
+    }
     if(!photos.length)gallery.appendChild(node('p','muted','No photographs added.'));
     dialog.showModal();
   });
@@ -199,7 +210,7 @@
       locked=false;$('publish').disabled=false;
       status('The project name changed after uploading. Use the original name, save, then rename it.','error');return;
     }
-    const input={slug:current?.slug||null,revision:current?.revision||null,title,order:Number($('project-order').value),published:$('project-published').checked,
+    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,order:Number($('project-order').value),published:$('project-published').checked,
       photos:photos.map(({kind,path,sha,meta,variants})=>({kind,...(kind==='new'?{sha}:{path}),meta, ...(variants?{variants}:{})}))};
     try{
       status('Saving project data in GitHub (photos are already in R2)…');

@@ -24,6 +24,9 @@ export async function onRequestPost(context) {
     if (!input || typeof input !== 'object') throw Error('Invalid project');
     const title = String(input.title || '').trim();
     if (title.length < 1 || title.length > 120) throw Error('Project title must be 1–120 characters.');
+    if (input.blurb != null && typeof input.blurb !== 'string') throw Error('Invalid project blurb.');
+    if (String(input.blurb || '').length > 1000) throw Error('Project blurb must be 1,000 characters or less.');
+    const blurb = String(input.blurb || '').trim().replace(/\r\n?/g, '\n');
     const create = !input.slug;
     const slug = create ? slugify(title) : String(input.slug);
     if (!/^[a-z0-9-]{1,65}$/.test(slug)) throw Error('Invalid project slug');
@@ -97,7 +100,7 @@ export async function onRequestPost(context) {
     if (published && !newRefs.length) throw Error('Add at least one photograph before publishing.');
     const order = Number(input.order);
     if (!Number.isSafeInteger(order) || order < 0 || order > 999999) throw Error('Homepage order must be a whole number between 0 and 999999.');
-    const next = { ...previous, title, published, order, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
+    const next = { ...previous, title, blurb, published, order, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
     // One atomic Git commit for all changes to this project, including new files.
     const ref = await gh(context, '/git/ref/heads/main');
     const head = await gh(context, `/git/commits/${ref.object.sha}`);

@@ -45,6 +45,16 @@ img { display: block; max-width: 100%; }
 .gallery-link img { width: 100%; height: auto; }
 .photo-caption { margin: 4px 0 0; font-size: 9px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
 
+/* Optional short text in the gallery's unused column space; invisible if blank. */
+.project-blurb { display: inline-block; vertical-align: top; break-inside: avoid;
+  width: 100%; max-width: 420px; margin: 12px 0 20px; color: var(--muted);
+  font: 400 11px/1.65 var(--font); overflow-wrap: anywhere; }
+.project-blurb p { margin: 0 0 9px; white-space: pre-line; }
+.project-blurb p:last-child { margin-bottom: 0; }
+@media (max-width: 600px) {
+  .project-blurb { max-width: 100%; margin-top: 8px; margin-bottom: 14px; }
+}
+
 /* Photo viewer remains functional, with image-sampled background and EXIF. */
 .lightbox { --viewer-bg: #252824; --viewer-text: #f7f7f3; max-width: none; max-height: none; width: 100vw; height: 100dvh; margin: 0; padding: 0; border: 0; background: var(--viewer-bg); color: var(--viewer-text); transition: background-color .24s ease; overflow: hidden; }
 .lightbox::backdrop { background: #20221f; }

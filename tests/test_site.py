@@ -60,6 +60,26 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertNotIn('/projects/private/', sitemap)
         self.assertFalse((self.root / 'dist' / 'projects' / 'private').exists())
 
+    def test_optional_project_blurb_is_escaped_and_only_rendered_when_set(self):
+        (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')
+        file = self.root / 'content' / 'projects' / 'test.json'
+        data = {'title': 'Test', 'published': True, 'cover': '/media/test/pic.jpg',
+                'gallery': [], 'photo_details': [], 'description': 'Legacy hidden description'}
+        file.write_text(json.dumps(data))
+        self.site.run()
+        project = (self.root / 'dist' / 'projects' / 'test' / 'index.html').read_text()
+        self.assertNotIn('class="project-blurb"', project)
+        self.assertNotIn('Legacy hidden description</p>', project)
+        data['blurb'] = 'Made by hand.\n\nA <careful> study of material.\nSecond line.'
+        file.write_text(json.dumps(data))
+        self.site.run()
+        project = (self.root / 'dist' / 'projects' / 'test' / 'index.html').read_text()
+        self.assertIn('class="project-blurb"', project)
+        self.assertIn('Made by hand.', project)
+        self.assertIn('A &lt;careful&gt; study', project)
+        self.assertNotIn('A <careful> study', project)
+        self.assertLess(project.index('class="project-blurb"'), project.index('project-bottom-inquiry'))
+
     def test_notes_are_published_in_order_with_safe_html_and_timestamps(self):
         notes = self.root / 'content' / 'notes'
         notes.mkdir(parents=True)
