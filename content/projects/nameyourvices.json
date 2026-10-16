@@ -1,0 +1,181 @@
+{
+  "title": "NameYourVices",
+  "blurb": "An ongoing project related to a particular atmosphere.",
+  "published": false,
+  "order": 4,
+  "social_image": "",
+  "cover_position": {
+    "x": 0,
+    "y": 50
+  },
+  "cover": "/media/nameyourvices/49eea71c08084c9ebc226a3b/nameyourvices-12.jpg",
+  "gallery": [
+    "/media/nameyourvices/d95b0ec613e444ebb70cd8b5/nameyourvices-04.jpg",
+    "/media/nameyourvices/873ea5ea8a3d4a6a9d89ad55/nameyourvices-01.jpg",
+    "/media/nameyourvices/64b2953413bb49738e7c46d9/nameyourvices-02.jpg",
+    "/media/nameyourvices/6393e0b58ed24edfb87699a3/nameyourvices-03.jpg",
+    "/media/nameyourvices/5f3a270f4dbe4a0ca4926193/nameyourvices-05.jpg",
+    "/media/nameyourvices/dc72421aa5314cb6b3e76e92/nameyourvices-06.jpg",
+    "/media/nameyourvices/bc4b5d0131ac483e87e5299c/nameyourvices-07.jpg",
+    "/media/nameyourvices/3107713eec4a4d4b8b1f3aa6/nameyourvices-09.jpg",
+    "/media/nameyourvices/0c8147a7befe4c879cac0271/nameyourvices-10.jpg",
+    "/media/nameyourvices/33325300190c49f38d552fa8/nameyourvices-11.jpg",
+    "/media/nameyourvices/8e0bf9efdf064494a06d1d96/nameyourvices-13.jpg",
+    "/media/nameyourvices/d3fbe42a9b3042f895a2665c/nameyourvices-14.jpg",
+    "/media/nameyourvices/e2b65b5615944d539a211d76/nameyourvices-14.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/nameyourvices/49eea71c08084c9ebc226a3b/nameyourvices-12.jpg",
+      "id": "af8d81faa689413fba14c56e",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "102 mm",
+      "aperture": "f/5",
+      "shutter_speed": "1/30",
+      "iso": "720"
+    },
+    {
+      "image": "/media/nameyourvices/d95b0ec613e444ebb70cd8b5/nameyourvices-04.jpg",
+      "id": "9d80722f92224f7b9948aed1",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "70 mm",
+      "aperture": "f/4",
+      "shutter_speed": "1/40",
+      "iso": "6400"
+    },
+    {
+      "image": "/media/nameyourvices/873ea5ea8a3d4a6a9d89ad55/nameyourvices-01.jpg",
+      "id": "d123b509aaef4bb5b2b0cee4",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/125",
+      "iso": "3600"
+    },
+    {
+      "image": "/media/nameyourvices/64b2953413bb49738e7c46d9/nameyourvices-02.jpg",
+      "id": "d96a8f5510844fad8e9477be",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/9",
+      "shutter_speed": "1/500",
+      "iso": "110"
+    },
+    {
+      "image": "/media/nameyourvices/6393e0b58ed24edfb87699a3/nameyourvices-03.jpg",
+      "id": "499ef47d81ff43a5b6e37796",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/40",
+      "iso": "100"
+    },
+    {
+      "image": "/media/nameyourvices/5f3a270f4dbe4a0ca4926193/nameyourvices-05.jpg",
+      "id": "491a19a17ee741adbc387154",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/5",
+      "shutter_speed": "1/250",
+      "iso": "200"
+    },
+    {
+      "image": "/media/nameyourvices/dc72421aa5314cb6b3e76e92/nameyourvices-06.jpg",
+      "id": "aac4dd785f8f4545920534c5",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/100",
+      "iso": "180"
+    },
+    {
+      "image": "/media/nameyourvices/bc4b5d0131ac483e87e5299c/nameyourvices-07.jpg",
+      "id": "621cf33425bf4e438381267f",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/16",
+      "shutter_speed": "1/50",
+      "iso": "1400"
+    },
+    {
+      "image": "/media/nameyourvices/3107713eec4a4d4b8b1f3aa6/nameyourvices-09.jpg",
+      "id": "41108c5cfc544cd4bc306fd2",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "86 mm",
+      "aperture": "f/4",
+      "shutter_speed": "1/80",
+      "iso": "500"
+    },
+    {
+      "image": "/media/nameyourvices/0c8147a7befe4c879cac0271/nameyourvices-10.jpg",
+      "id": "54ab0a2045d04fad9b989f65",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "68 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/320",
+      "iso": "160"
+    },
+    {
+      "image": "/media/nameyourvices/33325300190c49f38d552fa8/nameyourvices-11.jpg",
+      "id": "64da92763fd0499096814266",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/80",
+      "iso": "5000"
+    },
+    {
+      "image": "/media/nameyourvices/8e0bf9efdf064494a06d1d96/nameyourvices-13.jpg",
+      "id": "f98ed175eafd4399ab6d3680",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "0.0 mm f/0.0",
+      "shutter_speed": "1/500",
+      "iso": "125"
+    },
+    {
+      "image": "/media/nameyourvices/d3fbe42a9b3042f895a2665c/nameyourvices-14.jpg",
+      "id": "3fd2058e673e43119843bbe0",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "37 mm",
+      "aperture": "f/4",
+      "shutter_speed": "1/100",
+      "iso": "6400"
+    },
+    {
+      "image": "/media/nameyourvices/e2b65b5615944d539a211d76/nameyourvices-14.jpg",
+      "id": "aa7405be3b0b4da78ee4ed17",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/160",
+      "iso": "10000"
+    }
+  ]
+}
