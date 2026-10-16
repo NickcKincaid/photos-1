@@ -1,0 +1,94 @@
+{
+  "title": "Textural Repetition",
+  "blurb": "An ongoing project that serves as a meditation on recurring visual motifs found in both nature and human-made environments.",
+  "published": false,
+  "order": 4,
+  "cover_position": {
+    "x": 56,
+    "y": 83
+  },
+  "cover": "/media/textural-repetition/57f2927b42834b24932aac33/textural-repetition-01.jpg",
+  "gallery": [
+    "/media/textural-repetition/70573d8b8edf45519727cb22/textural-repetition-03.jpg",
+    "/media/textural-repetition/b335ea77806e4d6bb59d572d/textural-repetition-02.jpg",
+    "/media/textural-repetition/398a34d652ff43ae90a48379/textural-repetition-05.jpg",
+    "/media/textural-repetition/81171ddb5dc740d0944dcbb5/textural-repetition-04.jpg",
+    "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
+    "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/textural-repetition/57f2927b42834b24932aac33/textural-repetition-01.jpg",
+      "id": "032fea4fbd4a4c2f9e464d70",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "59 mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/40",
+      "iso": "450"
+    },
+    {
+      "image": "/media/textural-repetition/70573d8b8edf45519727cb22/textural-repetition-03.jpg",
+      "id": "190d737f804c416bbb9a69d7",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/6.3",
+      "shutter_speed": "1/100",
+      "iso": "140"
+    },
+    {
+      "image": "/media/textural-repetition/b335ea77806e4d6bb59d572d/textural-repetition-02.jpg",
+      "id": "25884ca140944408beaf1b8f",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "0.0 mm f/0.0",
+      "shutter_speed": "1/640",
+      "iso": "500"
+    },
+    {
+      "image": "/media/textural-repetition/398a34d652ff43ae90a48379/textural-repetition-05.jpg",
+      "id": "6cc69d5464c9432e9e8c60f9",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "0.0 mm f/0.0",
+      "shutter_speed": "1/40",
+      "iso": "360"
+    },
+    {
+      "image": "/media/textural-repetition/81171ddb5dc740d0944dcbb5/textural-repetition-04.jpg",
+      "id": "c91c3d5ac3f94352a14f74fe",
+      "storage": "r2",
+      "camera": "Canon EOS Rebel T7i",
+      "lens": "EF-S55-250mm f/4-5.6 IS",
+      "focal_length": "116 mm",
+      "aperture": "f/11",
+      "shutter_speed": "1/200",
+      "iso": "1250"
+    },
+    {
+      "image": "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
+      "id": "dd3dfaf53e954bc499ad28cf",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/640",
+      "iso": "560"
+    },
+    {
+      "image": "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg",
+      "id": "29fb3efe8a034cd1a50d04cc",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/9",
+      "shutter_speed": "1/200",
+      "iso": "220"
+    }
+  ]
+}
