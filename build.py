@@ -189,7 +189,7 @@ def nav(site: dict, active: str = '') -> str:
                     for label, href, key in menu)
     return f'''<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header page">
-  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><img class="brand-mark" src="/favicon-32x32.png?v=962b3e77bf" width="18" height="18" alt="" aria-hidden="true" decoding="async"><strong>{esc(site['name'])}</strong></a>
+  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><img class="brand-mark" src="/favicon-192x192.png?v=962b3e77bf" width="36" height="36" alt="" aria-hidden="true" decoding="async"><strong>{esc(site['name'])}</strong></a>
   <nav class="site-nav" aria-label="Main navigation">{links}</nav>
 </header>'''
 
