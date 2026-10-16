@@ -10,6 +10,7 @@
   const prevButton = dialog.querySelector('.lightbox-prev');
   const nextButton = dialog.querySelector('.lightbox-next');
   const copyButton = dialog.querySelector('.lightbox-copy');
+  const downloadLink = dialog.querySelector('.lightbox-download');
   const items = Array.from(document.querySelectorAll('[data-lightbox]'));
   if (!items.length) return;
   let current = 0;
@@ -86,6 +87,16 @@
     image.classList.remove('is-loaded');
     image.alt = thumb ? thumb.alt : 'Project photograph';
     image.src = item.dataset.fullSrc || item.getAttribute('href');
+    if (downloadLink) {
+      // The R2 key never changes. The suggested name comes from the current
+      // published gallery position and project title, not the stored key.
+      const original = new URL(item.dataset.fullSrc, location.origin);
+      const suggested = item.dataset.downloadName;
+      original.searchParams.set('download', suggested);
+      downloadLink.href = original.pathname + original.search;
+      downloadLink.setAttribute('download', suggested);
+      downloadLink.setAttribute('aria-label', `Download ${suggested}`);
+    }
     counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(items.length).padStart(2, '0')}`;
     metadata.textContent = item.getAttribute('data-meta') || '';
     if (image.complete && image.naturalWidth) {

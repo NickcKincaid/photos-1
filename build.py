@@ -317,6 +317,17 @@ def photo_caption(index: int, count: int, image: str, project: dict, css_class: 
     return (f'<figcaption class="{css_class}">{esc(details)}</figcaption>'
             if details else '')
 
+def download_filename(project_title: str, position: int, count: int, image: str) -> str:
+    """Public download names reflect display order; R2 keys never change."""
+    extension = Path(image_url(image)).suffix.lower().lstrip('.')
+    if extension in ('jpeg', 'jpg'):
+        extension = 'jpg'
+    elif extension not in ('webp', 'png', 'tif', 'tiff'):
+        extension = 'jpg'
+    width = max(2, len(str(count)))
+    return f'{slugify(project_title)[:80]}-{position:0{width}d}.{extension}'
+
+
 def lightbox(project_title: str = '') -> str:
     return f'''<dialog id="lightbox" class="lightbox" aria-label="Photo viewer">
   <div class="lightbox-inner">
@@ -325,7 +336,7 @@ def lightbox(project_title: str = '') -> str:
       <img class="lightbox-image" alt="" decoding="async">
       <button class="lightbox-nav lightbox-next" type="button" aria-label="Next photo">&#8594;</button>
     </div>
-    <div class="lightbox-bottom"><span class="lightbox-counter" aria-live="polite"></span><span class="lightbox-metadata"></span><button class="lightbox-copy" type="button" aria-label="Copy link to this photograph">Copy link</button></div>
+    <div class="lightbox-bottom"><span class="lightbox-counter" aria-live="polite"></span><span class="lightbox-metadata"></span><div class="lightbox-actions"><a class="lightbox-download" href="#" download aria-label="Download this photograph">Download</a><button class="lightbox-copy" type="button" aria-label="Copy link to this photograph">Copy link</button></div></div>
   </div>
 </dialog>'''
 
@@ -345,7 +356,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     items = []
     for idx, image in enumerate(images, start=1):
         items.append(f'''<figure class="gallery-item">
-  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="#photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" aria-label="Open photograph {idx} in viewer">
+  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="#photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" data-download-name="{esc(download_filename(p['title'], idx, len(images), image))}" aria-label="Open photograph {idx} in viewer">
     <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1, p)} alt="{esc(image_alt(p, image, p['title'] + ', photograph ' + str(idx)))}">
   </a>
   {photo_caption(idx, len(images), image, p)}

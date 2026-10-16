@@ -159,3 +159,42 @@ class CoverCropTests(unittest.TestCase):
         import build
         for pos in ({'x':'0;background:red','y':33},{'x':-1,'y':110},None):
             self.assertEqual(build.cover_position({'cover_position':pos}),(50,50))
+
+
+class DownloadFilenameTests(unittest.TestCase):
+    def test_download_filename_tracks_current_position_and_title_without_changing_storage_keys(self):
+        spec = importlib.util.spec_from_file_location('download_build', SOURCE / 'build.py')
+        build = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(build)
+        image = '/media/handmade-watusi-horn-table/00232f36de234e2c905d50cb/handmade-watusi-horn-table-01.jpg'
+        self.assertEqual(build.download_filename('Handmade Watusi Horn Table', 1, 3, image),
+                         'handmade-watusi-horn-table-01.jpg')
+        self.assertEqual(build.download_filename('Handmade Watusi Horn Table', 3, 3, image),
+                         'handmade-watusi-horn-table-03.jpg')
+        self.assertEqual(build.download_filename('Watusi Table (Revised)', 1, 3, image),
+                         'watusi-table-revised-01.jpg')
+        self.assertEqual(build.download_filename('Test', 100, 100, '/media/test/folder/a.webp'), 'test-100.webp')
+
+    def test_project_markup_associates_download_names_with_stable_ids(self):
+        spec = importlib.util.spec_from_file_location('download_build2', SOURCE / 'build.py')
+        build = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(build)
+        cover = '/media/test/stable/first.jpg'
+        second = '/media/test/stable/second.jpg'
+        project = {
+            'title':'Test Project', 'slug':'test', 'url':'/projects/test/',
+            'cover':cover, 'gallery':[second],
+            'photo_details':[{'image':cover,'id':'a'*24},{'image':second,'id':'b'*24}],
+        }
+        page = build.project_page({'name':'Nicholas Kincaid'}, project, 0, [project])
+        self.assertIn('data-download-name="test-project-01.jpg"',page)
+        self.assertIn('data-download-name="test-project-02.jpg"',page)
+        self.assertIn('data-photo-id="'+'a'*24+'"',page)
+        self.assertIn('data-photo-id="'+'b'*24+'"',page)
+        self.assertIn('class="lightbox-download"',page)
+        project['gallery'] = [cover]
+        project['cover'] = second
+        page2 = build.project_page({'name':'Nicholas Kincaid'}, project, 0, [project])
+        self.assertIn('data-download-name="test-project-01.jpg"',page2)
+        self.assertIn('data-download-name="test-project-02.jpg"',page2)
+        self.assertEqual(cover, '/media/test/stable/first.jpg')

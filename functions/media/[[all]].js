@@ -14,6 +14,13 @@ async function handle(context, headOnly) {
   if (!KEY.test(key) || key.includes('..') || key.includes('//')) {
     return new Response('Not found', {status:404});
   }
+  // An optional download filename is deliberately a *presentation* detail:
+  // the underlying R2 object key is not renamed when project order changes.
+  const requestedName = url.searchParams.get('download');
+  if (requestedName !== null &&
+      !/^[a-z0-9](?:[a-z0-9-]{0,80})-[0-9]{2,4}\.(?:jpg|jpeg|png|webp|tif|tiff)$/.test(requestedName)) {
+    return new Response('Invalid download filename', { status: 400 });
+  }
   if (context.env.PHOTO_BUCKET) {
     const object = headOnly
       ? await context.env.PHOTO_BUCKET.head(key)
@@ -23,10 +30,13 @@ async function handle(context, headOnly) {
         'Content-Type': object.httpMetadata?.contentType || serveType(key),
         'X-Content-Type-Options': 'nosniff',
         // Use a short TTL: migrated images may initially share URLs with static copies.
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': requestedName ? 'private, no-store' : 'public, max-age=3600',
       });
+      if (requestedName) {
+        headers.set('Content-Disposition', `attachment; filename="${requestedName}"`);
+      }
       const legacy = /^media\/([a-z0-9-]{1,65})\/\1-([0-9]{2,3})-[a-f0-9]{24}\.jpg$/i.exec(key);
-      if (legacy) headers.set('Content-Disposition', `inline; filename="${legacy[1]}-${legacy[2]}.jpg"`);
+      if (legacy && !requestedName) headers.set('Content-Disposition', `inline; filename="${legacy[1]}-${legacy[2]}.jpg"`);
       // New keys already end with a readable project-01.jpg filename.
       if (object.etag) headers.set('ETag', `"${object.etag.replace(/"/g, '')}"`);
       if (typeof object.size === 'number') headers.set('Content-Length', String(object.size));

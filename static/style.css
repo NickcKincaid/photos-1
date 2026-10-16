@@ -157,7 +157,8 @@ body > main { flex: 1 0 auto; }
 .lightbox-project { max-width: 75%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lightbox-close,
 .lightbox-nav,
-.lightbox-copy {
+.lightbox-copy,
+.lightbox-download {
   appearance: none;
   border: 0;
   background: transparent;
@@ -169,9 +170,10 @@ body > main { flex: 1 0 auto; }
 }
 .lightbox-close { min-width: 54px; min-height: 40px; padding: 9px 0 9px 9px; text-align: right; white-space: nowrap; }
 .lightbox-nav { font: 400 12px/1 var(--font); min-width: 38px; min-height: 46px; }
-.lightbox-copy { white-space: nowrap; padding: 8px 0 8px 10px; }
-.lightbox-close:hover, .lightbox-nav:hover, .lightbox-copy:hover,
-.lightbox-close:focus-visible, .lightbox-nav:focus-visible, .lightbox-copy:focus-visible {
+.lightbox-copy, .lightbox-download { white-space: nowrap; padding: 8px 0 8px 10px; text-decoration: none; }
+.lightbox-actions { display: flex; align-items: center; gap: clamp(10px, 1.8vw, 24px); flex: 0 0 auto; }
+.lightbox-close:hover, .lightbox-nav:hover, .lightbox-copy:hover, .lightbox-download:hover,
+.lightbox-close:focus-visible, .lightbox-nav:focus-visible, .lightbox-copy:focus-visible, .lightbox-download:focus-visible {
   color: #ffffff; opacity: 1;
 }
 .lightbox :focus-visible { outline-color: #e7e8e4; outline-offset: 2px; }
@@ -221,9 +223,9 @@ body > main { flex: 1 0 auto; }
   .lightbox-next { right: 0; }
   .lightbox-bottom { display: grid; grid-template-columns: 1fr auto; grid-template-rows: 22px auto; gap: 2px 12px; padding-bottom: max(13px, env(safe-area-inset-bottom)); align-items: center; }
   .lightbox-counter { grid-column: 1; grid-row: 1; }
-  .lightbox-copy { grid-column: 2; grid-row: 1; }
+  .lightbox-actions { grid-column: 2; grid-row: 1; }
   .lightbox-metadata { grid-column: 1 / -1; grid-row: 2; margin-left: 0; text-align: center; font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lightbox-image, .lightbox-close, .lightbox-nav, .lightbox-copy { transition: none; }
+  .lightbox-image, .lightbox-close, .lightbox-nav, .lightbox-copy, .lightbox-download { transition: none; }
 }
