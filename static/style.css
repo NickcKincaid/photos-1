@@ -245,6 +245,13 @@ body > main { flex: 1 0 auto; }
 .lightbox.is-zoomed .lightbox-nav {opacity:.35}
 @media(max-width:600px) {.lightbox-actions{gap:8px}.lightbox-zoom{padding-left:6px}}
 
-/* V25A: small horn mark next to the site title, never overpowering the type. */
-.brand { display: inline-flex; align-items: center; gap: 8px; }
-.brand-mark { display: block; width: 18px; height: 18px; flex: 0 0 18px; object-fit: cover; }
+/* V25B: independent horn mark in the top-left, above the wordmark. */
+.site-header { align-items: flex-end; min-height: 88px; padding-top: 13px; padding-bottom: 14px; }
+.brand { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 9px; width: auto; }
+.brand-mark { display: block; width: 21px; height: 21px; flex: 0 0 21px; object-fit: contain; }
+.site-nav { padding-bottom: 1px; }
+@media (max-width: 600px) {
+  .site-header { min-height: 112px; align-items: flex-start; padding-top: 12px; padding-bottom: 12px; gap: 13px 0; }
+  .brand { width: 100%; }
+  .site-nav { padding-bottom: 0; }
+}
