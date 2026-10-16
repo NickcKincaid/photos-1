@@ -245,6 +245,11 @@ body > main { flex: 1 0 auto; }
 .lightbox.is-zoomed .lightbox-nav {opacity:.35}
 @media(max-width:600px) {.lightbox-actions{gap:8px}.lightbox-zoom{padding-left:6px}}
 
+/* V25C: body uses a column flex layout. Without an explicit width,
+   the auto-margin .page header shrinks to its contents and appears centered.
+   Match the width and left gutter of the galleries below. */
+.site-header.page { width: 100%; }
+
 /* V25B: independent horn mark in the top-left, above the wordmark. */
 .site-header { align-items: flex-end; min-height: 88px; padding-top: 13px; padding-bottom: 14px; }
 .brand { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 9px; width: auto; }
