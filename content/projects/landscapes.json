@@ -1,0 +1,81 @@
+{
+  "title": "Landscapes",
+  "blurb": "An ongoing study of landscapes.",
+  "published": true,
+  "order": 6,
+  "social_image": "",
+  "cover_position": {
+    "x": 100,
+    "y": 0
+  },
+  "cover": "/media/landscapes/f7f4a676915c44e98367b058/landscapes-05.jpg",
+  "gallery": [
+    "/media/landscapes/312de68ccf4947819cbec64c/landscapes-01.jpg",
+    "/media/landscapes/481a3da8a5cc4a65a533a75c/landscapes-02.jpg",
+    "/media/landscapes/a60317b1e42c4debaa5af661/landscapes-03.jpg",
+    "/media/landscapes/2f30b61f18c74e5c92f9c72f/landscapes-04.jpg",
+    "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/landscapes/f7f4a676915c44e98367b058/landscapes-05.jpg",
+      "id": "185bdf6174b441f587bea87c",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/100",
+      "iso": "100"
+    },
+    {
+      "image": "/media/landscapes/312de68ccf4947819cbec64c/landscapes-01.jpg",
+      "id": "fa000e0e971a4516abab37c9",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/250",
+      "iso": "125"
+    },
+    {
+      "image": "/media/landscapes/481a3da8a5cc4a65a533a75c/landscapes-02.jpg",
+      "id": "39c4166e4ab84cd5af1e15fe",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "73 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/200",
+      "iso": "110"
+    },
+    {
+      "image": "/media/landscapes/a60317b1e42c4debaa5af661/landscapes-03.jpg",
+      "id": "f0a9045b632147e1ab176d69",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/4",
+      "shutter_speed": "1/125",
+      "iso": "100"
+    },
+    {
+      "image": "/media/landscapes/2f30b61f18c74e5c92f9c72f/landscapes-04.jpg",
+      "id": "79e7ab27956c4ccc85ab8d9b",
+      "storage": "r2"
+    },
+    {
+      "image": "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg",
+      "id": "6083b89f4a9a4f56b16a962c",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/200",
+      "iso": "125"
+    }
+  ]
+}
