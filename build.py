@@ -189,7 +189,7 @@ def nav(site: dict, active: str = '') -> str:
                     for label, href, key in menu)
     return f'''<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header page">
-  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><strong>{esc(site['name'])}</strong></a>
+  <a class="brand" href="/" aria-label="{esc(site['name'])} — home"><img class="brand-mark" src="/favicon-32x32.png?v=962b3e77bf" width="18" height="18" alt="" aria-hidden="true" decoding="async"><strong>{esc(site['name'])}</strong></a>
   <nav class="site-nav" aria-label="Main navigation">{links}</nav>
 </header>'''
 
@@ -237,7 +237,10 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
   {og_image}
   {schema_tag}
   <title>{esc(full_title)}</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=962b3e77bf">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=962b3e77bf">
+  <link rel="shortcut icon" href="/favicon.ico?v=962b3e77bf">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=962b3e77bf">
   <link rel="stylesheet" href="/style.css?v={css_version}">
   <script src="/site.js?v={js_version}" defer></script>
 </head>
@@ -462,7 +465,7 @@ def run() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-    for name in ('style.css', 'site.js', 'favicon.svg', '_headers', '_routes.json'):
+    for name in ('style.css', 'site.js', 'favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', '_headers', '_routes.json'):
         shutil.copy2(ROOT / 'static' / name, OUT / name)
     prep_dir = OUT / 'prepare'
     prep_dir.mkdir(parents=True, exist_ok=True)

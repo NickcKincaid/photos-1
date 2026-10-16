@@ -244,3 +244,7 @@ body > main { flex: 1 0 auto; }
 .lightbox.is-zoomed .lightbox-image:active {cursor:grabbing}
 .lightbox.is-zoomed .lightbox-nav {opacity:.35}
 @media(max-width:600px) {.lightbox-actions{gap:8px}.lightbox-zoom{padding-left:6px}}
+
+/* V25A: small horn mark next to the site title, never overpowering the type. */
+.brand { display: inline-flex; align-items: center; gap: 8px; }
+.brand-mark { display: block; width: 18px; height: 18px; flex: 0 0 18px; object-fit: cover; }
