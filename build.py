@@ -416,7 +416,7 @@ def timestamp(note: dict) -> str:
     published = note['published_at']
     iso = published.strftime('%Y-%m-%dT%H:%M:%SZ')
     shown = published.strftime('%d %b %Y · %H:%M UTC')
-    return f'<time datetime="{iso}">{shown}</time>'
+    return f'<time datetime="{iso}" data-local-published title="Published {shown}">{shown}</time>'
 
 
 def notes_page(site: dict, notes: list[dict]) -> str:

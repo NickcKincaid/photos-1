@@ -47,28 +47,36 @@
   function node(tag, className='', value='') { const el=document.createElement(tag);if(className)el.className=className;if(value)el.textContent=value;return el; }
   function cleanup() { for (const u of localURLs) URL.revokeObjectURL(u); localURLs.clear(); }
   function markDirty() { dirty = true; }
-  const legacyR2Name = path => /^\/media\/([a-z0-9-]{1,65})\/\1-[0-9]{2,3}-[a-f0-9]{24}\.jpg$/.test(path || '');
-  function oldPhotoPaths(project) {
-    if (!project?.slug) return [];
-    const details = new Map((project.photo_details || []).map(d => [d.image, d]));
-    return [project.cover, ...(project.gallery || [])].filter(p =>
-      legacyR2Name(p) && details.get(p)?.storage === 'r2');
-  }
-  function updateStandardizeState() {
-    const button = $('standardize-photos');
-    const count = oldPhotoPaths(current).length;
-    button.hidden = count === 0;
-    button.disabled = locked;
-    if (count) button.textContent = `Standardize ${count} old photo filename${count===1?'':'s'}`;
+  // Presentation names follow the current editor order; R2 storage paths and
+  // stable photo IDs never change when the gallery is reordered.
+  function displayFilename(photo, index) {
+    const title = $('project-title').value.trim() || current?.title || 'untitled';
+    const base = slugify(title).slice(0, 80);
+    const count = Math.max(2, String(photos.length).length);
+    const extension = /\.(webp|png|tiff?|jpe?g)$/i.exec(photo.path || '')?.[1]?.toLowerCase();
+    const ext = extension === 'jpeg' || extension === 'jpg' || !extension ? 'jpg' : extension;
+    return `${base}-${String(index + 1).padStart(count, '0')}.${ext}`;
   }
   function updateDeleteState() {
     const button = $('delete-project');
     button.hidden = !current?.slug;
     button.disabled = locked;
-    updateStandardizeState();
   }
   window.addEventListener('beforeunload', event => { if (dirty || orderDirty) { event.preventDefault(); event.returnValue = ''; } });
-  $('project-title').addEventListener('input', markDirty);
+  // A project title can change on every keystroke. Update only text labels:
+  // rebuilding up to 90 photo editors each time is slow on phones.
+  function refreshPhotoLabels() {
+    document.querySelectorAll('#photos .photo-name').forEach((el,i) => {
+      el.textContent = (i === 0 ? 'Cover · ' : '') + displayFilename(photos[i], i);
+    });
+    const selected = document.querySelector('.project-btn.active');
+    if (selected) {
+      if (selected.firstChild) selected.firstChild.textContent = $('project-title').value.trim() || current?.title || '';
+      const flag = selected.querySelector('small');
+      if (flag) flag.textContent = 'Unsaved changes';
+    }
+  }
+  $('project-title').addEventListener('input', () => { markDirty(); refreshPhotoLabels(); });
   $('project-blurb').addEventListener('input', markDirty);
   $('project-order').addEventListener('input', markDirty);
   $('project-published').addEventListener('change', markDirty);
@@ -112,8 +120,10 @@
     projects.forEach((project, index) => {
       const wrap=node('div','project-entry');wrap.draggable = !locked;
       wrap.dataset.slug=project.slug;
-      const btn=node('button','project-btn'+(current?.slug === project.slug?' active':''),project.title || project.slug);
-      const small=node('small','',project.published?'Published':'Draft');btn.appendChild(small);
+      const selected = current?.slug === project.slug;
+      const shownTitle = selected && dirty ? $('project-title').value.trim() || project.title : project.title;
+      const btn=node('button','project-btn'+(selected?' active':''),shownTitle || project.slug);
+      const small=node('small','',selected && dirty ? 'Unsaved changes' : (project.published?'Published':'Draft'));btn.appendChild(small);
       btn.type='button';btn.addEventListener('click',()=>openProject(project));wrap.appendChild(btn);
       for (const [label,offset] of [['↑',-1],['↓',1]]) {
         const b=node('button','project-move',label);
@@ -168,7 +178,7 @@
     photos.forEach((photo,i)=>{
       const row=node('div','photo-row');const img=node('img');img.alt=`Photograph ${i+1}`;
       img.src=photo.preview || photo.path;img.loading='lazy';row.appendChild(img);
-      const detail=node('div','photo-details');const name=node('p','photo-name',(i===0?'Cover · ':'')+String(i+1).padStart(2,'0')+' — '+(photo.filename || photo.path?.split('/').pop()?.replace(/-([a-f0-9]{24})(?=\.jpg$)/,'') || 'New photo'));
+      const detail=node('div','photo-details');const name=node('p','photo-name', (i===0?'Cover · ':'')+displayFilename(photo, i));
       detail.appendChild(name);
       const buttons=node('div','photo-buttons');
       for(const [title,func] of [['↑',()=>move(i,-1)],['↓',()=>move(i,1)],['Remove',()=>{photos.splice(i,1);if(i===0)coverPosition={x:50,y:50};markDirty();renderPhotos();}]]) {
@@ -230,7 +240,13 @@
       img.src=photo.preview || photo.path;
       img.alt=photo.meta?.alt || `Photograph ${i+1}`;
       img.loading=i===0?'eager':'lazy';fig.appendChild(img);
-      const caption=['camera','lens','focal_length','aperture','shutter_speed','iso'].map(k=>photo.meta?.[k]).filter(Boolean).join(' · ');
+      const m = photo.meta || {};
+      const focal = String(m.focal_length || '').trim();
+      const shutter = String(m.shutter_speed || '').trim();
+      const iso = String(m.iso || '').trim();
+      const caption = [focal ? focal + (/^\d+(?:\.\d+)?$/.test(focal) ? ' mm' : '') : '',
+        shutter ? shutter + (/s(?:ec(?:onds)?)?$/i.test(shutter) ? '' : ' s') : '',
+        iso ? (/^ISO\b/i.test(iso) ? iso : 'ISO ' + iso) : ''].filter(Boolean).join(' · ');
       if(caption)fig.appendChild(node('figcaption','',caption));
       gallery.appendChild(fig);
     }
@@ -269,44 +285,6 @@
     } catch(err){status(err.message,'error');}
     finally{locked=false;$('publish').disabled=false;renderList();renderPhotos();}
   });
-  $('standardize-photos').addEventListener('click', async () => {
-    if (locked || !current?.slug) return;
-    if (dirty || orderDirty) {
-      status('Save or discard edits and project ordering before standardizing names.', 'error');
-      return;
-    }
-    const project = current;
-    const legacy = oldPhotoPaths(project);
-    if (!legacy.length) return;
-    if (!window.confirm(`Copy ${legacy.length} older photo${legacy.length===1?'':'s'} to clean filenames?\n\nThe project will switch to the new names in one publish. Existing R2 files will be retained as a safety backup.`)) return;
-    locked = true;
-    $('publish').disabled = true;
-    $('photo-files').disabled = true;
-    updateDeleteState();
-    renderList();renderPhotos();
-    try {
-      const mappings = [];
-      for (let i = 0; i < legacy.length; i++) {
-        status(`Copying and verifying photograph ${i+1} of ${legacy.length}…`);
-        const mapping = await api('standardize', {method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:'prepare',slug:project.slug,revision:project.revision,oldPath:legacy[i]})});
-        mappings.push(mapping);
-      }
-      status('All new filenames verified. Publishing updated project references…');
-      const result = await api('standardize', {method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'commit',slug:project.slug,revision:project.revision,mappings})});
-      dirty = false;
-      await loadProjects(project.slug);
-      status(`Standardized ${result.migrated} photo filename(s). Cloudflare is deploying. Old R2 copies were kept for safety.`, 'good');
-    } catch (error) {
-      status('Migration stopped safely: '+error.message+' Existing project photos were not deleted. Retry after checking the error.', 'error');
-    } finally {
-      locked = false;
-      $('publish').disabled = false;
-      $('photo-files').disabled = false;
-      updateDeleteState();renderList();renderPhotos();
-    }
-  });
   $('delete-project').addEventListener('click', async () => {
     if (locked || !current?.slug) return;
     if (dirty || orderDirty) {
@@ -326,7 +304,7 @@
     $('publish').disabled = true;
     updateDeleteState();
     try {
-      status(`Deleting ${title} and its photographs from GitHub…`);
+      status(`Deleting ${title} and its project images…`);
       const result = await api('delete', {method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({slug:project.slug, revision:project.revision, confirmTitle:title})});
       dirty=false;

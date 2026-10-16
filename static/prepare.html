@@ -23,7 +23,7 @@ small {font:inherit;color:var(--muted)}
 </head>
 <body>
 <h1>Prepare photos for upload</h1>
-<p>Resize large photographs for the Pages CMS upload limit. Images are processed on your device, not uploaded to a server.</p>
+<p>For normal photo publishing, use the private dashboard. It already optimizes your photos automatically. This optional standalone tool prepares files for offline use.</p>
 <p>JPEG camera EXIF is retained where available. Creator/copyright metadata is embedded in the prepared JPEG files.</p>
 <form id="form">
   <label for="photos">Select photographs</label>
@@ -31,7 +31,7 @@ small {font:inherit;color:var(--muted)}
   <button id="submit" type="submit">Prepare photos</button>
 </form>
 <div class="output" id="output" aria-live="polite"></div>
-<p style="margin-top:20px">After saving the prepared JPEGs to your phone or computer, upload them in <a href="https://app.pagescms.org/">Pages CMS</a>. Final filenames will be standardized by your GitHub workflow.</p>
+<p style="margin-top:20px">To publish directly, open the <a href="/admin/">private photography editor</a>. The gallery automatically assigns clean download filenames based on photo order.</p>
 <script src="/prepare/prepare.js" defer></script>
 </body>
 </html>

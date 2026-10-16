@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const targetBytes = 2_600_000; // safely under Pages CMS's ~4.5 MB upload limit
+  const targetBytes = 2_600_000; // keep uploads below the server's 3 MB R2 request limit
   const enc = new TextEncoder();
   const xmp = `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/"><dc:creator><rdf:Seq><rdf:li>Nicholas Kincaid</rdf:li></rdf:Seq></dc:creator><dc:rights><rdf:Alt><rdf:li xml:lang="x-default">© Nicholas Kincaid. All rights reserved.</rdf:li></rdf:Alt></dc:rights><photoshop:Credit>Nicholas Kincaid</photoshop:Credit><xmpRights:Marked>True</xmpRights:Marked></rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>`;
   function segment(payload) {

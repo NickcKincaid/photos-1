@@ -1,3 +1,25 @@
+/* Localize UTC Notes timestamps in the reader's browser; keep UTC HTML as a no-JS fallback. */
+(() => {
+  const stamps = document.querySelectorAll('time[data-local-published][datetime]');
+  if (!stamps.length || !globalThis.Intl?.DateTimeFormat) return;
+  let formatter;
+  try {
+    formatter = new Intl.DateTimeFormat(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+    });
+  } catch { return; }
+  for (const stamp of stamps) {
+    const date = new Date(stamp.dateTime || stamp.getAttribute('datetime'));
+    if (!Number.isFinite(date.getTime())) continue;
+    try {
+      stamp.textContent = formatter.format(date);
+      stamp.setAttribute('aria-label', `Published ${stamp.textContent}`);
+      // Retain an unambiguous UTC reference in the title attribute.
+    } catch { /* keep the pre-rendered UTC text */ }
+  }
+})();
+
 /* Accessible modal photo viewer; canvas sampling never uploads image data. */
 (() => {
   const dialog = document.querySelector('#lightbox');

@@ -99,6 +99,8 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertLess(listing.index('&lt;Note One&gt;'), listing.index('Older note'))
         self.assertIn('15 Oct 2026', listing)
         self.assertIn('20:35 UTC', listing)
+        self.assertIn('data-local-published', listing)
+        self.assertIn('datetime="2026-10-15T20:35:00Z"', listing)
         self.assertIn('&lt;script&gt;', detail)
         self.assertNotIn('<script>alert(1)</script>', detail)
         self.assertNotIn('Secret draft', listing)

@@ -20,7 +20,7 @@ Note drafts are hidden from the public site but saved to GitHub. **If the reposi
 
 ## Hosting
 
-- GitHub holds project and note JSON files, site code and legacy photo files.
+- GitHub holds project and note JSON files and website code. Cloudflare R2 holds published photographs.
 - Cloudflare Pages runs `python3 build.py`, output directory `dist`.
 - Cloudflare R2 stores new photographs behind the `PHOTO_BUCKET` Pages binding.
 - Cloudflare Pages Functions serve images and authenticated editor APIs.
@@ -41,3 +41,12 @@ python3 tests/browser_v16.py
 ```
 
 This repository contains sample-empty `content/` and `media/` directories for clean installs. The distributed code **does not include your live GitHub project records or R2 photographs**; keep independent backups.
+
+## V23 maintenance
+
+Admin photo labels now reflect the current project title and display order. These labels
+are suggested **download filenames**, not physical R2 object keys. Changing a title or
+reordering photos never moves the stored images. The retired one-time R2 filename
+migration interface and old GitHub-image-processing workflow have been removed.
+
+For upgrades, see `UPGRADE_V23.md`.

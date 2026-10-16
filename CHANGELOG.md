@@ -28,3 +28,8 @@ This full-source release consolidates the existing minimal portfolio, V13 editor
 - The migration and deletion API depends on live GitHub/R2 permissions and should be verified with a disposable project after deployment.
 - Deleting an R2 object immediately after a GitHub commit can produce a short gap before Cloudflare finishes redeploying the new project page.
 - Unsaved uploads may leave R2 objects behind, and removing GitHub files does not shrink older Git history. Maintain independent backups.
+
+## V23A
+- Notes timestamps are localized in visitor browsers; semantic UTC fallback remains.
+- Explicit single-column vertical Notes feed on all screen sizes.
+- Combined V23 changes into one safe update.
