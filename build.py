@@ -294,15 +294,18 @@ def photo_info(image: str, project: dict) -> str:
                 info[key] = str(value).strip()
         break
     fragments = []
-    # The public website intentionally shows only exposure essentials. Camera,
-    # lens, aperture and other EXIF fields are preserved in the underlying file.
-    for key in ('focal_length', 'shutter_speed', 'iso'):
+    # Display only the four requested exposure fields. Camera and lens
+    # remain in the metadata, but are not shown in public captions.
+    for key in ('focal_length', 'aperture', 'shutter_speed', 'iso'):
         value = str(info.get(key) or '').strip()
         if not value:
             continue
         # Avoid duplicating units when entered manually in the CMS.
         if key == 'focal_length' and value.replace('.', '', 1).isdigit():
             value += ' mm'
+        if key == 'aperture' and not re.match(r'(?i)^f\s*/', value):
+            # Accept manual inputs such as 2.8 or f2.8 without duplicate 'f/'.
+            value = 'f/' + re.sub(r'(?i)^f\s*', '', value)
         if key == 'shutter_speed' and not value.lower().endswith(('s', 'sec', 'seconds')):
             value += ' s'
         if key == 'iso' and not value.upper().startswith('ISO'):

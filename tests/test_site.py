@@ -110,7 +110,7 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertIn('Nicholas Kincaid', detail)
         self.assertIn('Notes', listing)
 
-    def test_public_metadata_only_displays_focal_shutter_and_iso(self):
+    def test_public_metadata_displays_focal_aperture_shutter_and_iso(self):
         (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')
         (self.root / 'content' / 'projects' / 'test.json').write_text(json.dumps({
             'title': 'Test', 'published': True, 'cover': '/media/test/pic.jpg',
@@ -120,11 +120,15 @@ class PortfolioBuildTests(unittest.TestCase):
                 'focal_length': '120', 'shutter_speed': '1/400', 'iso': '220'}]}))
         self.site.run()
         page = (self.root / 'dist' / 'projects' / 'test' / 'index.html').read_text()
-        self.assertIn('120 mm · 1/400 s · ISO 220', page)
+        self.assertIn('120 mm · f/8 · 1/400 s · ISO 220', page)
         self.assertNotIn('Nikon Z6', page)
         self.assertNotIn('Nikkor 24-120mm', page)
-        self.assertNotIn('f/8', page)
+        self.assertIn('f/8', page)
         self.assertIn('class="lightbox-project">Test</span>', page)
+        self.assertEqual(self.site.photo_info('/media/test/pic.jpg', {'photo_details': [
+            {'image': '/media/test/pic.jpg', 'aperture': 'f/2.8'}]}), 'f/2.8')
+        self.assertEqual(self.site.photo_info('/media/test/pic.jpg', {'photo_details': [
+            {'image': '/media/test/pic.jpg', 'aperture': 'F4'}]}), 'f/4')
 
     def test_photo_links_open_viewer_not_raw_media(self):
         (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')

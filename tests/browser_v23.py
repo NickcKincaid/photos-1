@@ -43,7 +43,7 @@ with sync_playwright() as pw:
         assert 'Unsaved changes' in page.locator('.project-btn').inner_text()
         page.locator('#preview-project').click()
         first=page.locator('#draft-preview-photos figcaption').first.inner_text()
-        assert '35 mm · 1/60 s · ISO 800' in first, first
+        assert '35 mm · f/8 · 1/60 s · ISO 800' in first, first
         assert 'Nikon' not in page.locator('#draft-preview-photos').inner_text()
         assert not page.evaluate('document.documentElement.scrollWidth > innerWidth')
         page.close()

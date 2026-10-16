@@ -242,9 +242,11 @@
       img.loading=i===0?'eager':'lazy';fig.appendChild(img);
       const m = photo.meta || {};
       const focal = String(m.focal_length || '').trim();
+      const aperture = String(m.aperture || '').trim();
       const shutter = String(m.shutter_speed || '').trim();
       const iso = String(m.iso || '').trim();
       const caption = [focal ? focal + (/^\d+(?:\.\d+)?$/.test(focal) ? ' mm' : '') : '',
+        aperture ? (/^f\s*\//i.test(aperture) ? aperture : 'f/' + aperture.replace(/^f\s*/i, '')) : '',
         shutter ? shutter + (/s(?:ec(?:onds)?)?$/i.test(shutter) ? '' : ' s') : '',
         iso ? (/^ISO\b/i.test(iso) ? iso : 'ISO ' + iso) : ''].filter(Boolean).join(' · ');
       if(caption)fig.appendChild(node('figcaption','',caption));
