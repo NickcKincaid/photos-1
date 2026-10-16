@@ -54,7 +54,11 @@
     {
       "image": "/media/cdmx/029adcc6ab4a4a69b167e072/cdmx-03.jpg",
       "id": "06497c3742ce4ec0aa81bc2e",
-      "storage": "r2"
+      "storage": "r2",
+      "lens": "40 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/6400 s",
+      "iso": "ISO 640"
     },
     {
       "image": "/media/cdmx/e9192a8055cc4de593c95111/cdmx-06.jpg",
