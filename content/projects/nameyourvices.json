@@ -26,6 +26,7 @@
     "/media/nameyourvices/8ef5f1c8381944a89ff6973f/nameyourvices-18.jpg",
     "/media/nameyourvices/32e7195af7b8461a9df37c92/nameyourvices-15.jpg",
     "/media/nameyourvices/55c9b057c4844a01b2770f2d/nameyourvices-16.jpg",
+    "/media/nameyourvices/c8c036d183aa4611a96da6f5/nameyourvices-20.jpg",
     "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg",
     "/media/nameyourvices/bb56a3bfffd84fdba08031b4/nameyourvices-19.jpg"
   ],
@@ -214,6 +215,17 @@
       "lens": "0.0 mm f/0.0",
       "shutter_speed": "1/40",
       "iso": "6400"
+    },
+    {
+      "image": "/media/nameyourvices/c8c036d183aa4611a96da6f5/nameyourvices-20.jpg",
+      "id": "0d1b80edb00a4a29a786784a",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "87 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/100",
+      "iso": "110"
     },
     {
       "image": "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg",
