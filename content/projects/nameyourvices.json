@@ -15,7 +15,6 @@
     "/media/nameyourvices/64b2953413bb49738e7c46d9/nameyourvices-02.jpg",
     "/media/nameyourvices/5f3a270f4dbe4a0ca4926193/nameyourvices-05.jpg",
     "/media/nameyourvices/dc72421aa5314cb6b3e76e92/nameyourvices-06.jpg",
-    "/media/nameyourvices/bc4b5d0131ac483e87e5299c/nameyourvices-07.jpg",
     "/media/nameyourvices/3107713eec4a4d4b8b1f3aa6/nameyourvices-09.jpg",
     "/media/nameyourvices/47f92ccece4f4baa9626cd5b/nameyourvices-14.jpg",
     "/media/nameyourvices/0c8147a7befe4c879cac0271/nameyourvices-10.jpg",
@@ -95,17 +94,6 @@
       "aperture": "f/7.1",
       "shutter_speed": "1/100",
       "iso": "180"
-    },
-    {
-      "image": "/media/nameyourvices/bc4b5d0131ac483e87e5299c/nameyourvices-07.jpg",
-      "id": "621cf33425bf4e438381267f",
-      "storage": "r2",
-      "camera": "NIKON Z 6",
-      "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
-      "aperture": "f/16",
-      "shutter_speed": "1/50",
-      "iso": "1400"
     },
     {
       "image": "/media/nameyourvices/3107713eec4a4d4b8b1f3aa6/nameyourvices-09.jpg",
