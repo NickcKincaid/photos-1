@@ -342,7 +342,7 @@ def lightbox(project_title: str = '') -> str:
     <div class="lightbox-top"><span class="lightbox-project">{esc(project_title)}</span><button class="lightbox-close" type="button" aria-label="Close photo viewer"><span class="lightbox-close-label">Close</span><span class="lightbox-close-symbol" aria-hidden="true">&times;</span></button></div>
     <div class="lightbox-stage"><button class="lightbox-nav lightbox-prev" type="button" aria-label="Previous photo">&#8592;</button>
       <img class="lightbox-image" alt="" decoding="async">
-      <p class="lightbox-unavailable" role="status" hidden>This photograph is temporarily unavailable.</p>
+      <p class="lightbox-unavailable" role="status" hidden></p>
       <button class="lightbox-nav lightbox-next" type="button" aria-label="Next photo">&#8594;</button>
     </div>
     <div class="lightbox-bottom"><span class="lightbox-counter" aria-live="polite"></span><span class="lightbox-metadata"></span><div class="lightbox-actions"><button class="lightbox-zoom" type="button" aria-label="Zoom photograph" aria-pressed="false">Zoom</button><a class="lightbox-download" href="#" download aria-label="Download this photograph">Download</a><button class="lightbox-copy" type="button" aria-label="Copy link to this photograph">Copy link</button></div></div>

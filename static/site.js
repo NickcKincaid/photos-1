@@ -222,7 +222,10 @@
       return;
     }
     image.classList.remove('is-loaded');
-    if (unavailable) unavailable.hidden = false;
+    if (unavailable) {
+      unavailable.textContent = 'This photograph is temporarily unavailable.';
+      unavailable.hidden = false;
+    }
     if (downloadLink) downloadLink.hidden = true;
   });
 

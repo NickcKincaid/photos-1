@@ -1,6 +1,7 @@
 import { gh, getProject, decodeContent, slugify, errorResponse } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
 const fields = ['camera','lens','focal_length','aperture','shutter_speed','iso','alt'];
+const REQUIRED_EXPOSURE = [['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO']];
 const R2_IMAGE = /^\/media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))\.jpg$/;
 const R2_VARIANT = /^\/media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))-(640|1280)\.webp$/;
 function validVariants(value, original, slug) {
@@ -62,6 +63,10 @@ export async function onRequestPost(context) {
     const seenExisting = new Set(), seenNew = new Set();
     for (const item of input.photos) {
       if (!item || typeof item !== 'object') throw Error('Invalid photo');
+      const missing = REQUIRED_EXPOSURE.filter(([field]) => !String(item.meta?.[field] ?? '').trim());
+      if (missing.length) {
+        throw Error(`Photo ${details.length + 1}: ${missing.map(([,label])=>label).join(', ')} required before saving.`);
+      }
       let path;
       let newR2 = false;
       if (item.kind === 'existing') {
@@ -73,8 +78,7 @@ export async function onRequestPost(context) {
         const match = R2_IMAGE.exec(path);
         if (!match || match[1] !== slug || seenNew.has(path)) throw Error('Invalid R2 image reference.');
         seenNew.add(path);
-        if (!context.env.PHOTO_BUCKET) throw Error('R2 bucket binding PHOTO_BUCKET is missing.');
-        if (!await context.env.PHOTO_BUCKET.head(path.slice(1))) throw Error('R2 image is missing. Upload again.');
+        // The shared R2 existence check below covers both new and existing objects.
         newR2 = true;
       } else if (item.kind === 'new') {
         const sha = String(item.sha || '');

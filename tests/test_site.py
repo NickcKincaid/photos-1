@@ -57,6 +57,10 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertIn('rel="icon"', home)
         self.assertTrue((self.root / 'dist' / 'favicon.ico').exists())
         self.assertIn('lightbox-unavailable', self.site.lightbox('Test project'))
+        # Keep unavailable-photo text out of initial HTML for text-only readers.
+        self.assertNotIn('This photograph is temporarily unavailable.', self.site.lightbox('Test project'))
+        self.assertIn("unavailable.textContent = 'This photograph is temporarily unavailable.'",
+                      (SOURCE / 'static' / 'site.js').read_text())
 
     def test_project_pages_and_unlisted_draft(self):
         (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')

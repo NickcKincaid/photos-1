@@ -1,5 +1,14 @@
 # Consolidated release notes
 
+## V27 — Required exposure metadata and reliability pass (2026-10-17)
+- Focal length, aperture, shutter speed, and ISO are mandatory for **each photograph** whenever a project is saved, including unlisted drafts. The admin editor lists missing fields and focuses the first one; the authenticated save API enforces the same rule.
+- Legacy published projects remain unchanged until edited. When an existing project is saved again, missing exposure settings must be completed.
+- Avoided a duplicate R2 object-existence lookup during publishing.
+- The gallery writes its unavailable-photo message only after an actual image load failure, so text-only readers do not misinterpret hidden initial HTML.
+- Improved admin errors for non-JSON API responses and preserved thumbnail-optimization warnings after batch uploads.
+- Added API and desktop/mobile editor regression coverage.
+
+
 This full-source release consolidates the existing minimal portfolio, V13 editor fixes, V14 project deletion, and V15 Cloudflare R2 storage into a clean codebase.
 
 ## Improvements in this release

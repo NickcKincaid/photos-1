@@ -1,7 +1,11 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const keys = [['camera','Camera'],['lens','Lens'],['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO'],['alt','Image description / alt text']];
+  const requiredMeta = [['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO']];
+  const requiredKeys = new Set(requiredMeta.map(([key]) => key));
+  const keys = [...requiredMeta,['camera','Camera'],['lens','Lens'],['alt','Image description / alt text']];
+  const examples = {focal_length:'35 mm',aperture:'f/5.6',shutter_speed:'1/250 s',iso:'400'};
+  const missingMeta = photo => requiredMeta.filter(([key]) => !String(photo.meta?.[key] ?? '').trim());
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
   let stagedSlug = null;
   let coverPosition={x:50,y:50};
@@ -41,7 +45,7 @@
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }
   async function api(path, options={}) {
     const response = await fetch('/api/admin/'+path, { credentials:'same-origin', cache:'no-store', ...options });
-    let body; try { body=await response.json(); } catch { throw Error(`Cloudflare returned HTTP ${response.status} before the uploader could respond. Check Pages Functions logs for /api/admin/upload.`); }
+    let body; try { body=await response.json(); } catch { throw Error(`The server returned HTTP ${response.status} without JSON for /api/admin/${path}. Check Cloudflare Pages Functions logs.`); }
     if (!response.ok) throw Error(body.error || `Request failed (${response.status})`);
     return body;
   }
@@ -227,6 +231,20 @@
     updateSocialPreview();
   }
   $('social-image').addEventListener('change', e=>{socialImage=e.target.value;markDirty();updateSocialPreview();});
+  function validatePhotoMetadata() {
+    for (const [index, photo] of photos.entries()) {
+      const missing = missingMeta(photo);
+      if (!missing.length) continue;
+      const row = $('photos').children[index];
+      const details = row?.querySelector('details');
+      if (details) details.open = true;
+      const field = row?.querySelector(`input[data-meta-field="${missing[0][0]}"]`);
+      if (field) field.focus();
+      status(`Photo ${index+1}: enter ${missing.map(([,label])=>label).join(', ')} before saving. All four exposure settings are required for every photo.`, 'error');
+      return false;
+    }
+    return true;
+  }
   function renderPhotos() {
     updateCoverCrop();
     renderSocialImages();
@@ -242,11 +260,38 @@
         const b=node('button','',title);b.type='button';b.disabled=locked;b.addEventListener('click',func);buttons.appendChild(b);
       }
       detail.appendChild(buttons);
-      const more=node('details');const summary=node('summary','','Photo description and camera settings (optional)');more.appendChild(summary);
+      const more=node('details');
+      const summary=node('summary');more.appendChild(summary);
       const grid=node('div','meta-fields');
+      const refreshMetaStatus = () => {
+        const missing=missingMeta(photo);
+        summary.textContent=missing.length
+          ? `Exposure settings required — missing ${missing.map(([,label])=>label).join(', ')}`
+          : 'Exposure settings complete · optional camera, lens and description';
+        more.classList.toggle('metadata-incomplete',Boolean(missing.length));
+      };
       for(const [key,label] of keys){
-        const wrap=node('label');wrap.appendChild(node('span','',label));const field=node('input');field.value=photo.meta?.[key]||'';field.maxLength=key==='alt'?250:180;field.addEventListener('input',e=>{photo.meta??={};photo.meta[key]=e.target.value;markDirty();});wrap.appendChild(field);grid.appendChild(wrap);
+        const wrap=node('label');
+        wrap.appendChild(node('span','',label+(requiredKeys.has(key)?' *':'')));
+        const field=node('input');field.value=photo.meta?.[key]??'';
+        field.maxLength=key==='alt'?250:180;
+        field.dataset.metaField=key;
+        if (requiredKeys.has(key)) {
+          // A closed <details> makes browser-native required validation impossible to focus.
+          // Validate explicitly on Save and expand/focus the first missing field.
+          field.setAttribute('aria-required','true');
+          field.placeholder=examples[key];
+        }
+        const updateField = () => {
+          photo.meta??={};photo.meta[key]=field.value;
+          if (requiredKeys.has(key)) field.setAttribute('aria-invalid',String(!field.value.trim()));
+          refreshMetaStatus();markDirty();
+        };
+        if (requiredKeys.has(key)) field.setAttribute('aria-invalid',String(!String(field.value).trim()));
+        field.addEventListener('input',updateField);
+        wrap.appendChild(field);grid.appendChild(wrap);
       }
+      refreshMetaStatus();
       more.appendChild(grid);detail.appendChild(more);row.appendChild(detail);container.appendChild(row);
     });
   }
@@ -260,6 +305,7 @@
     const chosen=Array.from(e.target.files||[]);if(!chosen.length || locked)return;
     if(!current?.slug && !$('project-title').value.trim()){status('Name your project before uploading photos.','error');$('photo-files').value='';return;}
     locked=true;$('publish').disabled=true;$('photo-files').disabled=true;
+    const thumbnailWarnings=[];
     try {
       for(const [i,file] of chosen.entries()) {
         status(`Preparing and uploading ${i+1} of ${chosen.length}: ${file.name}`);
@@ -280,11 +326,13 @@
               'X-Photo-Project':slug,'X-Photo-Variant':String(v.width),'X-Photo-Source':upload.path},body:v.blob});
             variants.push({url:thumb.path,width:thumb.width});
           }
-        } catch (e) {status('Original uploaded. Thumbnail optimization skipped: '+e.message);}
+        } catch (e) {thumbnailWarnings.push(file.name);}
         photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:upload.path.split('/').pop(),preview});
         markDirty();renderPhotos();
       }
-      status(`${chosen.length} photo(s) prepared. Click Save project to publish them.`, 'good');
+      status(thumbnailWarnings.length
+        ? `${chosen.length} photo(s) uploaded. Thumbnails could not be optimized for ${thumbnailWarnings.length} image(s); full-size images remain available. Review the project and click Save.`
+        : `${chosen.length} photo(s) prepared. Click Save project to publish them.`, thumbnailWarnings.length ? 'error' : 'good');
     } catch(err){status('Upload stopped: '+err.message,'error');}
     finally{locked=false;$('publish').disabled=false;$('photo-files').disabled=false;$('photo-files').value='';renderPhotos();}
   });
@@ -327,6 +375,7 @@
     if (orderDirty) { status('Save project order before saving this project.', 'error'); return; }
     const title=$('project-title').value.trim();
     if(!title){status('Enter a project title.','error');return;}
+    if (!validatePhotoMetadata()) return;
     locked=true;$('publish').disabled=true;
     if (!current?.slug && stagedSlug && slugify(title)!==stagedSlug) {
       locked=false;$('publish').disabled=false;

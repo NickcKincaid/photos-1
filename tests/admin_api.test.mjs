@@ -243,7 +243,7 @@ test('project save accepts new clean-name R2 original and thumbnail paths',async
    const variant=`/media/tokyo/${uuid}/tokyo-01-640.webp`;
    const req=new Request('https://nickckincaid.com/api/admin/save',{method:'POST',headers:{'content-type':'application/json'},
      body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:true,order:1,
-       cover_position:{x:73,y:12},photos:[{kind:'r2',path,meta:{iso:'100',storage:'r2'},variants:[{url:variant,width:640}]}]})});
+       cover_position:{x:73,y:12},photos:[{kind:'r2',path,meta:{focal_length:'35 mm',aperture:'f/8',shutter_speed:'1/125 s',iso:'100',storage:'r2'},variants:[{url:variant,width:640}]}]})});
    const resp=await save({request:req,env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(key){return {size:10}}}}});
    assert.equal(resp.status,200,await resp.clone().text());
    const entry=gh.trees[0].tree.find(t=>t.path==='content/projects/tokyo.json');
@@ -251,5 +251,58 @@ test('project save accepts new clean-name R2 original and thumbnail paths',async
    assert.equal(project.cover,path);
    assert.deepEqual(project.photo_details[0].variants,[{url:variant,width:640}]);
    assert.deepEqual(project.cover_position,{x:73,y:12});
+ }finally{gh.restore();}
+});
+
+const EXPOSURE = {focal_length:'35 mm',aperture:'f/8',shutter_speed:'1/250 s',iso:'400'};
+function requestWithPhoto(meta, published=false, kind='r2') {
+ const path='/media/tokyo/'+'7'.repeat(24)+'/tokyo-01.jpg';
+ const photo=kind==='r2' ? {kind,path,meta} : {kind:'existing',path,meta};
+ return new Request('https://nickckincaid.com/api/admin/save', {
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',order:1,published,photos:[photo]})
+ });
+}
+
+test('saving a project or draft requires every exposure field; whitespace is not enough',async()=>{
+ for(const published of [false,true]) {
+   for(const field of Object.keys(EXPOSURE)) {
+     for(const missing of [undefined, '  ']) {
+       const gh=mockGithub();let headCalls=0;
+       try {
+         const meta={...EXPOSURE};
+         if(missing===undefined) delete meta[field]; else meta[field]=missing;
+         const resp=await save({request:requestWithPhoto(meta,published),env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){headCalls++;return {};}}}});
+         assert.equal(resp.status,400);
+         assert.match((await resp.json()).error,/Photo 1:.*required before saving/);
+         assert.equal(gh.trees.length,0);
+         assert.equal(headCalls,0,'Reject missing EXIF before touching R2');
+       }finally{gh.restore();}
+     }
+   }
+ }
+});
+
+test('complete exposure fields save successfully and check each R2 original once',async()=>{
+ const gh=mockGithub();let headCalls=0;
+ try {
+   const res=await save({request:requestWithPhoto(EXPOSURE,true),env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){headCalls++;return {size:512}}}}});
+   assert.equal(res.status,200,await res.clone().text());
+   assert.equal(headCalls,1,'Only one HEAD request should be needed per uploaded photo');
+   const doc=gh.trees[0].tree.find(e=>e.path==='content/projects/tokyo.json');
+   const saved=JSON.parse(doc.content);
+   for(const key of Object.keys(EXPOSURE)) assert.equal(saved.photo_details[0][key],EXPOSURE[key]);
+ }finally{gh.restore();}
+});
+
+test('existing photograph missing exposure settings must be completed on next save',async()=>{
+ const old='/media/tokyo/'+'7'.repeat(24)+'/tokyo-01.jpg';
+ const gh=mockGithub({title:'Tokyo',published:true,order:1,cover:old,gallery:[],photo_details:[{image:old,storage:'r2',...EXPOSURE}]});
+ try {
+   const meta={...EXPOSURE,shutter_speed:''};
+   const resp=await save({request:requestWithPhoto(meta,false,'existing'),env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){return {size:512}}}}});
+   assert.equal(resp.status,400);
+   assert.match((await resp.json()).error,/Shutter speed/);
+   assert.equal(gh.trees.length,0);
  }finally{gh.restore();}
 });

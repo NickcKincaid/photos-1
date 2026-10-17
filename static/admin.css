@@ -105,3 +105,8 @@ main[hidden] { display: none !important; }
 .social-preview[hidden] {display:none}
 .social-preview img {display:block;width:100%;aspect-ratio:1.91;object-fit:cover;background:#dddcd8}
 .social-preview span {display:block;padding:7px 9px;font-size:11px;font-weight:600;overflow-wrap:anywhere}
+
+/* V27: make incomplete exposure settings obvious without changing the public gallery. */
+.photo-row details.metadata-incomplete > summary { color: #9a362f; }
+.meta-fields input[aria-invalid="true"] { border-color: #b77670; background: #fff8f6; }
+.meta-fields input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
