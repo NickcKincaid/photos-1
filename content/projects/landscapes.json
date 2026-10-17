@@ -14,7 +14,10 @@
     "/media/landscapes/481a3da8a5cc4a65a533a75c/landscapes-02.jpg",
     "/media/landscapes/a60317b1e42c4debaa5af661/landscapes-03.jpg",
     "/media/landscapes/2f30b61f18c74e5c92f9c72f/landscapes-04.jpg",
-    "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg"
+    "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg",
+    "/media/landscapes/d95eab4278a447b2bc7cc93b/landscapes-07.jpg",
+    "/media/landscapes/f5391623fe3a46248613dd9e/landscapes-08.jpg",
+    "/media/landscapes/0794f4c314314de29ba463fc/landscapes-09.jpg"
   ],
   "photo_details": [
     {
@@ -80,6 +83,39 @@
       "aperture": "f/8",
       "shutter_speed": "1/200",
       "iso": "125"
+    },
+    {
+      "image": "/media/landscapes/d95eab4278a447b2bc7cc93b/landscapes-07.jpg",
+      "id": "f759d272b4d44725a56f575b",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/200",
+      "iso": "100"
+    },
+    {
+      "image": "/media/landscapes/f5391623fe3a46248613dd9e/landscapes-08.jpg",
+      "id": "c8587ee6e5aa44f1b8d2b075",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "72 mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/125",
+      "iso": "160"
+    },
+    {
+      "image": "/media/landscapes/0794f4c314314de29ba463fc/landscapes-09.jpg",
+      "id": "b1afd69f751b4f8d880cf771",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/16",
+      "shutter_speed": "1/50",
+      "iso": "200"
     }
   ]
 }
