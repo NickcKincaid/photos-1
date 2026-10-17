@@ -17,7 +17,8 @@
     "/media/landscapes/2f30b61f18c74e5c92f9c72f/landscapes-04.jpg",
     "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg",
     "/media/landscapes/d95eab4278a447b2bc7cc93b/landscapes-07.jpg",
-    "/media/landscapes/0794f4c314314de29ba463fc/landscapes-09.jpg"
+    "/media/landscapes/0794f4c314314de29ba463fc/landscapes-09.jpg",
+    "/media/landscapes/a63545575e1e47e58f13665f/landscapes-10.jpg"
   ],
   "photo_details": [
     {
@@ -116,6 +117,15 @@
       "aperture": "f/16",
       "shutter_speed": "1/50",
       "iso": "200"
+    },
+    {
+      "image": "/media/landscapes/a63545575e1e47e58f13665f/landscapes-10.jpg",
+      "id": "7cb089c8849443c8938285af",
+      "storage": "r2",
+      "focal_length": "250 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/2000",
+      "iso": "100"
     }
   ]
 }
