@@ -14,7 +14,8 @@
     "/media/textural-repetition/81171ddb5dc740d0944dcbb5/textural-repetition-04.jpg",
     "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
     "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg",
-    "/media/textural-repetition/2dda3425255d42feb7c654ff/textural-repetition-07.jpg"
+    "/media/textural-repetition/2dda3425255d42feb7c654ff/textural-repetition-07.jpg",
+    "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg"
   ],
   "photo_details": [
     {
@@ -93,6 +94,17 @@
       "aperture": "f/8",
       "shutter_speed": "1/40",
       "iso": "360"
+    },
+    {
+      "image": "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg",
+      "id": "31f3d9cc0edf4c68b9dd0d06",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/11",
+      "shutter_speed": "1/60",
+      "iso": "640"
     }
   ],
   "social_image": ""

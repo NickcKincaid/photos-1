@@ -8,7 +8,8 @@
     "/media/kazakhstan/8e9c33ec39904b44b6eb6368/kazakhstan-02.jpg",
     "/media/kazakhstan/4be176d05bf64343a2482a23/kazakhstan-03.jpg",
     "/media/kazakhstan/3c6572753da84b2bb2515df3/kazakhstan-05.jpg",
-    "/media/kazakhstan/a7ce36e52061449d8f88c50e/kazakhstan-04.jpg"
+    "/media/kazakhstan/a7ce36e52061449d8f88c50e/kazakhstan-04.jpg",
+    "/media/kazakhstan/f4ae4a3e08264318858193f2/kazakhstan-06.jpg"
   ],
   "photo_details": [
     {
@@ -65,10 +66,22 @@
       "aperture": "f/7.1",
       "shutter_speed": "1/500",
       "iso": "200"
+    },
+    {
+      "image": "/media/kazakhstan/f4ae4a3e08264318858193f2/kazakhstan-06.jpg",
+      "id": "cf5a373f29844628bf89fde6",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "24 mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/250",
+      "iso": "2000"
     }
   ],
   "cover_position": {
     "x": 5,
     "y": 50
-  }
+  },
+  "social_image": ""
 }
