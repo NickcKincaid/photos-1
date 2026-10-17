@@ -27,8 +27,7 @@
     "/media/nameyourvices/32e7195af7b8461a9df37c92/nameyourvices-15.jpg",
     "/media/nameyourvices/55c9b057c4844a01b2770f2d/nameyourvices-16.jpg",
     "/media/nameyourvices/c8c036d183aa4611a96da6f5/nameyourvices-20.jpg",
-    "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg",
-    "/media/nameyourvices/bb56a3bfffd84fdba08031b4/nameyourvices-19.jpg"
+    "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg"
   ],
   "photo_details": [
     {
@@ -237,11 +236,6 @@
       "aperture": "f/5.6",
       "shutter_speed": "1/250",
       "iso": "100"
-    },
-    {
-      "image": "/media/nameyourvices/bb56a3bfffd84fdba08031b4/nameyourvices-19.jpg",
-      "id": "cf336aee3cb04d8e8c0baeab",
-      "storage": "r2"
     }
   ]
 }
