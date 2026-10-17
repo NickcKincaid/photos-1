@@ -13,11 +13,11 @@
     "/media/nameyourvices/d95b0ec613e444ebb70cd8b5/nameyourvices-04.jpg",
     "/media/nameyourvices/873ea5ea8a3d4a6a9d89ad55/nameyourvices-01.jpg",
     "/media/nameyourvices/64b2953413bb49738e7c46d9/nameyourvices-02.jpg",
-    "/media/nameyourvices/6393e0b58ed24edfb87699a3/nameyourvices-03.jpg",
     "/media/nameyourvices/5f3a270f4dbe4a0ca4926193/nameyourvices-05.jpg",
     "/media/nameyourvices/dc72421aa5314cb6b3e76e92/nameyourvices-06.jpg",
     "/media/nameyourvices/bc4b5d0131ac483e87e5299c/nameyourvices-07.jpg",
     "/media/nameyourvices/3107713eec4a4d4b8b1f3aa6/nameyourvices-09.jpg",
+    "/media/nameyourvices/47f92ccece4f4baa9626cd5b/nameyourvices-14.jpg",
     "/media/nameyourvices/0c8147a7befe4c879cac0271/nameyourvices-10.jpg",
     "/media/nameyourvices/33325300190c49f38d552fa8/nameyourvices-11.jpg",
     "/media/nameyourvices/8e0bf9efdf064494a06d1d96/nameyourvices-13.jpg",
@@ -70,17 +70,6 @@
       "iso": "110"
     },
     {
-      "image": "/media/nameyourvices/6393e0b58ed24edfb87699a3/nameyourvices-03.jpg",
-      "id": "499ef47d81ff43a5b6e37796",
-      "storage": "r2",
-      "camera": "NIKON Z 6",
-      "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
-      "aperture": "f/8",
-      "shutter_speed": "1/40",
-      "iso": "100"
-    },
-    {
       "image": "/media/nameyourvices/5f3a270f4dbe4a0ca4926193/nameyourvices-05.jpg",
       "id": "491a19a17ee741adbc387154",
       "storage": "r2",
@@ -123,6 +112,17 @@
       "aperture": "f/4",
       "shutter_speed": "1/80",
       "iso": "500"
+    },
+    {
+      "image": "/media/nameyourvices/47f92ccece4f4baa9626cd5b/nameyourvices-14.jpg",
+      "id": "e8f69d33ec3443678c2ed7eb",
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40 mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/50",
+      "iso": "3200"
     },
     {
       "image": "/media/nameyourvices/0c8147a7befe4c879cac0271/nameyourvices-10.jpg",
