@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/admin/admin.css">
   <script src="/admin/admin-processing.js" defer></script>
   <script src="/admin/admin-drafts.js" defer></script>
+  <script src="/admin/admin-tools.js" defer></script>
   <script src="/admin/admin.js" defer></script>
   <script src="/admin/admin-note-format.js" defer></script>
   <script src="/admin/admin-notes.js" defer></script>
@@ -24,6 +25,8 @@
     <div class="sidebar">
       <div class="sidebar-head"><strong>Projects</strong><button type="button" id="add-project">+ New project</button></div>
       <p class="muted ordering-help">Drag projects to reorder on desktop, or use the arrows on mobile.</p>
+      <p id="metadata-overview" class="muted" role="status">Checking metadata…</p>
+      <button type="button" id="review-missing" hidden>Open first incomplete project</button>
       <div id="project-list" aria-label="Projects"><p class="muted">Loading…</p></div>
       <button type="button" id="save-order" hidden disabled>Save project order</button>
     </div>
@@ -42,6 +45,7 @@
           <div class="upload-label"><strong>Photographs</strong><span class="muted">First photo = cover. Use arrows to reorder.</span></div>
           <label class="file-button" for="photo-files">+ Add photos</label>
           <input type="file" id="photo-files" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple>
+          <div id="upload-queue" class="upload-queue" role="region" aria-label="Photo upload queue" hidden></div>
           <p class="muted">Drafts are unlisted, not confidential. Anyone with the exact media URL may still view uploaded photographs.</p>
           <p class="muted">Images are resized on your device, credited, and stored in Cloudflare R2. Your originals remain untouched. Project information stays in GitHub.</p>
           <p class="muted"><strong>Required for every photograph:</strong> focal length, aperture, shutter speed, and ISO. EXIF is filled in automatically when available; complete missing fields before saving any project.</p>
@@ -60,6 +64,31 @@
               <button id="crop-reset" type="button">Center image</button>
             </div>
           </div>
+        </section>
+        <section id="bulk-editor" class="bulk-editor" aria-label="Bulk photograph editor" hidden>
+          <strong>Batch edit</strong><span id="bulk-count" class="muted">0 selected</span>
+          <div class="bulk-actions">
+            <button type="button" id="bulk-select-all">Select all</button>
+            <button type="button" id="bulk-clear">Clear</button>
+            <button type="button" id="bulk-first">Move selected first</button>
+            <button type="button" id="bulk-last">Move selected last</button>
+            <button type="button" id="bulk-remove">Remove selected</button>
+          </div>
+          <div class="bulk-meta">
+            <label>Setting <select id="bulk-field">
+              <option value="focal_length">Focal length</option><option value="aperture">Aperture</option>
+              <option value="shutter_speed">Shutter speed</option><option value="iso">ISO</option>
+              <option value="camera">Camera</option><option value="lens">Lens</option>
+            </select></label>
+            <label>Value <input type="text" id="bulk-value" maxlength="180" placeholder="e.g. 35 mm"></label>
+            <button type="button" id="bulk-apply">Apply to selected</button>
+          </div>
+          <p class="muted">Batch changes are unsaved until you click Save project. Applying a setting overwrites that field only on selected photographs.</p>
+        </section>
+        <section id="image-integrity" class="integrity-panel" aria-label="Image integrity checker">
+          <button type="button" id="check-images">Check this project's image links</button>
+          <p id="image-check-status" class="muted" role="status">Checks originals and thumbnails without modifying R2.</p>
+          <ul id="image-check-results" class="integrity-results"></ul>
         </section>
         <div id="photos" class="photos"></div>
         <label class="sharing-preview-field" for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span>
@@ -118,6 +147,9 @@
         <div><dt>Estimated Standard storage cost / month</dt><dd id="storage-cost">—</dd></div>
       </dl>
       <p class="muted" id="storage-caveat">Storage estimate excludes request charges. The free allowance, if eligible, is reflected in the estimate.</p>
+      <h2>Visitor statistics</h2>
+      <p>Cloudflare Web Analytics reports visitors, page views, popular project pages, referral sources, countries, and device types. It uses privacy-first aggregation rather than individual visitor profiles.</p>
+      <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">Open Cloudflare Web Analytics ↗</a> <span class="muted">In Workers &amp; Pages → your site → Metrics, enable Web Analytics if it is not already enabled. Visit Analytics &amp; Logs → Web Analytics to view the results.</span></p>
       <h2>Lightweight backups</h2>
       <p>Weekly GitHub Actions snapshots contain project settings and Notes JSON. They do not duplicate your R2 photos or original camera files.</p>
       <button id="download-metadata" type="button">Download a metadata backup now</button>

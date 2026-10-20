@@ -110,3 +110,18 @@ main[hidden] { display: none !important; }
 .photo-row details.metadata-incomplete > summary { color: #9a362f; }
 .meta-fields input[aria-invalid="true"] { border-color: #b77670; background: #fff8f6; }
 .meta-fields input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+/* V28: compact private-editor controls, never loaded by public pages. */
+#metadata-overview{font-size:10px;margin:0 0 8px}#review-missing{font-size:10px;margin:0 0 9px;padding:5px 7px}
+.project-btn small.needs-metadata{color:#9a362f}
+.bulk-editor,.integrity-panel{border-top:1px solid var(--line);padding:12px 0;margin-top:14px}
+.bulk-editor[hidden],.upload-queue[hidden]{display:none!important}
+.bulk-editor strong{margin-right:10px}.bulk-actions,.bulk-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:end;margin:10px 0}
+.bulk-actions button,.bulk-meta button,.integrity-panel button{padding:6px 9px;font-size:11px}
+.bulk-meta label{display:grid;gap:3px;color:var(--muted)}.bulk-meta input,.bulk-meta select{background:transparent;border:1px solid var(--line);color:var(--ink);padding:7px 8px;min-height:32px;font:inherit}
+.bulk-meta input{width:160px}.bulk-editor p{margin:8px 0 0;font-size:10px}
+.bulk-remove-confirmed{color:#9a362f}.photo-select{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);white-space:nowrap;margin:3px 0 6px}
+.integrity-panel p{margin:8px 0}.integrity-results{list-style:none;margin:0;padding:0;overflow-wrap:anywhere}.integrity-results li{margin:5px 0;color:#9a362f}.integrity-results a{text-decoration:underline}
+.upload-queue{margin:10px 0;padding:8px 0;border-block:1px solid var(--line)}.upload-job{display:grid;grid-template-columns:minmax(0,1fr) 70px auto;align-items:center;gap:10px;margin:6px 0}
+.upload-job span{overflow-wrap:anywhere}.upload-job progress{width:70px;height:7px}.upload-job button{padding:4px 8px;font-size:10px}.upload-job .upload-failed{color:#9a362f}.upload-job .upload-done{color:#356743}
+@media(max-width:680px){.upload-job{grid-template-columns:minmax(0,1fr) 58px auto}.upload-job progress{width:58px}.bulk-meta input{width:min(160px,50vw)}}

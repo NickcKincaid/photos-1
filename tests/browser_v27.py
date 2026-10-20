@@ -29,6 +29,7 @@ with sync_playwright() as pw:
             throw new Error('Unexpected fetch '+String(request));
           };
         }''', url)
+        page.add_script_tag(content=(ROOT / 'static/admin-tools.js').read_text())
         page.add_script_tag(content=(ROOT / 'static/admin.js').read_text())
         page.locator('.photo-row').wait_for(state='visible')
         assert 'missing Aperture, ISO' in page.locator('.photo-row summary').inner_text()

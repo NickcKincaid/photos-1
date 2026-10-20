@@ -42,6 +42,34 @@ def slugify(raw: str) -> str:
     return value or 'untitled'
 
 
+def seo_summary(value: object, limit: int = 158) -> str:
+    """Make a short, readable SERP description from editor text or Markdown."""
+    text = str(value or '')
+    text = re.sub(r'!\[([^\]]*)\]\([^)]*\)', r'\1', text)
+    text = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', text)
+    text = re.sub(r'https?://\S+', '', text)
+    text = re.sub(r'(?m)^\s{0,3}#{1,6}\s+', '', text)
+    text = re.sub(r'<[^>]*>', ' ', text)
+    text = re.sub(r'[*_`~>#]+', ' ', text)
+    text = re.sub(r'\s+', ' ', html.unescape(text)).strip()
+    text = re.sub(r'\s+([,.!?;:])', r'\1', text)
+    if len(text) > limit:
+        text = text[:limit - 1].rsplit(' ', 1)[0].rstrip(' ,.;:') + '…'
+    return text
+
+
+def homepage_description(site: dict) -> str:
+    """Allow a deliberate SEO override without relying on the old 28-char intro."""
+    custom = seo_summary(site.get('seo_description'))
+    if custom:
+        return custom
+    existing = seo_summary(site.get('intro'))
+    if len(existing) >= 70:
+        return existing
+    return (f'Photography by {site["name"]}. Explore selected photographic '
+            'projects, original images, and notes.')
+
+
 def image_url(value: str) -> str:
     """Only local uploaded images are accepted; avoid injecting unsafe URL schemes."""
     if not isinstance(value, str):
@@ -196,8 +224,8 @@ def nav(site: dict, active: str = '') -> str:
 
 def footer(site: dict) -> str:
     return f'''<footer class="site-footer page">
-  <a href="/inquire/">Contact</a>
-  <span>© {date.today().year} {esc(site['name'])}</span>
+  <span data-nosnippet><a href="/inquire/">Contact</a></span>
+  <span data-nosnippet>© {date.today().year} {esc(site['name'])}</span>
 </footer>'''
  
 
@@ -212,8 +240,8 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
                 f'  <meta property="og:image:alt" content="{esc(title + " — photograph by Nicholas Kincaid")}">\n'
                 f'  <meta name="twitter:image" content="{esc(site_url + og_cover)}">\n'
                 f'  <meta name="twitter:card" content="summary_large_image">') if og_cover else '<meta name="twitter:card" content="summary">'
-    full_title = title if path == '/' else f'{title} — {site["name"]}'
-    safe_desc = description.strip() or f'Photography by {site["name"]}.'
+    full_title = f'{site["name"]} — Photography' if path == '/' else f'{title} — {site["name"]}'
+    safe_desc = seo_summary(description) or f'Photography by {site["name"]}.'
     schema_tag = ''
     if structured:
         schema = json.dumps(structured, ensure_ascii=False).replace('<', r'\u003c')
@@ -225,6 +253,7 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f7f7f3">
   <meta name="description" content="{esc(safe_desc)}">
+  <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="author" content="Nicholas Kincaid">
   <link rel="canonical" href="{esc(canonical)}">
   <meta property="og:type" content="{esc(kind)}">
@@ -276,16 +305,31 @@ def cards(projects: list[dict]) -> str:
 def homepage(site: dict, projects: list[dict]) -> str:
     work = (f'<div class="works-grid">{cards(projects)}</div>' if projects
             else '<p class="empty-state">No projects yet.</p>')
+    description = homepage_description(site)
+    # A genuine visible introduction helps visitors *and* search engines make
+    # sense of the photo grid; the meta description alone cannot force a snippet.
     body = f'''{nav(site, 'projects')}<main id="main" class="page home-main">
-  <h1 class="visually-hidden">Projects</h1>
+  <h1 class="visually-hidden">Photography by {esc(site['name'])}</h1>
+  <p class="home-intro">Photography by {esc(site['name'])}. Selected projects and notes.</p>
   <section aria-label="Projects" id="work">{work}</section>
 </main>{footer(site)}'''
-    return document(str(site['name']), str(site.get('intro', 'Photography portfolio')), site, body,
-                    (projects[0].get('social_image') if projects[0].get('social_image') in [projects[0]['cover'], *projects[0]['gallery']] else projects[0]['cover']) if projects else '', '/', structured={
-                    '@context': 'https://schema.org', '@type': 'CollectionPage',
-                    'name': site['name'], 'url': SITE_URL + '/',
-                    'creator': {'@type': 'Person', 'name': 'Nicholas Kincaid'},
-                    'hasPart': [{'@type': 'CreativeWork', 'name': p['title'], 'url': SITE_URL + p['url']} for p in projects]})
+    person_id = SITE_URL + '/#person'
+    schema = {'@context': 'https://schema.org', '@graph': [
+        {'@type': 'WebSite', '@id': SITE_URL + '/#website', 'url': SITE_URL + '/',
+         'name': site['name'], 'inLanguage': 'en'},
+        {'@type': 'Person', '@id': person_id, 'name': site['name'],
+         'url': SITE_URL + '/', 'description': 'Photographer'},
+        {'@type': 'CollectionPage', '@id': SITE_URL + '/#projects',
+         'name': 'Photography by ' + site['name'], 'url': SITE_URL + '/',
+         'description': description, 'isPartOf': {'@id': SITE_URL + '/#website'},
+         'about': {'@id': person_id},
+         'hasPart': [{'@type': 'ImageGallery', 'name': p['title'],
+                      'url': SITE_URL + p['url']} for p in projects]}
+    ]}
+    hero = ((projects[0].get('social_image') if projects[0].get('social_image') in
+             [projects[0]['cover'], *projects[0]['gallery']] else projects[0]['cover'])
+            if projects else '')
+    return document(str(site['name']), description, site, body, hero, '/', structured=schema)
 
 def photo_info(image: str, project: dict) -> str:
     "EXIF when present, plus per-photo optional CMS overrides."
@@ -383,10 +427,13 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
   {gallery}
   <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
 </main>{footer(site)}{lightbox(p['title'])}'''
-    return document(p['title'], str(p.get('blurb') or p.get('description') or f'Photographs from {p["title"]} by Nicholas Kincaid.'), site, body,
+    description = seo_summary(p.get('blurb') or p.get('description')) or (
+        f'{p["title"]} — a photography project by {site["name"]}. View the complete photo series.')
+    return document(p['title'], description, site, body,
                     p.get('social_image') if p.get('social_image') in images else (images[0] if images else ''), p['url'], 'article',
-                    {'@context': 'https://schema.org', '@type': 'CreativeWork', 'name': p['title'],
-                     'url': SITE_URL + p['url'], 'creator': {'@type': 'Person', 'name': 'Nicholas Kincaid'},
+                    {'@context': 'https://schema.org', '@type': 'ImageGallery', 'name': p['title'],
+                     'url': SITE_URL + p['url'], 'description': description,
+                     'creator': {'@id': SITE_URL + '/#person'},
                      'image': [SITE_URL + photo for photo in images]})
 
 
@@ -413,6 +460,7 @@ def load_notes() -> list[dict]:
             continue
         entries.append({'slug': slugify(path.stem), 'title': title,
                         'body': text, 'published_at': when,
+                        'updated_at': clean_time(note.get('updated_at')),
                         'url': '/notes/' + slugify(path.stem) + '/'})
     return sorted(entries, key=lambda n: (n['published_at'], n['slug']), reverse=True)
 
@@ -447,7 +495,16 @@ def note_page(site: dict, note: dict, share_cover: str = '') -> str:
   <article class="note-entry"><div class="note-heading"><h1>{esc(note['title'])}</h1>{timestamp(note)}</div>
   {note_content(note)}</article>
 </main>{footer(site)}'''
-    return document(note['title'], note['body'][:155], site, body, cover=share_cover, path=note['url'], kind='article')
+    description = seo_summary(note['body']) or f'A note by {site["name"]}.'
+    published = note['published_at'].isoformat()
+    modified = (note.get('updated_at') or note['published_at']).isoformat()
+    schema = {'@context': 'https://schema.org', '@type': 'BlogPosting',
+              'headline': note['title'], 'url': SITE_URL + note['url'],
+              'description': description, 'datePublished': published, 'dateModified': modified,
+              'author': {'@id': SITE_URL + '/#person'},
+              'mainEntityOfPage': SITE_URL + note['url']}
+    return document(note['title'], description, site, body, cover=share_cover,
+                    path=note['url'], kind='article', structured=schema)
 
 
 def inquire_page(site: dict, share_cover: str = '') -> str:
@@ -506,9 +563,21 @@ def run() -> None:
     # The publishing API never exposes unlisted/draft projects or notes here.
     site_url = SITE_URL
     sitemap = ['<?xml version="1.0" encoding="utf-8"?>',
-               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for route in ['/', '/notes/', '/inquire/', *(p['url'] for p in projects), *(n['url'] for n in notes)]:
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+               'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">']
+    for route in ['/', '/notes/', '/inquire/']:
         sitemap.append(f'<url><loc>{esc(site_url + route)}</loc></url>')
+    for project in projects:
+        # Only published, known photo references appear in the public sitemap.
+        photos = list(dict.fromkeys([project['cover'], *(project.get('gallery') or [])]))
+        image_tags = ''.join(f'<image:image><image:loc>{esc(site_url + photo)}</image:loc></image:image>'
+                             for photo in photos[:1000] if image_url(photo))
+        sitemap.append(f'<url><loc>{esc(site_url + project["url"])}</loc>{image_tags}</url>')
+    for note in notes:
+        # Do not invent a modification date. Use the editor's real timestamp.
+        modified = note.get('updated_at') or note['published_at']
+        lastmod = f'<lastmod>{modified.date().isoformat()}</lastmod>' if modified else ''
+        sitemap.append(f'<url><loc>{esc(site_url + note["url"])}</loc>{lastmod}</url>')
     sitemap.append('</urlset>')
     (OUT / 'sitemap.xml').write_text('\n'.join(sitemap) + '\n', encoding='utf-8')
     (OUT / 'robots.txt').write_text(f'User-agent: *\nDisallow: /admin/\nDisallow: /api/\nDisallow: /prepare/\nSitemap: {site_url}/sitemap.xml\n', encoding='utf-8')

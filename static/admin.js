@@ -8,6 +8,10 @@
   const missingMeta = photo => requiredMeta.filter(([key]) => !String(photo.meta?.[key] ?? '').trim());
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
   let stagedSlug = null;
+  const selectedPhotos = new Set();
+  let imageCheck = 0, imageCheckAbort = null;
+  const uploadJobs = [];
+  let uploadRunning = false;
   let coverPosition={x:50,y:50};
   let socialImage='';
   function validCoverPosition(pos) {
@@ -121,6 +125,13 @@
   function openProject(project, force=false) {
     if (locked && !force) return;
     if (!force && dirty && !window.confirm('Discard unsaved changes to this project?')) return;
+    if (imageCheckAbort) imageCheckAbort.abort();
+    imageCheck++; imageCheckAbort=null;
+    $('image-check-results').replaceChildren();
+    $('image-check-status').textContent='Checks originals and thumbnails without modifying R2.';
+    selectedPhotos.clear();
+    uploadJobs.length=0;renderUploadQueue();
+    updateBulkState();
     cleanup(); current=project || null; stagedSlug = null;
     dirty = false;
     coverPosition=validCoverPosition(project?.cover_position);
@@ -163,7 +174,10 @@
       const selected = current?.slug === project.slug;
       const shownTitle = selected && dirty ? $('project-title').value.trim() || project.title : project.title;
       const btn=node('button','project-btn'+(selected?' active':''),shownTitle || project.slug);
-      const small=node('small','',selected && dirty ? 'Unsaved changes' : (project.published?'Published':'Draft'));btn.appendChild(small);
+      const report=window.PortfolioTools.metadataReport(project);
+      const incomplete=report.missing ? ` · ${report.missing}/${report.total} missing settings` : '';
+      const small=node('small',report.missing?'needs-metadata':'',selected && dirty ? 'Unsaved changes'+incomplete : (project.published?'Published':'Draft')+incomplete);
+      btn.appendChild(small);
       btn.type='button';btn.addEventListener('click',()=>openProject(project));wrap.appendChild(btn);
       for (const [label,offset] of [['↑',-1],['↓',1]]) {
         const b=node('button','project-move',label);
@@ -188,7 +202,28 @@
       container.appendChild(wrap);
     });
     updateOrderState();
+    updateMetadataOverview();
   }
+  function updateMetadataOverview() {
+    const aggregate=projects.map(p=>window.PortfolioTools.metadataReport(p));
+    const photosTotal=aggregate.reduce((sum,r)=>sum+r.total,0);
+    const missingTotal=aggregate.reduce((sum,r)=>sum+r.missing,0);
+    $('metadata-overview').textContent=`${projects.length} projects · ${photosTotal} photos · ${missingTotal} missing settings`;
+    $('review-missing').hidden=!missingTotal;
+  }
+  $('review-missing').addEventListener('click',()=>{
+    const first=projects.find(p=>window.PortfolioTools.metadataReport(p).missing>0);
+    if(!first) return;
+    openProject(first);
+    if(current?.slug!==first.slug)return;
+    const incomplete=photos.findIndex(p=>missingMeta(p).length);
+    if(incomplete<0)return;
+    const row=$('photos').children[incomplete];
+    const details=row?.querySelector('details');if(details)details.open=true;
+    const key=missingMeta(photos[incomplete])[0][0];
+    row?.querySelector(`input[data-meta-field="${key}"]`)?.focus();
+    row?.scrollIntoView({block:'center',behavior:'smooth'});
+  });
   $('save-order').addEventListener('click',async()=>{
     if(!orderDirty || locked) return;
     // Project ordering is a separate save, and never discards editor changes.
@@ -211,6 +246,72 @@
     finally {locked=false;$('publish').disabled=false;renderList();}
   });
   function move(i,d) {const next=i+d;if(next<0 || next>=photos.length)return;[photos[i],photos[next]]=[photos[next],photos[i]];if(i===0 || next===0)coverPosition={x:50,y:50};markDirty();renderPhotos();}
+  function updateBulkState() {
+    const active=photos.filter(p=>selectedPhotos.has(p.path)).length;
+    $('bulk-editor').hidden=!photos.length;
+    $('bulk-count').textContent=`${active} selected`;
+    for(const id of ['bulk-clear','bulk-first','bulk-last','bulk-remove','bulk-apply']) $(id).disabled=locked || !active;
+    $('bulk-select-all').disabled=locked || !photos.length;
+  }
+  $('bulk-select-all').addEventListener('click',()=>{photos.forEach(p=>selectedPhotos.add(p.path));renderPhotos();});
+  $('bulk-clear').addEventListener('click',()=>{selectedPhotos.clear();renderPhotos();});
+  for(const [id,position] of [['bulk-first','first'],['bulk-last','last']]) {
+    $(id).addEventListener('click',()=>{
+      if(locked || !selectedPhotos.size)return;
+      const first=photos[0]?.path;
+      photos=window.PortfolioTools.reorderedPhotos(photos,selectedPhotos,position);
+      if(photos[0]?.path!==first)coverPosition={x:50,y:50};
+      markDirty();renderPhotos();
+    });
+  }
+  $('bulk-remove').addEventListener('click',()=>{
+    if(locked || !selectedPhotos.size)return;
+    const count=photos.filter(p=>selectedPhotos.has(p.path)).length;
+    if(!count || !window.confirm(`Remove ${count} selected photograph(s) from this project? Changes are applied only after Save project.`))return;
+    const first=photos[0]?.path;
+    photos=photos.filter(p=>!selectedPhotos.has(p.path));
+    selectedPhotos.clear();
+    if(photos[0]?.path!==first)coverPosition={x:50,y:50};
+    markDirty();renderPhotos();
+  });
+  $('bulk-apply').addEventListener('click',()=>{
+    if(locked || !selectedPhotos.size)return;
+    const key=$('bulk-field').value, value=$('bulk-value').value.trim();
+    if(!keys.some(([name])=>name===key) || key==='alt')return;
+    if(!value){status('Enter a setting value before applying it.','error');$('bulk-value').focus();return;}
+    if(!window.confirm(`Overwrite ${key.replaceAll('_',' ')} for ${selectedPhotos.size} selected photograph(s)?`))return;
+    for(const photo of photos)if(selectedPhotos.has(photo.path)){
+      photo.meta??={};photo.meta[key]=value;
+    }
+    markDirty();renderPhotos();
+    status('Batch setting applied. Review the photographs, then Save project.','good');
+  });
+  $('check-images').addEventListener('click',async()=>{
+    if(imageCheckAbort) {imageCheckAbort.abort();imageCheckAbort=null;return;}
+    if(locked){$('image-check-status').textContent='Finish your current upload or save before checking image links.';return;}
+    if(!photos.length){$('image-check-status').textContent='No photographs to check.';return;}
+    const assets=window.PortfolioTools.imageLinks(photos);
+    if(!assets.length){$('image-check-status').textContent='No valid image URLs to check.';return;}
+    const run=++imageCheck, controller=new AbortController();imageCheckAbort=controller;
+    const button=$('check-images');button.textContent='Stop image check';
+    $('image-check-results').replaceChildren();
+    $('image-check-status').textContent=`Checking 0 of ${assets.length} URLs…`;
+    try {
+      const result=await window.PortfolioTools.checkImages(assets,{signal:controller.signal,
+        onProgress:(done,total)=>{if(run===imageCheck)$('image-check-status').textContent=`Checking ${done} of ${total} URLs…`;}});
+      if(run!==imageCheck || controller.signal.aborted)return;
+      const failed=result.filter(x=>!x.ok);
+      $('image-check-status').textContent=failed.length
+        ? `${result.length-failed.length} OK · ${failed.length} failed. Check the links below and retry if Cloudflare was temporarily unavailable.`
+        : `All ${result.length} checked image links responded successfully.`;
+      for(const issue of failed){
+        const li=node('li','',`Photo ${issue.number}, ${issue.variant}: HTTP ${issue.status||'network error'} — `);
+        const a=node('a','','Open image');a.href=issue.path;a.target='_blank';a.rel='noopener noreferrer';li.appendChild(a);
+        $('image-check-results').appendChild(li);
+      }
+    }catch(error){if(run===imageCheck)$('image-check-status').textContent='Image check failed: '+error.message;}
+    finally{if(run===imageCheck){imageCheckAbort=null;button.textContent="Check this project's image links";}}
+  });
   function updateSocialPreview() {
     const box=$('social-preview');if(!box)return;
     const chosen=photos.find(p=>p.path===socialImage)||photos[0];
@@ -248,12 +349,20 @@
   function renderPhotos() {
     updateCoverCrop();
     renderSocialImages();
+    for(const key of [...selectedPhotos])if(!photos.some(p=>p.path===key))selectedPhotos.delete(key);
+    updateBulkState();
     const container=$('photos');container.replaceChildren();
     if(!photos.length) {container.appendChild(node('p','empty','No photographs yet. Add images above.'));return;}
     photos.forEach((photo,i)=>{
       const row=node('div','photo-row');const img=node('img');img.alt=`Photograph ${i+1}`;
       img.src=photo.preview || photo.path;img.loading='lazy';row.appendChild(img);
-      const detail=node('div','photo-details');const name=node('p','photo-name', (i===0?'Cover · ':'')+displayFilename(photo, i));
+      const detail=node('div','photo-details');
+      const select=node('label','photo-select');
+      const check=node('input');check.type='checkbox';check.checked=selectedPhotos.has(photo.path);check.disabled=locked;
+      check.setAttribute('aria-label',`Select photograph ${i+1} for batch editing`);
+      check.addEventListener('change',()=>{if(check.checked)selectedPhotos.add(photo.path);else selectedPhotos.delete(photo.path);updateBulkState();});
+      select.appendChild(check);select.appendChild(node('span','','Select for batch edit'));detail.appendChild(select);
+      const name=node('p','photo-name', (i===0?'Cover · ':'')+displayFilename(photo, i));
       detail.appendChild(name);
       const buttons=node('div','photo-buttons');
       for(const [title,func] of [['↑',()=>move(i,-1)],['↓',()=>move(i,1)],['Remove',()=>{photos.splice(i,1);if(i===0)coverPosition={x:50,y:50};markDirty();renderPhotos();}]]) {
@@ -301,40 +410,98 @@
     if(!items.length) status('Start by creating a new project.');
   }
   $('add-project').addEventListener('click',()=>openProject(null));
-  $('photo-files').addEventListener('change', async e=>{
-    const chosen=Array.from(e.target.files||[]);if(!chosen.length || locked)return;
-    if(!current?.slug && !$('project-title').value.trim()){status('Name your project before uploading photos.','error');$('photo-files').value='';return;}
-    locked=true;$('publish').disabled=true;$('photo-files').disabled=true;
-    const thumbnailWarnings=[];
-    try {
-      for(const [i,file] of chosen.entries()) {
-        status(`Preparing and uploading ${i+1} of ${chosen.length}: ${file.name}`);
-        const result=await window.PhotoPrep.prepare(file);
-        const smallPreview=await window.PhotoPrep.preview(result.blob);
-        const preview=URL.createObjectURL(smallPreview);localURLs.add(preview);
-        const slug=current?.slug || slugify($('project-title').value.trim());
-        if (!current?.slug && !stagedSlug) stagedSlug=slug;
-        if (!current?.slug && stagedSlug!==slug) throw Error('Keep the original project name until you save these uploaded photos.');
-        const upload=await api('upload',{method:'POST',headers:{'Content-Type':'image/jpeg',
-          'X-Photo-Project':slug,'X-Photo-Position':String(photos.length+1)},body:result.blob});
-        const variants=[];
-        try {
-          for (const v of await window.PhotoPrep.variants(result.blob)) {
-            // Only upload thumbnails at their exact requested width.
-            if (![640,1280].includes(v.width)) continue;
-            const thumb=await api('upload',{method:'POST',headers:{'Content-Type':'image/webp',
-              'X-Photo-Project':slug,'X-Photo-Variant':String(v.width),'X-Photo-Source':upload.path},body:v.blob});
-            variants.push({url:thumb.path,width:thumb.width});
-          }
-        } catch (e) {thumbnailWarnings.push(file.name);}
-        photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:upload.path.split('/').pop(),preview});
-        markDirty();renderPhotos();
+  function renderUploadQueue() {
+    const panel=$('upload-queue');panel.replaceChildren();panel.hidden=!uploadJobs.length;
+    for(const job of uploadJobs) {
+      const line=node('div','upload-job');
+      const name=node('span',job.state==='failed'?'upload-failed':job.state==='done'?'upload-done':'',
+        `${job.file.name} — ${job.state}${job.error?' ('+job.error+')':''}`);
+      const bar=node('progress');bar.max=100;bar.value=job.progress;
+      const actions=node('div');
+      if(job.state==='failed'){
+        const retry=node('button','','Retry');retry.type='button';retry.disabled=uploadRunning;
+        retry.addEventListener('click',()=>{
+          if(uploadRunning)return;
+          job.state='queued';job.progress=0;job.error='';renderUploadQueue();runUploadQueue();
+        });
+        actions.appendChild(retry);
       }
-      status(thumbnailWarnings.length
-        ? `${chosen.length} photo(s) uploaded. Thumbnails could not be optimized for ${thumbnailWarnings.length} image(s); full-size images remain available. Review the project and click Save.`
-        : `${chosen.length} photo(s) prepared. Click Save project to publish them.`, thumbnailWarnings.length ? 'error' : 'good');
-    } catch(err){status('Upload stopped: '+err.message,'error');}
-    finally{locked=false;$('publish').disabled=false;$('photo-files').disabled=false;$('photo-files').value='';renderPhotos();}
+      if(job.state==='failed' || job.state==='queued'){
+        const remove=node('button','',job.state==='failed'?'Dismiss':'Remove');remove.type='button';remove.disabled=uploadRunning;
+        remove.addEventListener('click',()=>{
+          if(uploadRunning)return;
+          uploadJobs.splice(uploadJobs.indexOf(job),1);renderUploadQueue();
+        });
+        actions.appendChild(remove);
+      }
+      line.append(name,bar,actions);panel.appendChild(line);
+    }
+  }
+  function sendUpload(blob,headers,onProgress) {
+    return new Promise((resolve,reject)=>{
+      const xhr=new XMLHttpRequest();xhr.open('POST','/api/admin/upload');xhr.responseType='text';xhr.withCredentials=true;
+      for(const [key,value] of Object.entries(headers))xhr.setRequestHeader(key,value);
+      xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.min(99,Math.round(e.loaded/e.total*100)));};
+      xhr.onerror=()=>reject(Error('Upload connection failed. Check your internet connection and retry.'));
+      xhr.onabort=()=>reject(Error('Upload interrupted. Retry this photograph.'));
+      xhr.onload=()=>{
+        let data;try{data=JSON.parse(xhr.responseText);}catch{reject(Error(`Upload returned HTTP ${xhr.status} without JSON.`));return;}
+        if(xhr.status<200 || xhr.status>=300){reject(Error(data.error||`Upload returned HTTP ${xhr.status}`));return;}
+        onProgress(100);resolve(data);
+      };
+      xhr.send(blob);
+    });
+  }
+  async function runUploadQueue() {
+    if(uploadRunning || locked)return;
+    const work=uploadJobs.filter(job=>job.state==='queued');if(!work.length)return;
+    uploadRunning=true;locked=true;$('publish').disabled=true;$('photo-files').disabled=true;
+    let completed=0,failed=0,warning=0;
+    try {
+      for(const job of work) {
+        job.state='preparing';job.error='';renderUploadQueue();
+        let preview=null;
+        try {
+          const result=await window.PhotoPrep.prepare(job.file);
+          const smallPreview=await window.PhotoPrep.preview(result.blob);
+          preview=URL.createObjectURL(smallPreview);localURLs.add(preview);
+          const slug=current?.slug || slugify($('project-title').value.trim());
+          if (!current?.slug && !stagedSlug) stagedSlug=slug;
+          if (!current?.slug && stagedSlug!==slug) throw Error('Keep the original project name until you save uploaded photos.');
+          job.state='uploading';renderUploadQueue();
+          const upload=await sendUpload(result.blob,{'Content-Type':'image/jpeg','X-Photo-Project':slug,
+            'X-Photo-Position':String(photos.length+1)},value=>{if(value===100 || value-job.progress>=5){job.progress=value;renderUploadQueue();}});
+          const variants=[];
+          try {
+            for (const v of await window.PhotoPrep.variants(result.blob)) {
+              if (![640,1280].includes(v.width))continue;
+              const thumb=await sendUpload(v.blob,{'Content-Type':'image/webp','X-Photo-Project':slug,
+                'X-Photo-Variant':String(v.width),'X-Photo-Source':upload.path},()=>{});
+              variants.push({url:thumb.path,width:thumb.width});
+            }
+          }catch(error){warning++;job.error='Thumbnails incomplete; original saved';}
+          photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:upload.path.split('/').pop(),preview});
+          job.state='done';job.progress=100;completed++;markDirty();renderPhotos();
+        }catch(error){if(preview){URL.revokeObjectURL(preview);localURLs.delete(preview);}job.state='failed';job.error=String(error.message||error).slice(0,200);failed++;}
+        renderUploadQueue();
+      }
+      status(failed
+        ? `${completed} uploaded; ${failed} failed. Use Retry next to each failed photograph, then Save project.`
+        : warning ? `${completed} uploaded. ${warning} photo(s) missing thumbnails; originals work. Review and Save project.`
+        : `${completed} uploaded. Review metadata and click Save project.`,failed||warning?'error':'good');
+    }finally{
+      uploadRunning=false;locked=false;$('publish').disabled=false;$('photo-files').disabled=false;
+      renderUploadQueue();renderPhotos();
+    }
+  }
+  $('photo-files').addEventListener('change', e=>{
+    const chosen=Array.from(e.target.files||[]);$('photo-files').value='';
+    if(!chosen.length || locked)return;
+    if(!current?.slug && !$('project-title').value.trim()){status('Name your project before uploading photos.','error');return;}
+    const queued=uploadJobs.filter(j=>j.state==='queued'||j.state==='failed').length;
+    if(photos.length+queued+chosen.length>90){status('Maximum 90 photographs per project.','error');return;}
+    chosen.forEach(file=>uploadJobs.push({file,state:'queued',progress:0,error:''}));
+    renderUploadQueue();runUploadQueue();
   });
   $('preview-project').addEventListener('click',()=>{
     const dialog=$('draft-preview');
@@ -373,6 +540,10 @@
   $('editor-form').addEventListener('submit',async e=>{
     e.preventDefault();if(locked)return;
     if (orderDirty) { status('Save project order before saving this project.', 'error'); return; }
+    if (uploadJobs.some(job=>job.state==='failed'||job.state==='queued')) {
+      status('Retry or dismiss failed photo uploads before saving, so none are forgotten.','error');
+      $('upload-queue').scrollIntoView({block:'center'});return;
+    }
     const title=$('project-title').value.trim();
     if(!title){status('Enter a project title.','error');return;}
     if (!validatePhotoMetadata()) return;

@@ -1,5 +1,24 @@
 # Consolidated release notes
 
+## V28 + SEO — Combined editor tools and search visibility (2026-10-20)
+- One cumulative install package contains all V28 private-dashboard features and optional Cloudflare Web Analytics CSP compatibility, plus the public search improvements below.
+- The homepage now has a more descriptive document title, a focused meta description, and a discreet, visible one-line introduction so search engines have real descriptive content instead of only project titles and the footer.
+- Project and Notes summaries are cleaned of Markdown markup and normalized to concise page-specific descriptions; images continue to use existing editor-supplied alt text.
+- Structured data identifies the photographer, the website, image galleries, and individual Notes with publication/modification timestamps where known.
+- The public sitemap now lists published project images and actual last-modified dates for Notes, never unpublished projects or drafts. The current canonical URLs and robots restrictions remain intact.
+- Footer utility text is excluded from Google snippets with data-nosnippet while remaining visible on the website. Public pages allow large image previews.
+- New SEO regression tests validate metadata, image sitemap structure, draft exclusion, and schema output. Google ultimately controls its own snippets and re-indexing time.
+
+## V28 — Portfolio editor tools and optional visitor analytics (2026-10-19)
+- Project sidebar reports how many photographs have missing focal length, aperture, shutter speed, or ISO, with a shortcut to the first incomplete project. Saved GitHub project JSON remains the source of truth.
+- Photo editor adds checkboxes and reversible pre-save batch actions: overwrite one shared camera setting, move selected photos to the start/end, and remove selected photos after confirmation. Nothing is published until Save project.
+- Per-project image integrity checker runs read-only HEAD requests for original and stored variant links with a four-request concurrency limit. Shows unavailable image URLs; does not list or delete R2 objects.
+- Upload queue continues past individual failures and displays per-file progress, Retry and Dismiss controls. You must resolve failed uploads before saving so they cannot be forgotten. The retry is within the current browser session; it is not an across-restart resumable upload.
+- Storage & backups links to Cloudflare Web Analytics; visitor analytics requires one-click activation in the Cloudflare dashboard. The site itself does not store visitor identities or install an analytics database.
+- Updated public CSP allowlist for Cloudflare's optional analytics beacon (and reporting endpoint), retaining a restrictive separate admin CSP.
+- Added focused unit and mobile/desktop browser regression tests.
+
+
 ## V27 — Required exposure metadata and reliability pass (2026-10-17)
 - Focal length, aperture, shutter speed, and ISO are mandatory for **each photograph** whenever a project is saved, including unlisted drafts. The admin editor lists missing fields and focuses the first one; the authenticated save API enforces the same rule.
 - Legacy published projects remain unchanged until edited. When an existing project is saved again, missing exposure settings must be completed.
