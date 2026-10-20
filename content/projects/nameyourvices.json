@@ -200,6 +200,8 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
+      "focal_length": "500",
+      "aperture": "f/8",
       "shutter_speed": "1/40",
       "iso": "6400"
     },
