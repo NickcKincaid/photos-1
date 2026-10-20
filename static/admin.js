@@ -238,6 +238,7 @@
         slugs:projects.map(p=>p.slug),revisions:Object.fromEntries(projects.map(p=>[p.slug,p.revision]))
       })});
       orderDirty=false;
+      window.dispatchEvent(new Event('portfolio-published'));
       // Read the new GitHub SHA values after this commit. Leaving old revisions
       // here would make the next legitimate project save fail as stale.
       const fresh=await api('projects');
@@ -577,6 +578,7 @@
       const saved=await api('save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
       dirty=false;
       orderDirty=false;
+      window.dispatchEvent(new Event('portfolio-published'));
       window.PortfolioDrafts?.clear('project',draftKey());
       try {
         await loadProjects(saved.slug);
@@ -611,6 +613,7 @@
         body:JSON.stringify({slug:project.slug, revision:project.revision, confirmTitle:title})});
       dirty=false;
       orderDirty=false;
+      window.dispatchEvent(new Event('portfolio-published'));
       window.PortfolioDrafts?.clear('project',draftKey());
       await loadProjects();
       status(result.r2Warning || `Deleted ${title}. GitHub photos removed: ${result.deletedPhotos}; R2 objects removed: ${result.deletedR2 ?? 0}. Cloudflare will redeploy shortly.`,result.r2Warning?'error':'good');

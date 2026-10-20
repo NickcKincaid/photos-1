@@ -101,3 +101,11 @@ This full-source release consolidates the existing minimal portfolio, V13 editor
 - Notes timestamps are localized in visitor browsers; semantic UTC fallback remains.
 - Explicit single-column vertical Notes feed on all screen sizes.
 - Combined V23 changes into one safe update.
+
+## V31 — Deployment status, contact sheets and optional AI metadata (2026-10-20)
+- Project pages with at least two photos offer an optional Contact sheet toggle: compact square thumbnails on mobile and desktop. It keeps the same photo links, lightbox, original gallery layout, and camera captions when toggled back.
+- The private dashboard can check the latest production Cloudflare Pages deployment from a server-only Cloudflare API token with Pages Read permission. Configuration: CF_ACCOUNT_ID, CF_PAGES_PROJECT, CF_PAGES_READ_TOKEN. Unconfigured deployments show an actionable status rather than guessing that the site is live. After a successful project save, the dashboard briefly polls while a deployment is in progress.
+- Optional batch generation of **missing** photo descriptions via a Cloudflare Workers AI binding named AI. Requires accepting the selected vision model's license in your Cloudflare account. Images are resized in the browser, then sent to Workers AI only with explicit confirmation. Model calls may be billed; the generated text remains unsaved until the project is saved. Existing descriptions are never overwritten. Results should be reviewed for accuracy.
+- Generated descriptions are stored in the existing `photo_details.alt` field and used for HTML image alt attributes, not on-screen photo captions. When no project blurb/description is provided, the project meta description may use the first reviewed photo description as a private metadata fallback.
+- New targeted JavaScript/Python regressions cover deployment state mapping, server-only credentials, JPEG request validation, caption sanitization, contact sheet markup, and nonvisible alt descriptions.
+- Cloudflare deployment API and Workers AI calls cannot be fully validated without enabling user-specific bindings/secrets and executing a real request after deployment.

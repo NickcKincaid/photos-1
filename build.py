@@ -446,12 +446,21 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     body = f'''{nav(site, 'projects')}<main id="main" class="page project-main">
   <div class="project-heading">
     <h1 class="project-title">{esc(p['title'])}</h1>
+    {('<button class="contact-sheet-toggle" type="button" aria-pressed="false" hidden>Contact sheet</button>') if len(images) > 1 else ''}
   </div>
   {gallery}
   <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
 </main>{footer(site)}{lightbox(p['title'])}'''
-    description = seo_summary(p.get('blurb') or p.get('description')) or (
-        f'{p["title"]} — a photography project by {site["name"]}. View the complete photo series.')
+    description = seo_summary(p.get('blurb') or p.get('description'))
+    if not description:
+        # A reviewed AI description can inform the search summary without adding
+        # visible copy to the gallery. Never invent subjects from camera EXIF.
+        reviewed = [str(item.get('alt') or '').strip() for item in p.get('photo_details', [])
+                    if isinstance(item, dict) and item.get('image') in images and item.get('alt')]
+        summary = seo_summary(reviewed[0], 100) if reviewed else ''
+        description = seo_summary(f'{p["title"]} — photography by {site["name"]}. {summary}'
+                                  if summary else
+                                  f'{p["title"]} — a photography project by {site["name"]}. View the complete photo series.')
     return document(p['title'], description, site, body,
                     p.get('social_image') if p.get('social_image') in images else (images[0] if images else ''), p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'ImageGallery', 'name': p['title'],

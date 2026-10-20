@@ -1,3 +1,16 @@
+/* V31 contact sheet switches presentation only; photo anchors and viewer remain unchanged. */
+(() => {
+  const button=document.querySelector('.contact-sheet-toggle');
+  const gallery=document.querySelector('.project-photos');
+  if (!button || !gallery) return;
+  button.hidden=false;
+  button.addEventListener('click',()=>{
+    const active=gallery.classList.toggle('is-contact-sheet');
+    button.setAttribute('aria-pressed',String(active));
+    button.textContent=active?'Standard view':'Contact sheet';
+  });
+})();
+
 /* Localize UTC Notes timestamps in the reader's browser; keep UTC HTML as a no-JS fallback. */
 (() => {
   const stamps = document.querySelectorAll('time[data-local-published][datetime]');

@@ -279,3 +279,16 @@ body > main { flex: 1 0 auto; }
 .lightbox-unavailable[hidden], .lightbox-download[hidden] { display: none; }
 
 /* V29: quiet but meaningful homepage introduction for readers and search. */
+
+/* V31 optional contact sheet: compact overview without changing the standard gallery. */
+.contact-sheet-toggle { appearance:none; border:0; padding:2px 0; margin-left:auto; background:none;
+  color:var(--muted); font:400 11px/1.4 var(--font); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.contact-sheet-toggle[hidden] { display:none; }
+.contact-sheet-toggle:hover, .contact-sheet-toggle:focus-visible { color:var(--ink); }
+.project-photos.is-contact-sheet { columns:initial; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; align-items:start; }
+.project-photos.is-contact-sheet .gallery-item { display:block; width:auto; margin:0; min-width:0; }
+.project-photos.is-contact-sheet .gallery-link { aspect-ratio:1; overflow:hidden; background:#e2e3dc; }
+.project-photos.is-contact-sheet .gallery-link img { width:100%; height:100%; object-fit:cover; }
+.project-photos.is-contact-sheet .photo-caption, .project-photos.is-contact-sheet .project-blurb { display:none; }
+@media(max-width:900px){.project-photos.is-contact-sheet{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@media(max-width:600px){.project-photos.is-contact-sheet{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}}

@@ -125,3 +125,13 @@ main[hidden] { display: none !important; }
 .upload-queue{margin:10px 0;padding:8px 0;border-block:1px solid var(--line)}.upload-job{display:grid;grid-template-columns:minmax(0,1fr) 70px auto;align-items:center;gap:10px;margin:6px 0}
 .upload-job span{overflow-wrap:anywhere}.upload-job progress{width:70px;height:7px}.upload-job button{padding:4px 8px;font-size:10px}.upload-job .upload-failed{color:#9a362f}.upload-job .upload-done{color:#356743}
 @media(max-width:680px){.upload-job{grid-template-columns:minmax(0,1fr) 58px auto}.upload-job progress{width:58px}.bulk-meta input{width:min(160px,50vw)}}
+
+/* V31: quiet controls consistent with the existing admin surface. */
+.ai-description-panel { border-top:1px solid var(--line); padding:16px 0 10px; margin-top:14px; }
+.ai-description-panel strong { display:block; margin-bottom:7px; }
+.ai-description-panel p { margin:7px 0; max-width:720px; }
+.ai-description-panel button { margin:4px 8px 4px 0; }
+.ai-description-panel button[hidden] { display:none; }
+.deploy-indicator { font-weight:400; color:var(--muted); font-size:10px; }
+.deploy-indicator[data-state="success"] { color:#3c6c4c; }
+.deploy-indicator[data-state="failed"] { color:#a33228; }

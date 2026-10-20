@@ -186,6 +186,7 @@
       const saved = await api('POST', {slug:selected?.slug || null, revision:selected?.revision || null,
         title, body, published:$('note-published').checked});
       dirty = false;
+      window.dispatchEvent(new Event('portfolio-published'));
       window.PortfolioDrafts?.clear('note',noteKey());
       try {
         await load(saved.slug, true);
@@ -205,6 +206,7 @@
     busy = true; $('save-note').disabled = true;
     try {
       await api('DELETE', {slug:selected.slug, revision:selected.revision, confirmTitle:selected.title});
+      window.dispatchEvent(new Event('portfolio-published'));
       dirty = false;
       window.PortfolioDrafts?.clear('note',noteKey());
       await load(null, true);

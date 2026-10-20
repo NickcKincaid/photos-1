@@ -18,9 +18,11 @@
   <script src="/admin/admin-note-format.js" defer></script>
   <script src="/admin/admin-notes.js" defer></script>
   <script src="/admin/admin-storage.js" defer></script>
+  <script src="/admin/admin-deployment.js" defer></script>
+  <script src="/admin/admin-describe.js" defer></script>
 </head>
 <body>
-  <header class="top"><a href="/">← Portfolio</a><span>Photography / editor</span><a class="private" href="/api/auth/logout">Sign out</a></header>
+  <header class="top"><a href="/">← Portfolio</a><span>Photography / editor <span id="deploy-indicator" class="deploy-indicator" role="status">· Deployment status pending</span></span><a class="private" href="/api/auth/logout">Sign out</a></header>
   <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button><button id="show-storage" type="button" aria-pressed="false">Storage &amp; backups</button></nav>
   <main id="projects-pane">
     <div class="sidebar">
@@ -85,6 +87,13 @@
             <button type="button" id="bulk-apply">Apply to selected</button>
           </div>
           <p class="muted">Batch changes are unsaved until you click Save project. Applying a setting overwrites that field only on selected photographs.</p>
+        </section>
+        <section id="ai-description" class="ai-description-panel" aria-label="Automatic photo descriptions">
+          <strong>Search and accessibility descriptions</strong>
+          <p class="muted">Use Cloudflare Workers AI to describe photographs for image alt text. These descriptions are not visible as photo captions. Existing descriptions are preserved; review generated wording before saving.</p>
+          <button type="button" id="generate-descriptions">Generate missing descriptions</button>
+          <button type="button" id="stop-descriptions" hidden>Stop</button>
+          <p id="ai-description-status" class="muted" role="status">Requires a Workers AI binding named AI. Generates text only when you request it; AI usage may be billed.</p>
         </section>
         <section id="image-integrity" class="integrity-panel" aria-label="Image integrity checker">
           <button type="button" id="check-images">Check this project's image links</button>
@@ -151,6 +160,10 @@
       <h2>Visitor statistics</h2>
       <p>Cloudflare Web Analytics reports visitors, page views, popular project pages, referral sources, countries, and device types. It uses privacy-first aggregation rather than individual visitor profiles.</p>
       <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">Open Cloudflare Web Analytics ↗</a> <span class="muted">In Workers &amp; Pages → your site → Metrics, enable Web Analytics if it is not already enabled. Visit Analytics &amp; Logs → Web Analytics to view the results.</span></p>
+      <h2>Latest Cloudflare deployment</h2>
+      <button type="button" id="deployment-refresh">Check deployment status</button>
+      <p class="muted" id="deployment-status" role="status">Waiting for deployment status…</p>
+      <p class="muted">Deployment information uses a server-only Cloudflare API token with Pages Read permission. No token is sent to this browser.</p>
       <h2>Lightweight backups</h2>
       <p>Weekly GitHub Actions snapshots contain project settings and Notes JSON. They do not duplicate your R2 photos or original camera files.</p>
       <button id="download-metadata" type="button">Download a metadata backup now</button>
