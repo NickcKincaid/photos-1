@@ -4,8 +4,9 @@
   const requiredMeta = [['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO']];
   const requiredKeys = new Set(requiredMeta.map(([key]) => key));
   const keys = [...requiredMeta,['camera','Camera'],['lens','Lens'],['alt','Image description / alt text']];
-  const examples = {focal_length:'35 mm',aperture:'f/5.6',shutter_speed:'1/250 s',iso:'400'};
-  const missingMeta = photo => requiredMeta.filter(([key]) => !String(photo.meta?.[key] ?? '').trim());
+  const examples = {focal_length:'35mm',aperture:'f/5.6',shutter_speed:'1/250s',iso:'ISO 400'};
+  const formatExposure = (key, value) => window.PortfolioExposure.normalizeExposureValue(key, value);
+  const missingMeta = photo => requiredMeta.filter(([key]) => !formatExposure(key,photo.meta?.[key]));
   let projects = [], current = null, photos = [], locked = false, dirty = false, orderDirty = false;
   let stagedSlug = null;
   const selectedPhotos = new Set();
@@ -124,7 +125,10 @@
   $('project-published').addEventListener('change', markDirty);
   function openProject(project, force=false) {
     if (locked && !force) return;
-    if (!force && dirty && !window.confirm('Discard unsaved changes to this project?')) return;
+    if (!force && dirty) {
+      if (!window.confirm('Discard unsaved changes to this project?')) return;
+      window.PortfolioDrafts?.clear('project',draftKey());
+    }
     if (imageCheckAbort) imageCheckAbort.abort();
     imageCheck++; imageCheckAbort=null;
     $('image-check-results').replaceChildren();
@@ -276,9 +280,15 @@
   });
   $('bulk-apply').addEventListener('click',()=>{
     if(locked || !selectedPhotos.size)return;
-    const key=$('bulk-field').value, value=$('bulk-value').value.trim();
+    const key=$('bulk-field').value;
+    let value=$('bulk-value').value.trim();
     if(!keys.some(([name])=>name===key) || key==='alt')return;
     if(!value){status('Enter a setting value before applying it.','error');$('bulk-value').focus();return;}
+    if(requiredKeys.has(key)) {
+      const formatted=formatExposure(key,value);
+      if(formatted===null){status(`Invalid ${key.replaceAll('_',' ')}. Example: ${examples[key]}.`,'error');$('bulk-value').focus();return;}
+      value=formatted;$('bulk-value').value=value;
+    }
     if(!window.confirm(`Overwrite ${key.replaceAll('_',' ')} for ${selectedPhotos.size} selected photograph(s)?`))return;
     for(const photo of photos)if(selectedPhotos.has(photo.path)){
       photo.meta??={};photo.meta[key]=value;
@@ -334,14 +344,23 @@
   $('social-image').addEventListener('change', e=>{socialImage=e.target.value;markDirty();updateSocialPreview();});
   function validatePhotoMetadata() {
     for (const [index, photo] of photos.entries()) {
-      const missing = missingMeta(photo);
-      if (!missing.length) continue;
+      photo.meta ??= {};
       const row = $('photos').children[index];
-      const details = row?.querySelector('details');
-      if (details) details.open = true;
-      const field = row?.querySelector(`input[data-meta-field="${missing[0][0]}"]`);
-      if (field) field.focus();
-      status(`Photo ${index+1}: enter ${missing.map(([,label])=>label).join(', ')} before saving. All four exposure settings are required for every photo.`, 'error');
+      const problems=[];
+      for (const [key,label] of requiredMeta) {
+        const field=row?.querySelector(`input[data-meta-field="${key}"]`);
+        // Keep any still-focused input synchronized with the stored draft.
+        const raw=field ? field.value : photo.meta[key];
+        const formatted=formatExposure(key,raw);
+        if(!formatted || formatted===null){problems.push({key,label,invalid:formatted===null});if(field)field.setAttribute('aria-invalid','true');}
+        else {photo.meta[key]=formatted;if(field){field.value=formatted;field.setAttribute('aria-invalid','false');}}
+      }
+      if(!problems.length)continue;
+      const details=row?.querySelector('details');
+      if(details)details.open=true;
+      const first=problems[0];
+      row?.querySelector(`input[data-meta-field="${first.key}"]`)?.focus();
+      status(`Photo ${index+1}: ${first.invalid?'correct invalid':'enter missing'} ${problems.map(x=>x.label).join(', ')}. Use formats like 35mm, f/8, 1/250s and ISO 400.`, 'error');
       return false;
     }
     return true;
@@ -393,10 +412,17 @@
         }
         const updateField = () => {
           photo.meta??={};photo.meta[key]=field.value;
-          if (requiredKeys.has(key)) field.setAttribute('aria-invalid',String(!field.value.trim()));
+          if (requiredKeys.has(key)) field.setAttribute('aria-invalid',String(!formatExposure(key,field.value)));
           refreshMetaStatus();markDirty();
         };
-        if (requiredKeys.has(key)) field.setAttribute('aria-invalid',String(!String(field.value).trim()));
+        if (requiredKeys.has(key)) {
+          field.setAttribute('aria-invalid',String(!formatExposure(key,field.value)));
+          field.addEventListener('blur',()=>{
+            const formatted=formatExposure(key,field.value);
+            if(formatted !== null && formatted !== field.value){field.value=formatted;updateField();}
+            else if(formatted===null){field.setAttribute('aria-invalid','true');}
+          });
+        }
         field.addEventListener('input',updateField);
         wrap.appendChild(field);grid.appendChild(wrap);
       }
@@ -512,15 +538,7 @@
       img.src=photo.preview || photo.path;
       img.alt=photo.meta?.alt || `Photograph ${i+1}`;
       img.loading=i===0?'eager':'lazy';fig.appendChild(img);
-      const m = photo.meta || {};
-      const focal = String(m.focal_length || '').trim();
-      const aperture = String(m.aperture || '').trim();
-      const shutter = String(m.shutter_speed || '').trim();
-      const iso = String(m.iso || '').trim();
-      const caption = [focal ? focal + (/^\d+(?:\.\d+)?$/.test(focal) ? ' mm' : '') : '',
-        aperture ? (/^f\s*\//i.test(aperture) ? aperture : 'f/' + aperture.replace(/^f\s*/i, '')) : '',
-        shutter ? shutter + (/s(?:ec(?:onds)?)?$/i.test(shutter) ? '' : ' s') : '',
-        iso ? (/^ISO\b/i.test(iso) ? iso : 'ISO ' + iso) : ''].filter(Boolean).join(' · ');
+      const caption = window.PortfolioExposure.exposureCaption(photo.meta);
       if(caption)fig.appendChild(node('figcaption','',caption));
       gallery.appendChild(fig);
     }
@@ -560,8 +578,12 @@
       dirty=false;
       orderDirty=false;
       window.PortfolioDrafts?.clear('project',draftKey());
-      await loadProjects(saved.slug);
-      status(saved.cleanupWarning || 'Project saved. Cloudflare will publish shortly. Photographs are in R2.',saved.cleanupWarning?'error':'good');
+      try {
+        await loadProjects(saved.slug);
+        status(saved.cleanupWarning || 'Project saved. Cloudflare will publish shortly. Photographs are in R2.',saved.cleanupWarning?'error':'good');
+      } catch(refreshError) {
+        status('Project saved in GitHub, but the editor could not refresh: '+refreshError.message+'. Reload the dashboard to see the latest revision.','error');
+      }
     } catch(err){status(err.message,'error');}
     finally{locked=false;$('publish').disabled=false;renderList();renderPhotos();}
   });

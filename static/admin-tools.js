@@ -5,7 +5,11 @@
   function metadataReport(project) {
     const paths = [...new Set([project?.cover, ...(project?.gallery || [])].filter(Boolean))];
     const details = new Map((project?.photo_details || []).filter(Boolean).map(item => [item.image, item]));
-    const missing = paths.filter(path => required.some(key => !String(details.get(path)?.[key] ?? '').trim())).length;
+    const valid = window.PortfolioExposure?.normalizeExposureValue;
+    const missing = paths.filter(path => required.some(key => {
+      const raw = String(details.get(path)?.[key] ?? '').trim();
+      return !raw || (valid ? !valid(key, raw) : false);
+    })).length;
     return {total:paths.length, missing};
   }
   function reorderedPhotos(photos, selected, position) {

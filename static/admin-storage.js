@@ -18,7 +18,7 @@
       $('storage-photos').textContent=Number(body.photographs).toLocaleString();
       $('storage-bytes').textContent=byteText(body.bytes);
       const estimatedOverage=Math.max(0,body.bytes/1e9-10)*0.015;
-      $('storage-cost').textContent='~$'+estimatedOverage.toFixed(2)+' USD';
+      $('storage-cost').textContent=body.incomplete ? 'Incomplete scan' : '~$'+estimatedOverage.toFixed(2)+' USD';
       $('storage-caveat').textContent=body.incomplete
         ? 'Large bucket: only the first '+body.objects+' objects were scanned. These are partial totals; pricing also depends on other buckets and operations.'
         : 'Approximate R2 Standard storage only. The first 10 GB-month free allowance is account-wide, not per bucket. Requests and other buckets may add charges.';

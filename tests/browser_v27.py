@@ -30,6 +30,8 @@ with sync_playwright() as pw:
           };
         }''', url)
         page.add_script_tag(content=(ROOT / 'static/admin-tools.js').read_text())
+        page.add_script_tag(content=(ROOT / 'static/admin-exposure.js').read_text())
+        page.add_script_tag(content=(ROOT / 'static/admin-exposure.js').read_text())
         page.add_script_tag(content=(ROOT / 'static/admin.js').read_text())
         page.locator('.photo-row').wait_for(state='visible')
         assert 'missing Aperture, ISO' in page.locator('.photo-row summary').inner_text()
@@ -39,12 +41,22 @@ with sync_playwright() as pw:
         assert page.evaluate('document.activeElement.dataset.metaField') == 'aperture'
         assert 'Photo 1' in page.locator('#status').inner_text()
         assert page.evaluate('window.__saves') == 0
-        page.locator('input[data-meta-field="aperture"]').fill('f/8')
+        page.locator('input[data-meta-field="aperture"]').fill('f8')
+        page.locator('input[data-meta-field="iso"]').click()
+        assert page.locator('input[data-meta-field="aperture"]').input_value() == 'f/8'
         assert 'missing ISO' in page.locator('.photo-row summary').inner_text()
         page.locator('#publish').click()
         assert page.evaluate('document.activeElement.dataset.metaField') == 'iso'
         assert page.evaluate('window.__saves') == 0
-        page.locator('input[data-meta-field="iso"]').fill('400')
+        page.locator('input[data-meta-field="iso"]').fill('iso400')
+        page.locator('input[data-meta-field="shutter_speed"]').click()
+        assert page.locator('input[data-meta-field="iso"]').input_value() == 'ISO 400'
+        page.locator('input[data-meta-field="shutter_speed"]').fill('0.008s')
+        page.locator('input[data-meta-field="focal_length"]').click()
+        assert page.locator('input[data-meta-field="shutter_speed"]').input_value() == '1/125s'
+        page.locator('input[data-meta-field="focal_length"]').fill('50 mm')
+        page.locator('input[data-meta-field="aperture"]').click()
+        assert page.locator('input[data-meta-field="focal_length"]').input_value() == '50mm'
         assert 'Exposure settings complete' in page.locator('.photo-row summary').inner_text()
         page.locator('#publish').click()
         page.wait_for_function('window.__saves === 1')

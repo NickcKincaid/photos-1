@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 globalThis.window = globalThis;
+await import('../static/admin-exposure.js');
 await import('../static/admin-tools.js');
 const tools=window.PortfolioTools;
 const path=n=>`/media/cdmx/${'a'.repeat(24)}/cdmx-0${n}.jpg`;
@@ -44,4 +45,11 @@ test('integrity checking limits concurrent HEAD requests to four and reports err
   assert.ok(maximum<=4);
   assert.equal(results.length,12);assert.equal(finished,12);
   assert.equal(results.filter(r=>!r.ok).length,2);
+});
+
+test('completeness checker flags invalid nonempty camera values',()=>{
+ const p=path(1);
+ assert.deepEqual(tools.metadataReport({cover:p,gallery:[],photo_details:[{
+  image:p,focal_length:'35mm',aperture:'f0',shutter_speed:'1/250s',iso:'ISO 400'
+ }]}),{total:1,missing:1});
 });

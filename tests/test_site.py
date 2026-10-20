@@ -147,7 +147,7 @@ class PortfolioBuildTests(unittest.TestCase):
                 'focal_length': '120', 'shutter_speed': '1/400', 'iso': '220'}]}))
         self.site.run()
         page = (self.root / 'dist' / 'projects' / 'test' / 'index.html').read_text()
-        self.assertIn('120 mm · f/8 · 1/400 s · ISO 220', page)
+        self.assertIn('120mm · f/8 · 1/400s · ISO 220', page)
         self.assertNotIn('Nikon Z6', page)
         self.assertNotIn('Nikkor 24-120mm', page)
         self.assertIn('f/8', page)

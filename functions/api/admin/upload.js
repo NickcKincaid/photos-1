@@ -41,11 +41,22 @@ export async function onRequestPost(context) {
     // put() receives a Uint8Array whose length is known to workerd.
     const image = await readLimited(req, MAX);
     if (!image.byteLength) return json({error:'Empty image.'},400);
-    const jpeg = image.length >= 3 && image[0] === 0xff && image[1] === 0xd8 && image[2] === 0xff;
-    const webp = image.length >= 12 && image[0] === 82 && image[1] === 73 &&
+    const jpeg = image.length >= 8 && image[0] === 0xff && image[1] === 0xd8 && image[2] === 0xff &&
+      image[image.length-2] === 0xff && image[image.length-1] === 0xd9;
+    const view = image.length >= 20 ? new DataView(image.buffer,image.byteOffset,image.byteLength) : null;
+    const riffSize = view ? view.getUint32(4,true) : 0;
+    const firstChunkBytes = view ? view.getUint32(16,true) : 0;
+    const isLossy = image[12]===86 && image[13]===80 && image[14]===56 && image[15]===56; // VP8 
+    const isLossless = image[12]===86 && image[13]===80 && image[14]===56 && image[15]===76; // VP8L
+    const isExtended = image[12]===86 && image[13]===80 && image[14]===56 && image[15]===88; // VP8X
+    const webp = image.length >= 20 && image[0] === 82 && image[1] === 73 &&
       image[2] === 70 && image[3] === 70 && image[8] === 87 &&
-      image[9] === 69 && image[10] === 66 && image[11] === 80;
-    if (!(variant ? webp : jpeg)) return json({error:'File content is not the expected image format.'},415);
+      image[9] === 69 && image[10] === 66 && image[11] === 80 &&
+      riffSize + 8 === image.length &&
+      (isLossy || isLossless || isExtended) &&
+      firstChunkBytes >= (isExtended ? 10 : isLossless ? 5 : 10) &&
+      20 + firstChunkBytes + (firstChunkBytes % 2) <= image.length;
+    if (!(variant ? webp : jpeg)) return json({error:'File content is not a complete JPEG or WebP image.'},415);
     await context.env.PHOTO_BUCKET.put(key, image, {httpMetadata:{contentType:expected},
       customMetadata:{creator:'Nicholas Kincaid',copyright:'Copyright Nicholas Kincaid. All rights reserved.'}});
     return json({path:'/'+key, storage:'r2', ...(variant?{width:Number(variant)}:{})});

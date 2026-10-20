@@ -192,7 +192,7 @@ test('new-style thumbnails are accepted and stored alongside their original',asy
  const b=bucket();const jpeg=new Uint8Array([255,216,255,224,0,2,255,217]);
  const resp=await upload({request:photoRequest('image/jpeg',jpeg),env:{PHOTO_BUCKET:b}});
  const original=(await resp.json()).path.slice(1);
- const webp=new Uint8Array([82,73,70,70,0,0,0,0,87,69,66,80,0,0]);
+ const webp=new Uint8Array([82,73,70,70,22,0,0,0,87,69,66,80,86,80,56,88,10,0,0,0,0,0,0,0,0,0,0,0,0,0]);
  const req=new Request('https://nickckincaid.com/api/admin/upload',{method:'POST',headers:{
    'content-type':'image/webp','X-Photo-Project':'test','X-Photo-Variant':'640',
    'X-Photo-Source':original},body:webp});
@@ -291,7 +291,8 @@ test('complete exposure fields save successfully and check each R2 original once
    assert.equal(headCalls,1,'Only one HEAD request should be needed per uploaded photo');
    const doc=gh.trees[0].tree.find(e=>e.path==='content/projects/tokyo.json');
    const saved=JSON.parse(doc.content);
-   for(const key of Object.keys(EXPOSURE)) assert.equal(saved.photo_details[0][key],EXPOSURE[key]);
+   assert.deepEqual(Object.fromEntries(Object.keys(EXPOSURE).map(k=>[k,saved.photo_details[0][k]])),
+     {focal_length:'35mm',aperture:'f/8',shutter_speed:'1/250s',iso:'ISO 400'});
  }finally{gh.restore();}
 });
 
@@ -305,4 +306,82 @@ test('existing photograph missing exposure settings must be completed on next sa
    assert.match((await resp.json()).error,/Shutter speed/);
    assert.equal(gh.trees.length,0);
  }finally{gh.restore();}
+});
+
+
+test('API normalizes abbreviated exposure values and rejects invalid input before any R2 activity',async()=>{
+ const gh=mockGithub();let headCalls=0;
+ try {
+   const meta={focal_length:'50',aperture:'f8',shutter_speed:'1/125',iso:'iso200'};
+   const good=await save({request:requestWithPhoto(meta,true),env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){headCalls++;return {size:5}}}}});
+   assert.equal(good.status,200,await good.clone().text());
+   const doc=gh.trees.at(-1).tree.find(x=>x.path==='content/projects/tokyo.json');
+   const exposure=JSON.parse(doc.content).photo_details[0];
+   assert.equal(exposure.focal_length,'50mm');
+   assert.equal(exposure.aperture,'f/8');
+   assert.equal(exposure.shutter_speed,'1/125s');
+   assert.equal(exposure.iso,'ISO 200');
+   assert.equal(headCalls,1);
+ } finally {gh.restore();}
+ for(const meta of [{...EXPOSURE,aperture:'f/0'},{...EXPOSURE,iso:'ISO nope'},{...EXPOSURE,shutter_speed:'1/0'}]) {
+   const gh=mockGithub();let headCalls=0;
+   try {
+     const response=await save({request:requestWithPhoto(meta),env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){headCalls++;return {};}}}});
+     assert.equal(response.status,400);
+     assert.equal(gh.trees.length,0);
+     assert.equal(headCalls,0);
+   } finally {gh.restore();}
+ }
+});
+
+
+test('R2 refuses truncated JPEG and inconsistent WebP sizes before writing',async()=>{
+ const b=bucket();
+ const short=new Uint8Array([255,216,255]);
+ const a=await upload({request:photoRequest('image/jpeg',short),env:{PHOTO_BUCKET:b}});
+ assert.equal(a.status,415);
+ assert.equal(b.saved.size,0);
+ const source='media/test/'+'c'.repeat(24)+'/test-01.jpg';
+ b.saved.set(source,new Uint8Array([255,216,255,224,0,2,255,217]));
+ const webp=new Uint8Array([82,73,70,70,80,0,0,0,87,69,66,80,86,80,56,88,2,0,0,0,0,0]);
+ const req=new Request('https://nickckincaid.com/api/admin/upload',{method:'POST',headers:{
+   'content-type':'image/webp','X-Photo-Project':'test','X-Photo-Variant':'640','X-Photo-Source':source},body:webp});
+ const response=await upload({request:req,env:{PHOTO_BUCKET:b}});
+ assert.equal(response.status,415);
+ assert.equal(b.saved.size,1);
+});
+
+test('already-published R2 images do not require redundant HEAD requests when editing captions',async()=>{
+ const path='/media/tokyo/'+'7'.repeat(24)+'/tokyo-01.jpg';
+ const previous={title:'Tokyo',published:true,order:1,cover:path,gallery:[],
+   photo_details:[{image:path,storage:'r2',...EXPOSURE}]};
+ const gh=mockGithub(previous);let headCalls=0;
+ try {
+   const response=await save({request:requestWithPhoto({...EXPOSURE,alt:'Updated caption'},true,'existing'),
+     env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){headCalls++;return {size:256}}}}});
+   assert.equal(response.status,200,await response.clone().text());
+   assert.equal(headCalls,0);
+   const doc=gh.trees[0].tree.find(x=>x.path==='content/projects/tokyo.json');
+   assert.equal(JSON.parse(doc.content).photo_details[0].alt,'Updated caption');
+ }finally{gh.restore();}
+});
+
+test('R2 handler returns 304 from metadata without fetching the full image',async()=>{
+ const {onRequestGet}=await import('../functions/media/[[all]].js');
+ const path='media/cdmx/example.jpg';let heads=0,gets=0;
+ const b={async head(){heads++;return {etag:'abc123',size:12345}},async get(){gets++;throw Error('R2 should not fetch full image on ETag match');}};
+ const response=await onRequestGet({request:new Request('https://nickckincaid.com/'+path,{headers:{'If-None-Match':'W/"abc123"'}}),env:{PHOTO_BUCKET:b}});
+ assert.equal(response.status,304);
+ assert.equal(heads,1);assert.equal(gets,0);
+ assert.equal(response.headers.get('etag'),'"abc123"');
+});
+
+test('R2 download requests ignore conditional image cache and preserve attachment',async()=>{
+ const {onRequestGet}=await import('../functions/media/[[all]].js');let gets=0,heads=0;
+ const b={async head(){heads++;return {etag:'abc123'}},async get(){gets++;return {
+  etag:'abc123',body:new Response('image').body,httpMetadata:{contentType:'image/jpeg'}};}};
+ const url='https://nickckincaid.com/media/cdmx/example.jpg?download=cdmx-01.jpg';
+ const response=await onRequestGet({request:new Request(url,{headers:{'If-None-Match':'"abc123"'}}),env:{PHOTO_BUCKET:b}});
+ assert.equal(response.status,200);assert.equal(gets,1);assert.equal(heads,0);
+ assert.match(response.headers.get('content-disposition'),/attachment/);
 });

@@ -40,12 +40,13 @@ class SearchMetadataTests(unittest.TestCase):
             'photo_details': [{'image': '/media/example/photo.jpg'}]
         }))
 
-    def test_homepage_has_clear_search_description_and_visible_intro(self):
+    def test_homepage_has_clear_search_description_without_visible_intro(self):
         self.site.run()
         home = (self.root / 'dist' / 'index.html').read_text()
         self.assertIn('<title>Nicholas Kincaid — Photography</title>', home)
         self.assertIn('meta name="description" content="Photography by Nicholas Kincaid. Explore selected photographic projects', home)
-        self.assertIn('class="home-intro">Photography by Nicholas Kincaid.', home)
+        self.assertNotIn('class="home-intro"', home)
+        self.assertIn('<h1 class="visually-hidden">Photography by Nicholas Kincaid</h1>', home)
         self.assertIn('max-image-preview:large', home)
         self.assertIn('data-nosnippet><a href="/inquire/">Contact</a>', home)
         self.assertIn('rel="canonical" href="https://nickckincaid.com/"', home)

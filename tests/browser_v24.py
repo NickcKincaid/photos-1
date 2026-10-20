@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix='photo-v24-') as directory:
             }''',storage)
             page.evaluate(fake_fetch)
             page.add_style_tag(content=(ROOT/'static/admin.css').read_text())
-            for script in ['admin-drafts.js','admin.js','admin-note-format.js','admin-notes.js','admin-storage.js']:
+            for script in ['admin-drafts.js','admin-tools.js','admin-exposure.js','admin.js','admin-note-format.js','admin-notes.js','admin-storage.js']:
                 page.add_script_tag(content=(ROOT/'static'/script).read_text())
             page.locator('#project-title').wait_for(state='visible')
         page=browser.new_page(viewport={'width':1150,'height':850},accept_downloads=True)

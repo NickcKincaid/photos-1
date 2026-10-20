@@ -22,6 +22,24 @@ async function handle(context, headOnly) {
     return new Response('Invalid download filename', { status: 400 });
   }
   if (context.env.PHOTO_BUCKET) {
+    // Conditional GETs can avoid fetching the image body from R2 entirely.
+    // Only compare against a real R2 ETag; downloads always bypass this shortcut.
+    const condition = !headOnly && !requestedName ? context.request.headers.get('if-none-match') : null;
+    let cached = null;
+    if (condition && condition.length <= 512) {
+      cached = await context.env.PHOTO_BUCKET.head(key);
+      if (cached?.etag) {
+        const etag = `"${cached.etag.replace(/"/g, '')}"`;
+        const matches = condition.split(',').some(tag => {
+          const clean = tag.trim().replace(/^W\//, '');
+          return clean === etag;
+        });
+        if (matches) return new Response(null, {status:304,headers:{
+          'ETag':etag, 'Cache-Control':'public, max-age=3600',
+          'X-Content-Type-Options':'nosniff'
+        }});
+      }
+    }
     const object = headOnly
       ? await context.env.PHOTO_BUCKET.head(key)
       : await context.env.PHOTO_BUCKET.get(key);

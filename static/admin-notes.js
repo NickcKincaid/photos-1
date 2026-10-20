@@ -47,7 +47,11 @@
   setInterval(persistDraft,1800);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)persistDraft();});
   function newSelection(note, force=false) {
-    if ((busy && !force) || (!force && !canDiscard())) return false;
+    if (busy && !force) return false;
+    if (!force && dirty) {
+      if (!canDiscard()) return false;
+      window.PortfolioDrafts?.clear('note',noteKey());
+    }
     selected = note || null;
     dirty = false;
     $('note-title').value = note?.title || '';
@@ -183,8 +187,12 @@
         title, body, published:$('note-published').checked});
       dirty = false;
       window.PortfolioDrafts?.clear('note',noteKey());
-      await load(saved.slug, true);
-      showStatus('Note saved. Cloudflare will update the public Notes page shortly.');
+      try {
+        await load(saved.slug, true);
+        showStatus('Note saved. Cloudflare will update the public Notes page shortly.');
+      } catch (refreshError) {
+        showStatus('Note saved in GitHub, but the editor could not refresh: '+refreshError.message+'. Reload the dashboard to see the latest revision.', true);
+      }
     } catch (error) { showStatus(error.message, true); }
     finally { busy = false; $('save-note').disabled = false; $('delete-note').disabled = false; }
   });

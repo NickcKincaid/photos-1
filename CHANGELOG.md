@@ -1,3 +1,43 @@
+## V30 — Thorough maintenance and reliability review (2026-10-20)
+
+This release can be applied over V27 or later. It **includes V28 dashboard improvements,
+V28/SEO changes and V29A metadata normalization** in the same update package.
+
+- Upload validation rejects obviously incomplete JPEGs and malformed/truncated WebP containers
+  before saving them to R2. Large files still use the existing strict 3 MB request cap.
+- Server-side project saves skip redundant R2 HEAD requests for R2 photos that already belong
+  to the saved project; newly uploaded objects are checked before publication.
+- Project cleanup only considers R2 photos that were actually in the previous project's cover
+  or gallery, reducing the chance that obsolete metadata entries trigger unwanted deletion.
+- R2 image requests can return a conditional HTTP 304 response when the ETag matches;
+  attachment downloads still fetch the original bytes normally.
+- The metadata completeness dashboard also flags syntactically invalid exposure values.
+- Explicitly discarded local project/Notes drafts no longer prompt for recovery next time.
+- After a successful GitHub save, temporary refresh failures are reported as **saved**, not
+  as failed commits (for both Projects and Notes).
+- Partial R2 storage inventories no longer show a misleading numeric cost estimate.
+- Added regression tests for truncated uploads, ETag revalidation, R2 efficiency and
+  invalid exposure metadata.
+
+### Known limitations and deployment considerations
+
+- Live Cloudflare Pages, R2, GitHub OAuth and Web Analytics settings cannot be checked by
+  the offline test suite. Verify them on your deployment after installation.
+- Removing R2 photographs from a project still cleans them up immediately after a successful
+  GitHub commit. While Cloudflare rebuilds, the old public HTML could temporarily reference
+  the deleted image. A deployment-aware cleanup queue is a future improvement.
+- Incomplete or abandoned uploads can leave unused R2 files; V30 does not delete them
+  automatically. Back up your original camera photographs separately from R2.
+- The editor uses browser-local draft recovery, but binary upload jobs cannot be resumed
+  after a browser reload. Google controls when SEO snippets are updated.
+
+## Metadata Formatting & Minimal Homepage — October 2026
+
+- Removed the visible introductory sentence above the homepage photographs; retained the page's SEO title, head description, structured data, and screen-reader heading.
+- Camera settings are standardized on blur, during bulk edits, when saving, and in the server API: `35mm · f/8 · 1/250s · ISO 400`.
+- Reject invalid values and focus the first problem in the editor. Existing project JSON is not rewritten automatically; older captions display consistently on the next build.
+- Avoid keyword stuffing or hidden SEO text. Use meaningful project descriptions, per-photo alt text, titles, and structured data for search discovery.
+
 # Consolidated release notes
 
 ## V28 + SEO — Combined editor tools and search visibility (2026-10-20)

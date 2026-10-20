@@ -306,11 +306,9 @@ def homepage(site: dict, projects: list[dict]) -> str:
     work = (f'<div class="works-grid">{cards(projects)}</div>' if projects
             else '<p class="empty-state">No projects yet.</p>')
     description = homepage_description(site)
-    # A genuine visible introduction helps visitors *and* search engines make
-    # sense of the photo grid; the meta description alone cannot force a snippet.
+    # Keep the photographic homepage minimal; SEO descriptions stay in the head.
     body = f'''{nav(site, 'projects')}<main id="main" class="page home-main">
   <h1 class="visually-hidden">Photography by {esc(site['name'])}</h1>
-  <p class="home-intro">Photography by {esc(site['name'])}. Selected projects and notes.</p>
   <section aria-label="Projects" id="work">{work}</section>
 </main>{footer(site)}'''
     person_id = SITE_URL + '/#person'
@@ -331,6 +329,39 @@ def homepage(site: dict, projects: list[dict]) -> str:
             if projects else '')
     return document(str(site['name']), description, site, body, hero, '/', structured=schema)
 
+def format_exposure_public(key: str, value: str) -> str:
+    """Presentation-only normalization of legacy camera data."""
+    value = str(value or '').strip().replace(',', '.')
+    if not value:
+        return ''
+    if key == 'focal_length':
+        match = re.fullmatch(r'(\d+(?:\.\d+)?)\s*(?:mm)?', value, flags=re.I)
+        if match and 0 < float(match.group(1)) <= 2000:
+            return f'{float(match.group(1)):g}mm'
+    elif key == 'aperture':
+        match = re.fullmatch(r'(?:f\s*/?\s*)?(\d+(?:\.\d+)?)', value, flags=re.I)
+        if match and 0 < float(match.group(1)) <= 128:
+            return f'f/{float(match.group(1)):g}'
+    elif key == 'shutter_speed':
+        match = re.fullmatch(r'(\d+)\s*/\s*(\d+)\s*(?:s|sec|secs|second|seconds)?', value, flags=re.I)
+        if match and int(match.group(2)) and int(match.group(1)) and int(match.group(1))/int(match.group(2)) <= 36000:
+            return f'{int(match.group(1))}/{int(match.group(2))}s'
+        match = re.fullmatch(r'(\d+(?:\.\d+)?)\s*(?:s|sec|secs|second|seconds)?', value, flags=re.I)
+        if match and 0 < float(match.group(1)) <= 36000:
+            seconds = float(match.group(1))
+            if seconds < 1:
+                denominator = round(1/seconds)
+                if 2 <= denominator <= 8000 and abs(1/denominator-seconds)/seconds < 0.01:
+                    return f'1/{denominator}s'
+            return f'{seconds:g}s'
+    elif key == 'iso':
+        match = re.fullmatch(r'(?:ISO\s*[-:]?\s*)?(\d+)', value, flags=re.I)
+        if match and 1 <= int(match.group(1)) <= 4096000:
+            return f'ISO {int(match.group(1))}'
+    # Existing unconventional values remain visible for later manual review.
+    return value
+
+
 def photo_info(image: str, project: dict) -> str:
     "EXIF when present, plus per-photo optional CMS overrides."
     info = read_exif(ROOT / image.lstrip('/')) if image and (ROOT / image.lstrip('/')).is_file() else {}
@@ -349,16 +380,8 @@ def photo_info(image: str, project: dict) -> str:
         value = str(info.get(key) or '').strip()
         if not value:
             continue
-        # Avoid duplicating units when entered manually in the CMS.
-        if key == 'focal_length' and value.replace('.', '', 1).isdigit():
-            value += ' mm'
-        if key == 'aperture' and not re.match(r'(?i)^f\s*/', value):
-            # Accept manual inputs such as 2.8 or f2.8 without duplicate 'f/'.
-            value = 'f/' + re.sub(r'(?i)^f\s*', '', value)
-        if key == 'shutter_speed' and not value.lower().endswith(('s', 'sec', 'seconds')):
-            value += ' s'
-        if key == 'iso' and not value.upper().startswith('ISO'):
-            value = 'ISO ' + value
+        # Normalize display of older stored values too; never rewrite existing project JSON.
+        value = format_exposure_public(key, value)
         fragments.append(value)
     return ' · '.join(fragments)
 

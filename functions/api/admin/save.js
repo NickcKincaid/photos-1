@@ -1,3 +1,4 @@
+import { normalizeExposureValue } from '../../../admin-lib/exposure.js';
 import { gh, getProject, decodeContent, slugify, errorResponse } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
 const fields = ['camera','lens','focal_length','aperture','shutter_speed','iso','alt'];
@@ -67,6 +68,12 @@ export async function onRequestPost(context) {
       if (missing.length) {
         throw Error(`Photo ${details.length + 1}: ${missing.map(([,label])=>label).join(', ')} required before saving.`);
       }
+      const formattedExposure={};
+      for (const [field,label] of REQUIRED_EXPOSURE) {
+        const formatted=normalizeExposureValue(field,item.meta[field]);
+        if(formatted===null) throw Error(`Photo ${details.length+1}: invalid ${label}. Expected 35mm, f/8, 1/250s or ISO 400.`);
+        formattedExposure[field]=formatted;
+      }
       let path;
       let newR2 = false;
       if (item.kind === 'existing') {
@@ -95,7 +102,13 @@ export async function onRequestPost(context) {
       const info = { image: path, id: permanentId };
       if (newR2 || old?.storage === 'r2' || item.meta?.storage === 'r2') {
         if (!context.env.PHOTO_BUCKET) throw Error('R2 bucket binding PHOTO_BUCKET is missing.');
-        if (!await context.env.PHOTO_BUCKET.head(path.slice(1))) throw Error('R2 photograph is not present in storage.');
+        // Existing unchanged published R2 paths were already verified when first saved.
+        // The integrity checker can diagnose storage loss on demand; do not make
+        // dozens of R2 HEAD requests during routine metadata edits.
+        if (!(item.kind === 'existing' && old?.storage === 'r2') &&
+            !await context.env.PHOTO_BUCKET.head(path.slice(1))) {
+          throw Error('R2 photograph is not present in storage.');
+        }
         info.storage = 'r2';
         const variants = newR2 ? validVariants(item.variants, path, slug) :
           (old?.variants || item.variants) ? (R2_IMAGE.test(path) ? validVariants(item.variants ?? old?.variants,path,slug) : []) : [];
@@ -103,7 +116,7 @@ export async function onRequestPost(context) {
       }
       if (old && typeof old.legacy_id === 'string' && /^[0-9a-f]{16}$/.test(old.legacy_id)) info.legacy_id = old.legacy_id;
       for (const field of fields) {
-        const v = String(item.meta?.[field] || '').trim();
+        const v = REQUIRED_EXPOSURE.some(([key]) => key === field) ? formattedExposure[field] : String(item.meta?.[field] || '').trim();
         if (v) info[field] = v.slice(0, field === 'alt' ? 250 : 180);
       }
       details.push(info);
@@ -124,8 +137,10 @@ export async function onRequestPost(context) {
     await gh(context, '/git/refs/heads/main', { method:'PATCH', body:{ sha:commit.sha, force:false } });
     // Storage cleanup happens only after the project commit succeeds. Never
     // delete an R2 object that another project still references.
+    const previouslyPublished = new Set(original);
     const removed = (previous.photo_details || []).filter(d =>
-      d && d.storage === 'r2' && typeof d.image === 'string' && !newRefs.includes(d.image));
+      d && d.storage === 'r2' && typeof d.image === 'string' &&
+      previouslyPublished.has(d.image) && !newRefs.includes(d.image));
     let cleanupWarning = '';
     if (removed.length && context.env.PHOTO_BUCKET) {
       try {

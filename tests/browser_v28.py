@@ -56,6 +56,7 @@ with sync_playwright() as pw:
         page.add_style_tag(content=(ROOT/'static/admin.css').read_text())
         page.evaluate(mock)
         page.add_script_tag(content=(ROOT/'static/admin-tools.js').read_text())
+        page.add_script_tag(content=(ROOT/'static/admin-exposure.js').read_text())
         page.add_script_tag(content=(ROOT/'static/admin.js').read_text())
         page.locator('.photo-row').first.wait_for()
         assert '1 missing settings' in page.locator('#metadata-overview').inner_text()
