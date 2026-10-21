@@ -2,6 +2,16 @@
 (() => {
   'use strict';
   const $=id=>document.getElementById(id);
+  // The timestamp is embedded by the website build. No Cloudflare API token,
+  // background polling, or R2 inventory request is needed to show it.
+  const built=$('website-last-updated');
+  if (built) {
+    const date=new Date(built.dateTime);
+    if(Number.isFinite(date.getTime())) {
+      try { built.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short',timeZoneName:'short'}).format(date); }
+      catch {} // Keep the pre-rendered UTC date as a no-JS fallback.
+    }
+  }
   const byteText=bytes=>{
     const gb=bytes/1e9;
     return gb>=1?gb.toFixed(2)+' GB':(bytes/1e6).toFixed(1)+' MB';
@@ -38,6 +48,11 @@
       $('storage-caveat').textContent=body.incomplete
         ? 'Large bucket: only the first '+body.objects+' objects were scanned. These are partial totals; pricing also depends on other buckets and operations.'
         : 'Approximate R2 Standard storage only. The first 10 GB-month free allowance is account-wide, not per bucket. Requests and other buckets may add charges.';
+      const checkedAt=new Date();
+      const clock=$('storage-last-checked-time');
+      clock.dateTime=checkedAt.toISOString();
+      clock.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(checkedAt);
+      $('storage-last-checked').hidden=false;
       $('storage-status').textContent=body.incomplete?'Partial scan complete.':'Storage totals checked.';
     } catch(error) {
       $('storage-status').textContent=error.message || 'Unable to check storage.';

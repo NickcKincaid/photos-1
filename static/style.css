@@ -292,3 +292,19 @@ body > main { flex: 1 0 auto; }
 .project-photos.is-contact-sheet .photo-caption, .project-photos.is-contact-sheet .project-blurb { display:none; }
 @media(max-width:900px){.project-photos.is-contact-sheet{grid-template-columns:repeat(4,minmax(0,1fr));}}
 @media(max-width:600px){.project-photos.is-contact-sheet{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}}
+
+/* V35b: low-overhead loading skeletons, with no continuous animation.
+   Homepage cover boxes already reserve their final 4:5 space. Gallery
+   photos use a 3:2 estimate while loading because legacy R2 metadata does
+   not include natural dimensions; the final image determines its height. */
+.project-card-media.photo-loading,
+.gallery-link.photo-loading {
+  background: linear-gradient(112deg, #e3e4de 0%, #ecece7 55%, #e3e4de 100%);
+}
+.gallery-link.photo-loading { aspect-ratio: 3 / 2; overflow: hidden; }
+.project-photos.is-contact-sheet .gallery-link.photo-loading { aspect-ratio: 1 / 1; }
+.photo-loading img { opacity: 0; }
+.project-card-media img, .gallery-link img { transition: opacity .16s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .project-card-media img, .gallery-link img { transition: none; }
+}

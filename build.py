@@ -571,7 +571,16 @@ def run() -> None:
     admin_scripts = [ROOT / 'static' / 'admin.js', *sorted((ROOT / 'static').glob('admin-*.js'))]
     for script in admin_scripts:
         shutil.copy2(script, admin_dir / script.name)
+    # This is the build's actual UTC time, not an R2 inventory timestamp or
+    # the last date someone opened the admin dashboard. The Cloudflare Pages
+    # production build regenerates it with every successful website publish.
+    built_at = datetime.now(timezone.utc).replace(microsecond=0)
     admin_html = (admin_dir / 'index.html').read_text(encoding='utf-8')
+    if admin_html.count('__SITE_BUILD_UTC__') != 1 or admin_html.count('__SITE_BUILD_LABEL__') != 1:
+        raise ValueError('Missing website update timestamp placeholders in admin.html')
+    admin_html = admin_html.replace('__SITE_BUILD_UTC__', esc(built_at.isoformat()))
+    admin_html = admin_html.replace('__SITE_BUILD_LABEL__', esc(built_at.strftime('%b %d, %Y %H:%M UTC')))
+    (admin_dir / 'index.html').write_text(admin_html, encoding='utf-8')
     for required in re.findall(r'<script\b[^>]*\bsrc=[\"\'](/admin/[A-Za-z0-9._-]+\.js)[\"\']', admin_html):
         if not (admin_dir / required.rsplit('/', 1)[-1]).is_file():
             raise FileNotFoundError(f'Admin page references missing script: {required}')

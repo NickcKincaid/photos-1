@@ -1,3 +1,17 @@
+/* V35b: lightweight image placeholders. No library, polling, or requests. */
+(() => {
+  for (const link of document.querySelectorAll('.project-card-media, .gallery-link')) {
+    const img=link.querySelector('img');
+    if (!img || img.complete) continue;
+    link.classList.add('photo-loading');
+    const finish=()=>link.classList.remove('photo-loading');
+    img.addEventListener('load',finish,{once:true});
+    img.addEventListener('error',finish,{once:true});
+    // Handle a load/error that happened just before listeners were attached.
+    if (img.complete) finish();
+  }
+})();
+
 /* Fit All switches presentation only; photo anchors and viewer remain unchanged. */
 (() => {
   const button=document.querySelector('.contact-sheet-toggle');
