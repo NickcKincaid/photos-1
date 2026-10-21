@@ -36,16 +36,24 @@
     <section class="editor" aria-label="Project editor">
       <p class="status" role="status" id="status">Loading projects…</p>
       <form id="editor-form" hidden>
-<details class="admin-panel" data-panel="project-details" open><summary>Project details</summary><div class="admin-panel-body">
-        <div class="fields">
-          <label>Project name<input id="project-title" type="text" maxlength="120" required placeholder="Project title"></label>
-          <label>Homepage position<input id="project-order" type="number" min="0" max="999999" step="1" value="1" required></label>
+<details class="admin-panel" data-panel="project-details" open><summary>Project details</summary><div class="admin-panel-body project-detail-body">
+        <fieldset class="project-settings-group">
+          <legend>Identity &amp; description</legend>
+          <label class="project-setting-field" for="project-title">Project name
+            <input id="project-title" type="text" maxlength="120" required placeholder="Project title">
+          </label>
+          <label class="project-setting-field" for="project-blurb"><span>Project blurb <span class="muted">(optional — visible beside the photographs)</span></span>
+            <textarea id="project-blurb" rows="4" maxlength="1000" placeholder="A few words about the project…"></textarea>
+          </label>
+        </fieldset>
+        <fieldset class="project-settings-group project-visibility">
+          <legend>Visibility &amp; homepage order</legend>
           <label class="check"><input id="project-published" type="checkbox"> Show project on website</label>
-        </div>
-        <label class="project-blurb-editor" for="project-blurb">Project blurb <span class="muted">(optional — appears in open space beside the photographs)</span>
-          <textarea id="project-blurb" rows="4" maxlength="1000" placeholder="A few words about the project…"></textarea>
-        </label>
-
+          <label class="project-setting-field order-field" for="project-order">Homepage position
+            <input id="project-order" type="number" min="0" max="999999" step="1" value="1" required>
+          </label>
+          <p class="muted project-hint">Lower numbers appear first. You can also reorder projects using the arrows in the sidebar.</p>
+        </fieldset>
 </div></details>
 <details class="admin-panel" data-panel="uploads"><summary>Upload & cover crop</summary><div class="admin-panel-body">
         <div class="upload-zone">
@@ -72,6 +80,10 @@
             </div>
           </div>
         </section>
+
+</div></details>
+<details class="admin-panel" data-panel="photo-list" open><summary>Photographs & metadata</summary><div class="admin-panel-body">
+        <div id="photos" class="photos"></div>
 
 </div></details>
 <details class="admin-panel" data-panel="batch-edit"><summary>Batch edit</summary><div class="admin-panel-body">
@@ -107,18 +119,6 @@
         </section>
 
 </div></details>
-<details class="admin-panel" data-panel="integrity"><summary>Check image links</summary><div class="admin-panel-body">
-        <section id="image-integrity" class="integrity-panel" aria-label="Image integrity checker">
-          <button type="button" id="check-images">Check this project's image links</button>
-          <p id="image-check-status" class="muted" role="status">Checks originals and thumbnails without modifying R2.</p>
-          <ul id="image-check-results" class="integrity-results"></ul>
-        </section>
-
-</div></details>
-<details class="admin-panel" data-panel="photo-list" open><summary>Photographs & metadata</summary><div class="admin-panel-body">
-        <div id="photos" class="photos"></div>
-
-</div></details>
 <details class="admin-panel" data-panel="sharing"><summary>Sharing & search preview</summary><div class="admin-panel-body">
         <label class="sharing-preview-field" for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span>
           <select id="social-image"><option value="">Use homepage cover</option></select>
@@ -128,6 +128,14 @@
           </div>
           <small class="muted">Approximate preview. Social apps may crop differently or cache an older image.</small>
         </label>
+
+</div></details>
+<details class="admin-panel" data-panel="integrity"><summary>Check image links</summary><div class="admin-panel-body">
+        <section id="image-integrity" class="integrity-panel" aria-label="Image integrity checker">
+          <button type="button" id="check-images">Check this project's image links</button>
+          <p id="image-check-status" class="muted" role="status">Checks originals and thumbnails without modifying R2.</p>
+          <ul id="image-check-results" class="integrity-results"></ul>
+        </section>
 
 </div></details>
         <div class="actions project-actions" role="group" aria-label="Project actions">
@@ -176,7 +184,8 @@
   <main id="storage-pane" class="storage-page" hidden>
     <section class="storage-panel" aria-label="Storage and backups">
       <h1>Storage &amp; backups</h1>
-      <p class="muted">Expand a section to manage storage, review usage or download backups.</p>
+      <p class="muted">Expand a section to manage R2 storage, visitor statistics, or backups.</p>
+      <p class="storage-cloudflare-link"><a href="https://dash.cloudflare.com/0f2e0380eafff7a2d0f444bfb5efab09/ai/workers-ai/usage" target="_blank" rel="noopener noreferrer">View actual Workers AI usage in Cloudflare ↗</a></p>
       <details class="admin-panel" data-panel="r2-storage" open>
         <summary>R2 photo storage</summary>
         <div class="admin-panel-body">
@@ -190,19 +199,6 @@
             <div><dt>Estimated Standard storage cost / month</dt><dd id="storage-cost">—</dd></div>
           </dl>
           <p class="muted" id="storage-caveat">Storage estimate excludes request charges. Account-wide free allowances, when eligible, are reflected in the estimate.</p>
-        </div>
-      </details>
-      <details class="admin-panel" data-panel="ai-usage">
-        <summary>Photo description AI usage</summary>
-        <div class="admin-panel-body" id="v34-ai-usage">
-          <div class="usage-figures">
-            <div>Requests (this browser): <strong data-usage="requests">0</strong></div>
-            <div>Generated: <strong data-usage="successes">0</strong></div>
-            <div>Failed: <strong data-usage="failures">0</strong></div>
-          </div>
-          <p>Model-reported tokens: <span data-usage="tokens">Not reported</span></p>
-          <p class="muted">Counts start with V33 and are saved only in this browser. They are not account-wide and do not represent Cloudflare neuron usage or billing.</p>
-          <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">View official Workers AI usage in Cloudflare ↗</a></p>
         </div>
       </details>
       <details class="admin-panel" data-panel="analytics">

@@ -1,3 +1,13 @@
+## V35 — Admin field order, real Cloudflare usage link & stability (2026-10-21)
+
+- Reorganized Project Details into Identity & description (name and optional blurb), then Visibility & homepage order (published setting and position). Kept all IDs and underlying fields for backwards compatibility.
+- Reordered project editor panels to match the photograph workflow: project details, upload/cover, photographs/metadata, batch editing, AI descriptions, sharing preview, then diagnostic image link checks.
+- Removed browser-local AI request/token counters and storage-event listeners. No inferred neuron totals remain; Storage now links directly to the account's official Cloudflare Workers AI usage dashboard.
+- Removed unused per-request usage extraction in the AI description endpoint. Generation/regeneration and review-before-save are unchanged.
+- Bounded manual R2 storage and metadata backup requests with timeouts, and clarified malformed storage-response errors instead of showing confusing JSON parsing failures.
+- Added regression coverage for editor layout, direct URL, and no local usage tracker; reran JS/Python tests, audit, production build, and desktop/mobile browser checks.
+- Local review cannot verify live Cloudflare bindings, billing, GitHub OAuth, or R2 connectivity.
+
 ## V34 — Editor menus and reliability (2026-10-21)
 
 - Replaced unreliable header-based collapse script with native, accessible expand/collapse panels, separately controllable for each project, note and Storage subsection. Persistent only within the active browser tab.

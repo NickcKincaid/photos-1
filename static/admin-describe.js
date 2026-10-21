@@ -1,4 +1,4 @@
-/* V33: generate / regenerate with explicit overwrite confirmation, accurate usage display. */
+/* V35: generate / regenerate descriptions with explicit overwrite confirmation. */
 (() => {
   'use strict';
   const generate=document.getElementById('generate-descriptions');
@@ -6,7 +6,6 @@
   const notice=document.getElementById('ai-description-status');
   if(!generate || !stop || !notice)return;
   const panel=document.getElementById('ai-description');
-  const usageKey='portfolio-ai-v33-usage';
   const regen=document.createElement('button');
   regen.type='button';regen.id='regenerate-descriptions';regen.textContent='Regenerate all descriptions';
   regen.title='Replace saved and unsaved descriptions only after reviewing a confirmation. Requires Save project to publish.';
@@ -15,18 +14,6 @@
   const summary=document.createElement('summary');summary.textContent='See photo errors';
   const errorList=document.createElement('ol');errors.append(summary,errorList);panel?.append(errors);
   let running=false,cancelled=false,active=null;
-
-  function record(success,usage) {
-    let state={requests:0,successes:0,failures:0,inputTokens:0,outputTokens:0,measuredRequests:0};
-    try{state={...state,...JSON.parse(localStorage.getItem(usageKey)||'{}')};}catch{}
-    state.requests++;state[success?'successes':'failures']++;
-    const input=usage?.input_tokens, output=usage?.output_tokens;
-    if(Number.isFinite(input) && Number.isFinite(output)){
-      state.inputTokens+=input;state.outputTokens+=output;state.measuredRequests++;
-    }
-    try{localStorage.setItem(usageKey,JSON.stringify(state));}catch{}
-    window.dispatchEvent(new CustomEvent('portfolio-ai-usage-updated',{detail:state}));
-  }
 
   function preparePreview(row) {
     const image=row.querySelector('img');
@@ -92,7 +79,6 @@
         });
       }
       if(!body?.alt || typeof body.alt!=='string')throw Error('The model returned no usable alt text.');
-      record(true,body.usage);
       return body.alt.trim().slice(0,240);
     }catch(error){
       if(error?.name==='AbortError'){
@@ -124,11 +110,9 @@
         if(!row.isConnected || !field.isConnected || (!overwrite && field.value.trim()))continue;
         notice.textContent=`Analyzing photo ${completed+failed+1} of ${count}…`;
         const original=field.value;
-        let requestSent=false;
         try{
           const blob=await preparePreview(row);
           if(cancelled)break;
-          requestSent=true;
           const alt=await describe(blob);
           if(cancelled)break;
           // Do not overwrite a manual edit made while inference was running.
@@ -139,7 +123,6 @@
           }
         }catch(error){
           if(cancelled)break;
-          if(requestSent)record(false);
           failed++;reason=error.message||'Unknown error';
           const item=document.createElement('li');item.textContent=`Photo ${i+1}: ${reason}`;errorList.append(item);
           errors.hidden=false;errors.open=true;

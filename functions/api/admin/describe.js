@@ -38,19 +38,6 @@ export function extractText(result) {
   return typeof v === 'string' ? v : '';
 }
 
-export function extractUsage(result) {
-  // Model metrics are optional and can vary. NEVER estimate neurons from token counts.
-  const metrics=result?.usage ?? result?.metrics ?? result?.result?.usage ?? result?.result?.metrics ?? {};
-  const number=(...names)=>{
-    for(const name of names){const val=metrics[name];if(Number.isFinite(val) && val >= 0) return Math.floor(val);}
-    return null;
-  };
-  return {
-    input_tokens:number('prompt_tokens','input_tokens','inputTokens'),
-    output_tokens:number('completion_tokens','output_tokens','outputTokens')
-  };
-}
-
 export function classifyAIError(error) {
   const status=Number(error?.status ?? error?.cause?.status ?? error?.response?.status ?? 0);
   const text=String(error?.message ?? '')+' '+String(error?.code ?? '');
@@ -85,7 +72,7 @@ export async function onRequestPost({request,env}) {
     });
     const alt=cleanAlt(extractText(result));
     if(!alt) return json({code:'EMPTY_DESCRIPTION',error:'Cloudflare returned no usable description. Try again or write your own.'},502);
-    return json({alt,model:MODEL,usage:extractUsage(result)});
+    return json({alt,model:MODEL});
   }catch(error) {
     if(error?.status===413)return json({code:'PHOTO_TOO_LARGE',error:'Photo preview exceeds 900 KB. Reduce image size.'},413);
     const classified=classifyAIError(error);

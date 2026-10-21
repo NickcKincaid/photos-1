@@ -1,7 +1,6 @@
-/* V34: native accordion panels and private browser-local AI usage metrics. */
+/* V35: native accessible accordion panels and project discard action. */
 (() => {
   'use strict';
-  const STORAGE_KEY = 'portfolio-ai-v33-usage';
   const FOLD_KEY = 'portfolio-v34-panels:';
   const groups = Array.from(document.querySelectorAll('details.admin-panel[data-panel]'));
   const valid = new Set(['open', 'closed']);
@@ -25,22 +24,4 @@
   document.getElementById('v34-cancel-changes')?.addEventListener('click',()=>{
     if(typeof window.PortfolioDiscardChanges==='function')window.PortfolioDiscardChanges();
   });
-  const usage=document.getElementById('v34-ai-usage');
-  function renderUsage(){
-    if(!usage)return;
-    let stats={};
-    try { stats=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{}; } catch {}
-    const number=key=>Math.max(0,Number(stats[key])||0).toLocaleString();
-    for(const key of ['requests','successes','failures']){
-      const target=usage.querySelector('[data-usage="'+key+'"]');
-      if(target)target.textContent=number(key);
-    }
-    const target=usage.querySelector('[data-usage="tokens"]');
-    if(target)target.textContent=Number(stats.measuredRequests)>0
-      ? `${number('inputTokens')} input · ${number('outputTokens')} output (reported on ${number('measuredRequests')} requests)`
-      : 'Not reported by model';
-  }
-  renderUsage();
-  window.addEventListener('portfolio-ai-usage-updated',renderUsage);
-  window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY)renderUsage();});
 })();

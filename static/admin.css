@@ -149,8 +149,6 @@ main[hidden] { display: none !important; }
 .storage-panel h1 { font-size:12px; margin-bottom:10px; }
 .storage-panel .admin-panel-body { padding:15px 12px 22px; }
 .storage-panel .admin-panel > summary { padding:16px 12px; }
-.usage-figures { display:flex; gap:12px 24px; flex-wrap:wrap; }
-.usage-figures > div { min-width:110px; }
 .project-actions { gap:8px; padding-top:17px; }
 .project-actions #publish { margin-right:3px; }
 .project-actions .cancel-changes { background:transparent; color:var(--ink); border:1px solid var(--line); padding:9px 12px; }
@@ -161,3 +159,22 @@ main[hidden] { display: none !important; }
   .project-actions .delete-project { margin-left:0; width:100%; text-align:center; }
   .project-actions button { flex:1 1 auto; }
 }
+
+/* V35: logical project settings hierarchy, quiet link to provider-level AI usage. */
+.project-detail-body { max-width:720px; }
+.project-settings-group { border:0; min-width:0; margin:0; padding:0; display:grid; gap:11px; }
+.project-settings-group + .project-settings-group { margin-top:18px; padding-top:15px; border-top:1px solid var(--line); }
+.project-settings-group legend { font-size:11px; font-weight:600; margin:0 0 10px; padding:0; }
+.project-setting-field { display:grid; gap:6px; min-width:0; }
+.project-setting-field > input, .project-setting-field > textarea {
+  background:transparent; color:var(--ink); border:1px solid var(--line);
+  font:inherit; padding:9px 10px; width:100%; min-width:0; outline-offset:2px;
+}
+.project-setting-field > textarea { resize:vertical; min-height:86px; line-height:1.6; }
+.project-setting-field > span.muted { font-weight:400; }
+.project-visibility .check { padding:2px 0; }
+.project-setting-field.order-field { max-width:170px; }
+.project-hint { font-size:10px; margin:0; max-width:500px; }
+.storage-cloudflare-link { margin:4px 0 16px; }
+.storage-cloudflare-link a { font-weight:600; }
+@media(max-width:680px){ .project-setting-field.order-field{max-width:100%;} }

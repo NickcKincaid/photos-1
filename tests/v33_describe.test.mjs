@@ -1,15 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {extractText,extractUsage,cleanAlt,MODEL,onRequestPost} from '../functions/api/admin/describe.js';
+import {extractText,cleanAlt,MODEL,onRequestPost} from '../functions/api/admin/describe.js';
 
 test('Moondream answer and caption output shapes are handled',()=>{
   assert.equal(extractText({answer:'street scene'}),'street scene');
   assert.equal(extractText({caption:'street scene'}),'street scene');
   assert.equal(extractText({result:{answer:'sporting event'}}),'sporting event');
-});
-test('Usage is reported only when the model actually provides it',()=>{
-  assert.deepEqual(extractUsage({answer:'x'}),{input_tokens:null,output_tokens:null});
-  assert.deepEqual(extractUsage({metrics:{input_tokens:80,output_tokens:32}}),{input_tokens:80,output_tokens:32});
 });
 test('Alt text is bounded and strips caption boilerplate',()=>{
   assert.equal(cleanAlt('Alt text: A photograph of a boxing ring with red corner posts.'),'a boxing ring with red corner posts.');
@@ -27,4 +23,5 @@ test('Authenticated inference endpoint uses documented Moondream data URI query 
   }}}});
   const data=await response.json();assert.equal(response.status,200);assert.equal(invoked,true);
   assert.match(data.alt,/boxers/);assert.equal(data.model,MODEL);
+  assert.equal(Object.hasOwn(data,'usage'),false);
 });

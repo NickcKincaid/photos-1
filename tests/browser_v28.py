@@ -64,6 +64,8 @@ with sync_playwright() as pw:
         assert '1/2 missing settings' in page.locator('.project-entry .project-btn small').first.inner_text()
         page.locator('#review-missing').click()
         assert page.evaluate('document.activeElement.dataset.metaField') == 'aperture'
+        # V34+ keeps batch controls inside a collapsed section.
+        page.locator('details[data-panel="batch-edit"] > summary').click()
         page.locator('#bulk-select-all').click()
         assert '2 selected' in page.locator('#bulk-count').inner_text()
         page.locator('#bulk-field').select_option('aperture')
@@ -74,10 +76,14 @@ with sync_playwright() as pw:
         page.locator('#bulk-first').click()
         assert 'cdmx-01.jpg' in page.locator('.photo-row').first.locator('.photo-name').inner_text()
         assert page.locator('.photo-row').first.locator('img').get_attribute('src').endswith('cdmx-02.jpg')
+        # The link checker is also independently collapsible.
+        page.locator('details[data-panel="integrity"] > summary').click()
         page.locator('#check-images').click()
         page.wait_for_function("document.querySelector('#image-check-status').textContent.includes('failed')")
         assert '1 failed' in page.locator('#image-check-status').inner_text()
         assert 'HTTP 404' in page.locator('#image-check-results').inner_text()
+        # File upload queue lives in the Upload & cover crop section.
+        page.locator('details[data-panel="uploads"] > summary').click()
         page.locator('#photo-files').set_input_files([
             {'name':'failure.jpg','mimeType':'image/jpeg','buffer':b'JPEG1'},
             {'name':'success.jpg','mimeType':'image/jpeg','buffer':b'JPEG2'}

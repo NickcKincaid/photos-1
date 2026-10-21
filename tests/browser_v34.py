@@ -14,7 +14,7 @@ with sync_playwright() as p:
     page.add_style_tag(content=css)
     page.evaluate('''() => {document.getElementById('editor-form').hidden=false;document.getElementById('status').textContent='Editing project.';document.getElementById('project-title').value='CDMX';}''')
     page.add_script_tag(content=script)
-    assert page.locator('details.admin-panel').count()==12, page.locator('details.admin-panel').count()
+    assert page.locator('details.admin-panel').count()==11, page.locator('details.admin-panel').count()
     assert page.locator('a:has-text("Cloudflare deployments")').count()==0
     assert page.locator('#deploy-indicator').count()==0
     assert page.locator('details[data-panel="project-details"]').get_attribute('open') is not None
@@ -33,9 +33,8 @@ with sync_playwright() as p:
     page.locator('#projects-pane').evaluate('(el)=>el.hidden=true')
     page.locator('#storage-pane').evaluate('(el)=>el.hidden=false')
     page.screenshot(path=str(Path('/tmp')/'v34-storage-desktop.png'),full_page=True)
-    assert page.locator('#v34-ai-usage').count()==1
-    page.locator('details[data-panel="ai-usage"] > summary').click()
-    assert page.locator('details[data-panel="ai-usage"]').get_attribute('open') is not None
+    assert page.locator('#v34-ai-usage').count()==0
+    assert page.locator('a:has-text("View actual Workers AI usage")').count()==1
     assert not errors, errors
     phone=browser.new_page(viewport={'width':375,'height':812},is_mobile=True,has_touch=True)
     phone.set_content(html)
@@ -46,4 +45,4 @@ with sync_playwright() as p:
     assert phone.evaluate('document.documentElement.scrollWidth <= innerWidth'),phone.evaluate('document.documentElement.scrollWidth')
     assert not errors, errors
     browser.close()
-print('V34 admin desktop/phone: 12 collapsible panels, form validation, usage, mobile overflow passed')
+print('V34 admin desktop/phone: 11 collapsible panels, form validation, provider link, mobile overflow passed')

@@ -21,23 +21,23 @@ class EditorV34Tests(unittest.TestCase):
     def test_explicit_panel_groups(self):
         html=(ROOT/'static/admin.html').read_text()
         p=_Panels();p.feed(html)
-        self.assertEqual(len(p.names),12)
+        self.assertEqual(len(p.names),11)
         self.assertEqual(len(p.names),len(set(p.names)))
         self.assertEqual(p.summary_count,len(p.names))
         self.assertFalse(p.stack)
-        for needed in ('project-details','uploads','batch-edit','ai-descriptions','integrity','photo-list','sharing','note-editor','r2-storage','ai-usage','analytics','backups'):
+        for needed in ('project-details','uploads','batch-edit','ai-descriptions','integrity','photo-list','sharing','note-editor','r2-storage','analytics','backups'):
             self.assertIn(needed,p.names)
-    def test_project_actions_and_usage_are_available_without_old_deployment_widget(self):
+    def test_project_actions_and_link_without_old_deployment_widget(self):
         html=(ROOT/'static/admin.html').read_text()
-        for token in ('id="publish"','id="preview-project"','id="v34-cancel-changes"','id="delete-project"','id="v34-ai-usage"','src="/admin/admin-ui.js"'):
+        for token in ('id="publish"','id="preview-project"','id="v34-cancel-changes"','id="delete-project"','View actual Workers AI usage in Cloudflare','src="/admin/admin-ui.js"'):
             self.assertIn(token,html)
         self.assertNotIn('admin-deployment.js',html)
         self.assertNotIn('Cloudflare deployments ↗',html)
         self.assertNotIn('id="deploy-indicator"',html)
         self.assertNotIn('id="deployment-refresh"',html)
-    def test_ui_handles_validation_and_usage_without_old_dom_observer(self):
+    def test_ui_handles_validation_without_old_dom_observer(self):
         js=(ROOT/'static/admin-ui.js').read_text()
         self.assertIn("addEventListener('invalid'",js)
         self.assertIn('PortfolioDiscardChanges',js)
-        self.assertIn('portfolio-ai-v33-usage',js)
+        self.assertNotIn('portfolio-ai-v33-usage',js)
         self.assertNotIn('MutationObserver',js)
