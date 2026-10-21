@@ -56,5 +56,17 @@
   "cover_position": {
     "x": 50,
     "y": 50
+  },
+  "social_position": {
+    "x": 50,
+    "y": 92
+  },
+  "social_card": {
+    "path": "/media/handmade-watusi-horn-table/307f67fe65cd4920bba65c69/sharing-1200x630.jpg",
+    "source": "/media/handmade-watusi-horn-table/00232f36de234e2c905d50cb/handmade-watusi-horn-table-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 92
+    }
   }
 }
