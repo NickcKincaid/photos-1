@@ -446,7 +446,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     body = f'''{nav(site, 'projects')}<main id="main" class="page project-main">
   <div class="project-heading">
     <h1 class="project-title">{esc(p['title'])}</h1>
-    {('<button class="contact-sheet-toggle" type="button" aria-pressed="false" hidden>Contact sheet</button>') if len(images) > 1 else ''}
+    {('<button class="contact-sheet-toggle" type="button" aria-pressed="false" hidden>Fit All</button>') if len(images) > 1 else ''}
   </div>
   {gallery}
   <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>

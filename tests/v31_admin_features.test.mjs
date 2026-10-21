@@ -51,9 +51,10 @@ test('AI caption returns sanitized text and sends only resized image data',async
   const bytes=new Uint8Array(120).fill(8);bytes.set([255,216],0);bytes.set([255,217],118);
   let received=false;
   const env={AI:{run:async(model,input)=>{
-    assert.match(model,/vision/);
+    assert.equal(model,'@cf/moondream/moondream3.1-9B-A2B');
     assert.match(input.image,/^data:image\/jpeg;base64,/);
-    assert.match(input.prompt,/Do not guess a location/);
+    assert.equal(input.task,'query');
+    assert.match(input.question,/visually grounded/i);
     received=true;
     return {response:'"An old brick building beneath a cloudy sky, with a metal railing in front."'};
   }}};

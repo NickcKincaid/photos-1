@@ -1,63 +1,59 @@
 # Nicholas Kincaid — Photography Portfolio
 
-A lightweight, static photography portfolio with a private GitHub-authenticated editor, Cloudflare R2 photo storage, and a Notes publishing section.
+Minimal static photo portfolio, built with Python and hosted on Cloudflare Pages.
+Photos live in private Cloudflare R2; project and note metadata live in GitHub.
+The admin editor at `/admin/` requires owner authentication through GitHub OAuth.
 
-## Public pages
+## Public site
 
-- `/` — projects and cover photographs.
-- `/projects/<slug>/` — photo gallery with a full-screen, fit-to-viewport viewer, EXIF information and a bottom-of-project inquiry link.
-- `/notes/` — notes, newest published first, with date and time (UTC). Each note also has a permanent `/notes/<slug>/` URL.
-- `/inquire/` — direct contact by email.
-- A compact site header and copyright/contact footer are shared across public pages.
+- `/`: published projects and their cover photographs.
+- `/projects/<slug>/`: project gallery, **Fit All** compact layout, full-screen viewer,
+  metadata, and inquiry link. AI-generated alt text is not a visible caption.
+- `/notes/`: published notes.
+- `/inquire/`: inquiry information.
 
-The public design retains Leelawadee UI (system font, with fallbacks) and text sizes at or below 12px. No website analytics or tracking frameworks are required.
+## Private editor
 
-## Private publishing
+- Projects: upload to R2, require ISO/aperture/shutter/focal length, order photos,
+  set cover and SEO data, save and delete projects.
+- Generate missing alt text, regenerate individual/all alt text using Workers AI;
+  review text and **Save project** to publish. The Cancel changes button discards
+  unsaved editor changes and its local recovery draft; it does not delete R2 uploads.
+- Storage & backups: inspect R2 storage, manually download metadata, check Pages
+  deployment status, open Cloudflare Web Analytics, and see browser-local AI
+  usage counters. Browser-local counts are **not** Cloudflare billing or neurons.
+- Notes: write and publish notes. Draft project/note metadata committed to a
+  public GitHub repo is not confidential.
 
-`/admin/` is accessible only to the configured GitHub owner via signed sessions. **Projects** manages R2 photo uploads, metadata, ordering and deletion. **Notes** creates, edits, drafts, publishes and deletes plain-text notes. Existing OAuth configuration, GitHub publishing token and `PHOTO_BUCKET` R2 binding are reused.
+## Required Cloudflare configuration
 
-Note drafts are hidden from the public site but saved to GitHub. **If the repository is public, note drafts are not confidential.**
+Cloudflare Pages build command: `python3 build.py`. Output directory: `dist`.
+GitHub OAuth and an R2 binding named `PHOTO_BUCKET` are documented in
+[ADMIN_SETUP.md](ADMIN_SETUP.md).
 
-## Hosting
+The optional Workers AI integration needs a **Workers AI binding named `AI`**.
+Deployment status needs server-only `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`, and
+`CF_PAGES_READ_TOKEN` (Cloudflare Pages Read permission). Redeploy after changing
+Pages bindings or environment variables. Never commit secrets.
 
-- GitHub holds project and note JSON files and website code. Cloudflare R2 holds published photographs.
-- Cloudflare Pages runs `python3 build.py`, output directory `dist`.
-- Cloudflare R2 stores new photographs behind the `PHOTO_BUCKET` Pages binding.
-- Cloudflare Pages Functions serve images and authenticated editor APIs.
-
-No new accounts or Cloudflare secrets are required by V16. See `ADMIN_SETUP.md` for the existing OAuth setup and `UPGRADE_V16.md` for the safe deployment procedure.
-
-## Development
+## Test locally
 
 ```sh
-python3 build.py
 npm test
+npm run audit
+python3 build.py
 ```
 
-Browser smoke testing requires Chromium/Playwright/Pillow:
+Browser smoke scripts in `tests/` are historical regression tools and may need
+Playwright/Chromium. CI runs Node/Python tests and builds the site.
 
-```sh
-python3 tests/browser_v16.py
-```
+## Merge and install
 
-This repository contains sample-empty `content/` and `media/` directories for clean installs. The distributed code **does not include your live GitHub project records or R2 photographs**; keep independent backups.
+The **cleaned source archive** does not contain `.git`, secrets, caches, or
+compiled output. Merge/install instructions are in `MERGE_AND_INSTALL.md`.
+For rollout and rollback guidance, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-## V23 maintenance
-
-Admin photo labels now reflect the current project title and display order. These labels
-are suggested **download filenames**, not physical R2 object keys. Changing a title or
-reordering photos never moves the stored images. The retired one-time R2 filename
-migration interface and old GitHub-image-processing workflow have been removed.
-
-For upgrades, see `UPGRADE_V23.md`.
-
-
-## V24 — Reliability and publishing tools
-
-- Browser-local autosave and recovery in the Projects and Notes editors (not automatic publication).
-- Authenticated, on-demand R2 storage inventory and lightweight metadata export.
-- Optional project image selection for social sharing cards.
-- Fit-to-screen photograph viewer with optional zoom, pinch, and pan.
-- Weekly GitHub Actions backup artifacts (JSON only; photographs are excluded).
-
-See `UPGRADE_V24.md` for installation, privacy considerations and post-deployment checks.
+**Data safety:** project JSON is not R2 image storage. Uploaded photographs
+already in R2 are not included in this repository ZIP. Keep separate original
+photo backups. This code cannot verify your live OAuth, R2 or Cloudflare AI
+bindings offline.

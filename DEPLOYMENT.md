@@ -1,43 +1,33 @@
-# Deploy and upgrade safely
+# Deploy and roll back the photography website
 
-## Existing website (recommended)
+1. Back up your full local repository (including `.git`) and your original camera
+   photographs. Download an admin metadata backup if desired; this does not
+   export R2 image bytes.
+2. Follow `MERGE_AND_INSTALL.md` if GitHub Desktop currently shows an
+   unresolved merge. Do not copy the ZIP's root folder into the repo as a nested
+   `photos-1/photos-1` directory.
+3. Review staged changes, particularly `content/` and `media/`, in GitHub
+   Desktop before committing. The replacement archive keeps your existing
+   project and note metadata; do not replace them with old sample data.
+4. Run `npm test`, `npm run audit`, and `python3 build.py` if Node/Python are
+   installed. GitHub Actions also tests code pushes.
+5. Push `main`. Cloudflare Pages builds with `python3 build.py` and deploys
+   `dist`. Check the build log for success before testing live pages.
+6. Verify homepage, one multi-photo gallery's Fit All button, the photo viewer,
+   admin OAuth, project editing/save, Cancel changes, AI regenerate-one, and
+   Storage/deployment status.
 
-Use the **`nickckincaid_portfolio_code_update.zip`** package. It deliberately excludes `content/` and `media/` so it does not replace your site title, photographs, or projects.
+## Cloudflare settings
 
-1. Make a backup of your GitHub repository and export original photographs from your devices before major changes.
-2. Extract the code-update ZIP; open GitHub Desktop > **Repository > Show in Explorer**.
-3. Copy the ZIP *contents* into the repository folder, preserving directories such as `functions/`, `static/`, `.github/`, and `admin-lib/`. Replace files when asked.
-4. In GitHub Desktop, inspect **Changes** and make sure no `content/projects/*.json` or `media/*` images are being deleted or replaced.
-5. Commit with summary `Consolidate and optimize photography portfolio`, then click **Push origin**.
-6. Cloudflare Pages deploys automatically. Check its latest build log and confirm the public gallery and `/admin/` sign-in work.
-7. Upload one disposable JPEG and test full-size viewing, responsive thumbnail, project saving, ordering, deletion, and R2 presence before migrating anything else.
+- Production R2 binding: `PHOTO_BUCKET`.
+- Production Workers AI binding: `AI` (optional, for generated alt text).
+- Deployment status: `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`, and secret
+  `CF_PAGES_READ_TOKEN` with Pages Read permission.
+- Required OAuth credentials and publishing token: see `ADMIN_SETUP.md`.
 
-If you already have a `dist/` directory tracked by Git, `.gitignore` won't untrack it. Remove it from **Git's index only** (not the source files) through a separate reviewed commit.
+## Rollback
 
-## Brand-new repository
-
-Use **`nickckincaid_portfolio_full_source.zip`**. It contains a clean starter `content/site.json`, `content/projects/.gitkeep`, and `media/.gitkeep`, so `python3 build.py` works even with zero projects. These starter files are **not** a backup of your existing content.
-
-Import the files directly at the repository root, then connect Cloudflare Pages with the build settings shown in README. Configure `PHOTO_BUCKET` and all four server-side credentials before attempting private uploads.
-
-## R2 setup
-
-1. In Cloudflare create a private **R2 Standard** bucket, for example `nickckincaid-photos`.
-2. On the **Pages** project, create a **Production R2 binding** named exactly `PHOTO_BUCKET` pointing to the bucket.
-3. Redeploy to activate the binding. No public bucket domain or R2 API token is required for this architecture.
-4. Existing GitHub-backed images keep working. For older projects, use **Copy older photos to R2**, then **Save project**. Verify the site before using **Remove old GitHub copies**.
-5. Old Git revisions retain image blobs even after current files are removed. Do not rewrite Git history without independent backups.
-
-## Backout plan
-
-Reverting this code version will restore previous software behavior, **not** move new R2-only photographs back to GitHub. Keep the R2 bucket, binding, project JSON, and access credentials intact while rolling back. Revert the code commit in GitHub and redeploy, and only remove R2 objects after validating no project references them.
-
-## Verification checklist
-
-- Homepage loads without broken image placeholders.
-- Opening a project shows correct photos, optional EXIF captions, and inquiry email link.
-- Lightbox closes with Close/Escape, navigates with keyboard/swipes, and direct photo links work.
-- `/admin/` redirects unauthenticated visitors to GitHub sign-in; protected `/api/admin/*` requests reject unauthorized access.
-- Disposable project creates R2 objects but only JSON is added to GitHub.
-- Save/reorder from two simultaneously open editor tabs reports a conflict instead of silently overwriting changes.
-- GitHub Actions runs without altering R2 object references or duplicating images.
+Revert the relevant code commit, push, and allow Cloudflare to redeploy.
+**Do not** delete the R2 bucket or reset secrets to roll back UI/code changes.
+Git history is not a substitute for backups of R2 image originals. Old public
+pages may temporarily refer to deleted R2 objects while a new site deploys.

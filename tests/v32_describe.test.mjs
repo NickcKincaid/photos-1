@@ -14,17 +14,18 @@ const req=(bytes=jpg(),type='image/jpeg')=>new Request('https://nickckincaid.com
 });
 const body=async result=>({status:result.status,body:await result.json()});
 
-test('seven independent photos generate captions using the correct byte-array input and model response shape',async()=>{
+test('seven independent photos use Moondream query with base64 image input and response shape',async()=>{
   let calls=0;
   const env={AI:{run:async(model,options)=>{
     assert.equal(model,MODEL);
-    assert.equal(model,'@cf/llava-hf/llava-1.5-7b-hf');
-    assert.ok(Array.isArray(options.image));
-    assert.equal(options.image[0],255);
-    assert.equal(options.image.at(-1),217);
-    assert.equal(options.prompt.includes('accessibility alt text'),true);
+    assert.equal(model,'@cf/moondream/moondream3.1-9B-A2B');
+    assert.equal(options.task,'query');
+    assert.ok(options.image.startsWith('data:image/jpeg;base64,'));
+    assert.equal(options.stream,false);
+    assert.ok(options.question.includes('accessibility alt-text'));
+    assert.ok(options.question.includes('fixed storefront awning')); 
     calls++;
-    return {description:'Orange flowers in front of a textured gray stone wall with diffused sunlight.'};
+    return {answer:'Orange flowers in front of a textured gray stone wall with diffused sunlight.',metrics:{input_tokens:52,output_tokens:19}};
   }}};
   for(let i=0;i<7;i++){
     const result=await body(await onRequestPost({request:req(),env}));

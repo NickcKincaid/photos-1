@@ -33,6 +33,7 @@ class ContactSheetTests(unittest.TestCase):
         self.site.run()
         html=(self.root/'dist/projects/sample/index.html').read_text()
         self.assertIn('class="contact-sheet-toggle"',html)
+        self.assertIn('>Fit All</button>',html)
         self.assertIn('class="project-photos',html)
         self.assertEqual(html.count('data-lightbox'),2)
         self.assertIn('alt="A geometric concrete facade in afternoon light."',html)

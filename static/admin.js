@@ -45,6 +45,20 @@
     setCropPosition(100*(e.clientX-r.left)/r.width,100*(e.clientY-r.top)/r.height,true);
   });
   window.photoEditorHasPendingChanges = () => dirty || orderDirty || locked;
+  // Discard only local, unpublished changes and the browser recovery draft.
+  // Published GitHub project data and already-uploaded R2 objects are untouched.
+  window.PortfolioDiscardChanges = () => {
+    if (locked || uploadRunning) {
+      window.alert('Wait for the current save or upload before canceling changes.');
+      return false;
+    }
+    if (!window.confirm('Discard all unsaved project changes, including photo order, alt text, and metadata? Previously uploaded R2 files will not be deleted.')) return false;
+    dirty = false;
+    orderDirty = false;
+    window.PortfolioDrafts?.clear?.('project', draftKey());
+    window.location.reload();
+    return true;
+  };
   const slugify = value => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'untitled';
   const localURLs = new Set();
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }

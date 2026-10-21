@@ -1,3 +1,19 @@
+## V33 — Merge repair, Fit All activation, and project cleanup (2026-10-21)
+
+- Resolved the four V32/V33 merge conflicts using V33 Moondream inference,
+  client-side regeneration, and compatible tests rather than leaving markers.
+- Updated a legacy V31 AI test to the current documented Moondream input shape.
+- Activated the **Fit All** button text in both generated project pages and
+  the browser toggle. Internal CSS selectors remain unchanged for compatibility.
+- Integrated **Cancel changes** directly in the project editor (no installer
+  patch required). It discards unsaved metadata/recovery drafts, not saved data
+  or already-uploaded R2 images.
+- Removed one-time patch scripts, duplicate release notes, and obsolete audit
+  documentation; retained source, regression tests, and current setup guides.
+- Kept project/notes JSON and optimized manifest semantically unchanged;
+  normalized accidental CRLF-only changes to avoid unrelated Git diffs.
+- Updated current README, deployment notes, and source audit.
+
 ## V30 — Thorough maintenance and reliability review (2026-10-20)
 
 This release can be applied over V27 or later. It **includes V28 dashboard improvements,

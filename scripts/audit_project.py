@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only V32 source safety sweep for an existing photography portfolio repo.
+"""Read-only portfolio source safety sweep for an existing photography portfolio repo.
 
 No network requests, no R2 writes, and no modifications to project JSON.
 """
@@ -91,13 +91,13 @@ build=read('build.py')
 viewer=read('static/site.js')
 describe=read('functions/api/admin/describe.js')
 if 'contact-sheet-toggle' in build and 'Fit All' not in build:
-    warnings.append('Visible gallery toggle in build.py has not been renamed to Fit All. Run Apply-V32.bat.')
+    warnings.append('Visible gallery toggle in build.py must use Fit All.')
 if 'is-contact-sheet' in viewer and 'Fit All' not in viewer:
-    warnings.append('Visible gallery control in static/site.js has not been renamed. Run Apply-V32.bat.')
-if 'LLaVA' not in describe and 'llava-hf' not in describe:
-    warnings.append('Expected V32 AI model implementation is not installed.')
+    warnings.append('Visible gallery control in static/site.js must use Fit All.')
+if '@cf/moondream/moondream3.1-9B-A2B' not in describe:
+    warnings.append('Expected V33 Moondream image-description implementation is not installed.')
 
-print('V32 READ-ONLY SOURCE AUDIT')
+print('PORTFOLIO READ-ONLY SOURCE AUDIT')
 print(f"Parsed: {counters['python']} Python, {counters['javascript']} JavaScript, {counters['json']} JSON files; {counters['projects']} project records")
 print(f'Errors: {len(errors)}; warnings: {len(warnings)}')
 for problem in errors:
