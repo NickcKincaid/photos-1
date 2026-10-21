@@ -21,11 +21,11 @@ class EditorV34Tests(unittest.TestCase):
     def test_explicit_panel_groups(self):
         html=(ROOT/'static/admin.html').read_text()
         p=_Panels();p.feed(html)
-        self.assertEqual(len(p.names),11)
+        self.assertEqual(len(p.names),12)
         self.assertEqual(len(p.names),len(set(p.names)))
         self.assertEqual(p.summary_count,len(p.names))
         self.assertFalse(p.stack)
-        for needed in ('project-details','uploads','batch-edit','ai-descriptions','integrity','photo-list','sharing','note-editor','r2-storage','analytics','backups'):
+        for needed in ('project-details','uploads','batch-edit','ai-descriptions','integrity','photo-list','sharing','note-editor','r2-storage','analytics','workers-ai','backups'):
             self.assertIn(needed,p.names)
     def test_project_actions_and_link_without_old_deployment_widget(self):
         html=(ROOT/'static/admin.html').read_text()

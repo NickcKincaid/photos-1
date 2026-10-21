@@ -61,6 +61,7 @@
   };
   const slugify = value => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'untitled';
   const localURLs = new Set();
+  const validPixels = n => Number.isInteger(n) && n > 0 && n <= 40000;
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }
   async function api(path, options={}) {
     const response = await fetch('/api/admin/'+path, { credentials:'same-origin', cache:'no-store', ...options });
@@ -77,7 +78,7 @@
     const snapshot={title:$('project-title').value,blurb:$('project-blurb').value,
       order:$('project-order').value,published:$('project-published').checked,
       crop:{...coverPosition},socialImage,
-      stagedSlug, photos:photos.map(({kind,path,meta,variants})=>({kind,path,meta,variants}))};
+      stagedSlug, photos:photos.map(({kind,path,meta,variants,width,height})=>({kind,path,meta,variants,width,height}))};
     window.PortfolioDrafts?.save('project',draftKey(),current?.revision,snapshot);
   }
   function tryRestoreDraft(project) {
@@ -98,7 +99,8 @@
     if(!project && typeof v.stagedSlug==='string' && /^[a-z0-9-]{1,65}$/.test(v.stagedSlug)) stagedSlug=v.stagedSlug;
     if(Array.isArray(v.photos) && v.photos.length<=90 && v.photos.every(p=>
         ['existing','r2'].includes(p.kind) && /^\/media\/[a-zA-Z0-9_./-]+\.(?:jpg|jpeg|webp|png)$/i.test(p.path||'') && !(p.path||'').includes('..'))) {
-      photos=v.photos.map(p=>({...p,preview:null}));
+      photos=v.photos.map(p=>({...p,preview:null, width:validPixels(p.width)?p.width:null,
+        height:validPixels(p.height)?p.height:null}));
     }
     dirty=true;status('Recovered local draft. Review and click Save project to publish.','good');
   }
@@ -158,7 +160,12 @@
     if (project) {
       const overrides=new Map((project.photo_details || []).map(x => [x.image, x]));
       const paths=[project.cover,...(project.gallery || [])].filter(Boolean).filter((p,i,a)=>a.indexOf(p)===i);
-      photos=paths.map(path=>({kind:'existing',path,meta:{...(overrides.get(path)||{})}}));
+      photos=paths.map(path=>{
+        const info = overrides.get(path) || {};
+        return {kind:'existing',path,meta:{...info},
+          width:validPixels(info.width)?info.width:null,
+          height:validPixels(info.height)?info.height:null};
+      });
     }
     $('project-title').value=project?.title || '';
     $('project-blurb').value=typeof project?.blurb === 'string' ? project.blurb : '';
@@ -392,7 +399,19 @@
     if(!photos.length) {container.appendChild(node('p','empty','No photographs yet. Add images above.'));return;}
     photos.forEach((photo,i)=>{
       const row=node('div','photo-row');const img=node('img');img.alt=`Photograph ${i+1}`;
-      img.src=photo.preview || photo.path;img.loading='lazy';row.appendChild(img);
+      img.src=photo.preview || photo.path;img.loading='lazy';
+      // Learn dimensions from older R2 photographs as the editor displays them.
+      // They will be persisted on the next explicit Save, not via an auto-commit.
+      const learnOriginalDimensions = () => {
+        // Never replace a full-resolution measurement with the 360px local preview.
+        if (!photo.preview && !(validPixels(photo.width) && validPixels(photo.height)) &&
+            validPixels(img.naturalWidth) && validPixels(img.naturalHeight)) {
+          photo.width=img.naturalWidth;photo.height=img.naturalHeight;
+        }
+      };
+      img.addEventListener('load',learnOriginalDimensions,{once:true});
+      if (img.complete && img.naturalWidth) learnOriginalDimensions();
+      row.appendChild(img);
       const detail=node('div','photo-details');
       const select=node('label','photo-select');
       const check=node('input');check.type='checkbox';check.checked=selectedPhotos.has(photo.path);check.disabled=locked;
@@ -524,7 +543,8 @@
               variants.push({url:thumb.path,width:thumb.width});
             }
           }catch(error){warning++;job.error='Thumbnails incomplete; original saved';}
-          photos.push({kind:'r2',path:upload.path,variants,meta:{...result.meta,storage:'r2'},filename:upload.path.split('/').pop(),preview});
+          photos.push({kind:'r2',path:upload.path,variants,width:result.width,height:result.height,
+            meta:{...result.meta,storage:'r2'},filename:upload.path.split('/').pop(),preview});
           job.state='done';job.progress=100;completed++;markDirty();renderPhotos();
         }catch(error){if(preview){URL.revokeObjectURL(preview);localURLs.delete(preview);}job.state='failed';job.error=String(error.message||error).slice(0,200);failed++;}
         renderUploadQueue();
@@ -590,7 +610,8 @@
       status('The project name changed after uploading. Use the original name, save, then rename it.','error');return;
     }
     const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,social_image:socialImage,cover_position:coverPosition,order:Number($('project-order').value),published:$('project-published').checked,
-      photos:photos.map(({kind,path,sha,meta,variants})=>({kind,...(kind==='new'?{sha}:{path}),meta, ...(variants?{variants}:{})}))};
+      photos:photos.map(({kind,path,sha,meta,variants,width,height})=>({kind,...(kind==='new'?{sha}:{path}),meta,
+        ...(validPixels(width)&&validPixels(height)?{width,height}:{}),...(variants?{variants}:{})}))};
     try{
       status('Saving project data in GitHub (photos are already in R2)…');
       const saved=await api('save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});

@@ -184,7 +184,11 @@ body > main { flex: 1 0 auto; }
 .lightbox-close-symbol { display: inline-flex; align-items: center; justify-content: center; height: 16px; line-height: 1; }
 .lightbox-close-symbol { width: 12px; font-size: 12px; }
 .lightbox-nav { font: 400 12px/1 var(--font); min-width: 38px; min-height: 46px; }
-.lightbox-copy, .lightbox-download { white-space: nowrap; padding: 8px 0 8px 10px; text-decoration: none; }
+.lightbox-copy, .lightbox-download { white-space: nowrap; padding: 8px 0 8px 10px; text-decoration: none;
+  display: inline-flex; align-items: center; min-height: 44px; }
+/* V36: give mobile viewer controls reliable touch targets without decoration. */
+.lightbox-nav { min-width: 44px; min-height: 44px; }
+.lightbox-zoom { min-height: 44px; }
 .lightbox-actions { display: flex; align-items: center; gap: clamp(10px, 1.8vw, 24px); flex: 0 0 auto; }
 .lightbox-close:hover, .lightbox-nav:hover, .lightbox-copy:hover, .lightbox-download:hover,
 .lightbox-close:focus-visible, .lightbox-nav:focus-visible, .lightbox-copy:focus-visible, .lightbox-download:focus-visible {
@@ -301,7 +305,7 @@ body > main { flex: 1 0 auto; }
 .gallery-link.photo-loading {
   background: linear-gradient(112deg, #e3e4de 0%, #ecece7 55%, #e3e4de 100%);
 }
-.gallery-link.photo-loading { aspect-ratio: 3 / 2; overflow: hidden; }
+.gallery-link.photo-loading { aspect-ratio: var(--photo-ratio, 3 / 2); overflow: hidden; }
 .project-photos.is-contact-sheet .gallery-link.photo-loading { aspect-ratio: 1 / 1; }
 .photo-loading img { opacity: 0; }
 .project-card-media img, .gallery-link img { transition: opacity .16s ease-out; }

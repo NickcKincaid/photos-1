@@ -100,6 +100,18 @@ export async function onRequestPost(context) {
       while (usedIds.has(permanentId)) permanentId = newId();
       usedIds.add(permanentId);
       const info = { image: path, id: permanentId };
+      // Photo dimensions are optional for legacy R2 objects. They must be real
+      // positive integers; never accept arbitrary CSS or untrusted ratios.
+      const width = item.width ?? old?.width;
+      const height = item.height ?? old?.height;
+      if (width != null || height != null) {
+        if (!Number.isInteger(width) || !Number.isInteger(height) ||
+            width < 1 || height < 1 || width > 40000 || height > 40000) {
+          throw Error('Invalid photograph dimensions. Reload the editor and retry.');
+        }
+        info.width = width;
+        info.height = height;
+      }
       if (newR2 || old?.storage === 'r2' || item.meta?.storage === 'r2') {
         if (!context.env.PHOTO_BUCKET) throw Error('R2 bucket binding PHOTO_BUCKET is missing.');
         // Existing unchanged published R2 paths were already verified when first saved.

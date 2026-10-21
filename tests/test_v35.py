@@ -51,6 +51,6 @@ class V35Tests(unittest.TestCase):
         desc=(ROOT/'functions/api/admin/describe.js').read_text()
         self.assertIn('env.AI.run(MODEL',desc)
         self.assertNotIn('extractUsage(',desc)
-        self.assertEqual(len(self.markup.panels),11)
+        self.assertEqual(len(self.markup.panels),12)
 
 if __name__=='__main__':unittest.main()

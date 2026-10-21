@@ -63,3 +63,11 @@ bindings offline.
 The private editor has native, independently collapsible panels for project details, photo upload, batch edits, AI descriptions, link checks, photo metadata, sharing, notes, and Storage tools. The open/closed state is remembered in the browser tab. Click a panel's heading to toggle it; keyboard Enter/Space also work. Save, Preview, and Cancel are grouped together, while Delete stays separated. The deployment-status widget was removed from the admin UI; Cloudflare Pages continues to deploy automatically after GitHub commits.
 
 Project Details now groups title/description before visibility and homepage position. The old browser-local AI usage counters have been removed, replaced by a direct official Cloudflare Workers AI usage link. No Cloudflare tokens or new API permissions are required.
+
+## V36 quality release
+
+- Newly uploaded R2 images save their pixel dimensions; the browser reserves the correct gallery space with native image width/height and a CSS ratio placeholder. The editor can also learn the dimensions of older R2 images when loaded; they persist the next time that project is explicitly saved.
+- Gallery lightbox links use approved descriptions as accessible labels, without displaying them as captions. Touch targets for viewer controls are improved without additional JavaScript.
+- The production builder retains stable canonical links, an image sitemap, real Notes modification dates, and `ImageGallery` / `ImageObject` structured data using reviewed photo descriptions. Verify real indexing through Google Search Console; generating a sitemap does not guarantee indexing.
+- Download a metadata backup in Storage & backups, then verify it offline with `python3 scripts/verify_metadata_backup.py PATH_TO_BACKUP.json`. This only checks structure and cannot restore deleted images: keep a separate copy of your originals/R2 photos.
+- Browser requests, R2 bindings and GitHub OAuth were reviewed locally; production permissions, quota and actual Lighthouse/Core Web Vitals must be checked on the deployed domain.

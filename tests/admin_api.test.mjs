@@ -385,3 +385,34 @@ test('R2 download requests ignore conditional image cache and preserve attachmen
  assert.equal(response.status,200);assert.equal(gets,1);assert.equal(heads,0);
  assert.match(response.headers.get('content-disposition'),/attachment/);
 });
+
+test('V36 stores legitimate pixel dimensions and retains them on later metadata edits',async()=>{
+ const path='/media/tokyo/'+'7'.repeat(24)+'/tokyo-01.jpg';
+ const previous={title:'Tokyo',published:true,order:1,cover:path,gallery:[],
+   photo_details:[{image:path,storage:'r2',width:2400,height:1600,...EXPOSURE}]};
+ const gh=mockGithub(previous);
+ try {
+   const response=await save({request:requestWithPhoto({...EXPOSURE,alt:'New alt'},true,'existing'),
+     env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){throw Error('Redundant R2 HEAD')}}}});
+   assert.equal(response.status,200,await response.clone().text());
+   const doc=gh.trees[0].tree.find(x=>x.path==='content/projects/tokyo.json');
+   const data=JSON.parse(doc.content).photo_details[0];
+   assert.equal(data.width,2400);assert.equal(data.height,1600);
+ }finally{gh.restore();}
+});
+
+test('V36 rejects malicious or incomplete image dimensions before committing',async()=>{
+ for(const dimensions of [{width:9999,height:'auto'},{width:-1,height:300},{width:1,height:50000},{width:300,height:null}]) {
+   const gh=mockGithub();
+   try {
+     const path='/media/tokyo/'+'7'.repeat(24)+'/tokyo-01.jpg';
+     const response=await save({request:new Request('https://nickckincaid.com/api/admin/save',{
+       method:'POST',headers:{'content-type':'application/json'},
+       body:JSON.stringify({slug:'tokyo',revision:SHA,title:'Tokyo',published:false,order:1,
+         photos:[{kind:'r2',path,...dimensions,meta:EXPOSURE}]})}),
+       env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){return {size:5}}}}});
+     assert.equal(response.status,400,await response.clone().text());
+     assert.equal(gh.trees.length,0);
+   }finally{gh.restore();}
+ }
+});

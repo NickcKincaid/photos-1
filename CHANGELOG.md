@@ -1,3 +1,22 @@
+## V36 — Stability, SEO, security and accessibility (2026-10-21)
+
+- Persist intrinsic pixel dimensions (width and height) for future photograph uploads and existing photographs opened in the editor and explicitly saved. Public gallery images use accurate dimensions to reserve loading space when available; older untouched R2 content retains the V35b fallback.
+- Improve link accessible names by including the reviewed alt descriptions, without displaying them as captions or changing the visual gallery.
+- Keep image sitemaps, canonical URLs and responsive thumbnails intact; add reviewed alt text to ImageObject entries in structured data; indexing still requires Search Console verification.
+- Add a read-only metadata-backup verifier; original image files remain outside backups and are not altered.
+- Retain Cloudflare Pages/R2/OAuth boundaries; no new dependencies or background requests.
+
+## V35b — Site build date & lightweight loading placeholders
+- Restore the latest site build date in Storage & backups, separate from the R2 Last checked time.
+- Add neutral CSS-only pending-image blocks for the public homepage and galleries, without any new dependencies.
+- Preserve native lazy loading, alt text, Fit All, and reduced-motion accessibility.
+
+## V35a — Storage clarification and usage navigation
+
+- Workers AI usage now has its own collapsible panel under Storage & backups; the link opens the official account-specific Cloudflare dashboard in a new tab. No local neuron estimates or new API permissions.
+- R2 photo storage now shows **Last checked** after a successful manual inventory. The timestamp represents the lookup time, not the last photo modification or a site deployment. Failed requests preserve the last successful check.
+- Metadata backups wording now explicitly lists covered JSON data and clarifies that R2 images and OAuth secrets are excluded. No backup/export behavior changed.
+
 ## V35 — Admin field order, real Cloudflare usage link & stability (2026-10-21)
 
 - Reorganized Project Details into Identity & description (name and optional blurb), then Visibility & homepage order (published setting and position). Kept all IDs and underlying fields for backwards compatibility.

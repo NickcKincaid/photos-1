@@ -139,6 +139,17 @@ def exists_image(image: str, project: dict) -> bool:
     return bool(image) and (is_r2_image(image, project) or (ROOT / image.lstrip('/')).is_file())
 
 
+def image_dimensions(value: str, project: dict | None = None) -> tuple[int, int] | None:
+    """Return persisted, validated source dimensions when known; never guess ratios."""
+    for entry in (project or {}).get('photo_details', []):
+        if not isinstance(entry, dict) or entry.get('image') != value:
+            continue
+        w, h = entry.get('width'), entry.get('height')
+        if type(w) is int and type(h) is int and 0 < w <= 40000 and 0 < h <= 40000:
+            return w, h
+    return None
+
+
 def image_attributes(value: str, sizes: str, eager: bool = False, project: dict | None = None) -> str:
     """Serve an optimized WebP when available, and the original if not."""
     original = media_href(value)
@@ -147,6 +158,8 @@ def image_attributes(value: str, sizes: str, eager: bool = False, project: dict 
     remote_variants = bool(is_r2_image(value, project or {}) and details.get('variants'))
     variants = details.get('variants') if remote_variants else optimized_images().get(value, [])
     variants = variants if isinstance(variants, list) else []
+    dimensions = image_dimensions(value, project)
+    dimension_attrs = f'width="{dimensions[0]}" height="{dimensions[1]}" ' if dimensions else ''
     valid = [v for v in variants if isinstance(v, dict)
              and isinstance(v.get('width'), int) and v['width'] > 0
              and image_url(v.get('url', ''))
@@ -155,9 +168,9 @@ def image_attributes(value: str, sizes: str, eager: bool = False, project: dict 
         valid.sort(key=lambda v: v['width'])
         src = valid[0]['url']
         srcset = ', '.join(f'{esc(v["url"])} {v["width"]}w' for v in valid)
-        return (f'src="{esc(src)}" srcset="{srcset}" sizes="{esc(sizes)}" '
+        return (f'{dimension_attrs}src="{esc(src)}" srcset="{srcset}" sizes="{esc(sizes)}" '
                 f'loading="{"eager" if eager else "lazy"}" decoding="async"')
-    return f'src="{esc(original)}" loading="{"eager" if eager else "lazy"}" decoding="async"'
+    return f'{dimension_attrs}src="{esc(original)}" loading="{"eager" if eager else "lazy"}" decoding="async"'
 
 
 def image_alt(project: dict, url: str, default: str) -> str:
@@ -431,9 +444,12 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     images.extend(img for img in p['gallery'] if img and img != p['cover'])
     items = []
     for idx, image in enumerate(images, start=1):
+        alt_text = image_alt(p, image, f'{p["title"]}, photograph {idx}')
+        dimensions = image_dimensions(image, p)
+        ratio_style = (f' style="--photo-ratio:{dimensions[0]}/{dimensions[1]}"' if dimensions else '')
         items.append(f'''<figure class="gallery-item">
-  <a class="gallery-link" data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="#photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" data-download-name="{esc(download_filename(p['title'], idx, len(images), image))}" aria-label="Open photograph {idx} in viewer">
-    <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1, p)} alt="{esc(image_alt(p, image, p['title'] + ', photograph ' + str(idx)))}">
+  <a class="gallery-link"{ratio_style} data-lightbox data-photo-id="{esc(photo_id(image, p))}" data-photo-legacy-id="{esc(photo_legacy_id(image, p))}" data-meta="{esc(photo_info(image, p))}" href="#photo={esc(photo_id(image, p))}" data-full-src="{esc(media_href(image))}" data-download-name="{esc(download_filename(p['title'], idx, len(images), image))}" aria-label="Open {esc(alt_text)} in viewer">
+    <img {image_attributes(image, IMAGE_SIZES_GALLERY, idx == 1, p)} alt="{esc(alt_text)}">
   </a>
   {photo_caption(idx, len(images), image, p)}
 </figure>''')
@@ -461,12 +477,22 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
         description = seo_summary(f'{p["title"]} — photography by {site["name"]}. {summary}'
                                   if summary else
                                   f'{p["title"]} — a photography project by {site["name"]}. View the complete photo series.')
+    # Describe the actual linked photographs in machine-readable metadata. Only
+    # saved, reviewed alt text is included; don't invent AI descriptions here.
+    image_schema = []
+    for position, photo in enumerate(images, 1):
+        obj = {'@type': 'ImageObject', 'contentUrl': SITE_URL + photo,
+               'creator': {'@id': SITE_URL + '/#person'}}
+        reviewed_alt = image_alt(p, photo, '')
+        if reviewed_alt:
+            obj['description'] = reviewed_alt
+        image_schema.append(obj)
     return document(p['title'], description, site, body,
                     p.get('social_image') if p.get('social_image') in images else (images[0] if images else ''), p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'ImageGallery', 'name': p['title'],
                      'url': SITE_URL + p['url'], 'description': description,
                      'creator': {'@id': SITE_URL + '/#person'},
-                     'image': [SITE_URL + photo for photo in images]})
+                     'image': image_schema})
 
 
 def clean_time(raw: str) -> datetime | None:

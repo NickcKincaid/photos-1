@@ -169,7 +169,7 @@
       camera=cameraMetadata(source);
     }
     const addon = 2+xmpPayload.length+(exif?.length||0);
-    let dimensions='';
+    let dimensions='', outputWidth=0, outputHeight=0;
     for (let round=0;round<12;round++) {
       const width=Math.max(1,Math.round(bitmap.width*size));
       const height=Math.max(1,Math.round(bitmap.height*size));
@@ -179,6 +179,7 @@
       ctx.fillStyle='white';ctx.fillRect(0,0,width,height);
       ctx.drawImage(bitmap,0,0,width,height);
       dimensions=`${width} × ${height}`;
+      outputWidth=width;outputHeight=height;
       for (const quality of [.88,.82,.75,.68,.58,.48]) {
         const jpeg=await toBlob(canvas,quality);
         if (jpeg.size+addon<=targetBytes) {buffer=new Uint8Array(await jpeg.arrayBuffer());break;}
@@ -194,7 +195,7 @@
     prefix.push(buffer.subarray(2));
     const blob=new Blob(prefix,{type:'image/jpeg'});
     const filename=file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]+/g,'-')+'-web.jpg';
-    return {blob,filename,dimensions,meta:camera};
+    return {blob,filename,dimensions,width:outputWidth,height:outputHeight,meta:camera};
   }
   // Keep only a tiny editor preview in memory. Otherwise 90 prepared uploads
   // would pin up to ~234 MB of full-size JPEG blobs on a phone until navigation.
