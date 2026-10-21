@@ -35,23 +35,39 @@
       const source=new Image();
       source.crossOrigin='anonymous';
       source.onload=()=>{
-        try{
-          if(!source.naturalWidth||!source.naturalHeight)throw Error('Image dimensions are unavailable.');
-          const scale=Math.min(1,896/Math.max(source.naturalWidth,source.naturalHeight));
-          const canvas=document.createElement('canvas');
-          canvas.width=Math.max(1,Math.round(source.naturalWidth*scale));
-          canvas.height=Math.max(1,Math.round(source.naturalHeight*scale));
-          const context=canvas.getContext('2d');
-          if(!context)throw Error('Canvas is unavailable.');
-          context.drawImage(source,0,0,canvas.width,canvas.height);
-          const encode=quality=>canvas.toBlob(blob=>{
-            if(!blob){reject(Error('Could not encode the image preview.'));return;}
-            if(blob.size>900_000 && quality>0.41){encode(0.40);return;}
-            if(blob.size>900_000){reject(Error('Preview is too large, even after compression.'));return;}
-            resolve(blob);
-          },'image/jpeg',quality);
-          encode(0.70);
-        }catch(error){reject(error);}
+        if(!source.naturalWidth || !source.naturalHeight){reject(Error('Image dimensions are unavailable.'));return;}
+        const canvas=document.createElement('canvas');
+        const context=canvas.getContext('2d');
+        if(!context){reject(Error('Canvas is unavailable.'));return;}
+        // Try both progressively lower quality and smaller dimensions to avoid
+        // failing on detailed/grainy photographs whose JPEGs compress poorly.
+        const sizes=[896,768,640,512,384];
+        const qualities=[0.75,0.6,0.45,0.32];
+        let sizeIndex=0,qualityIndex=0;
+        const done=(error,blob)=>{
+          canvas.width=0;canvas.height=0;
+          if(error)reject(error);else resolve(blob);
+        };
+        function encode(){
+          const limit=sizes[sizeIndex];
+          const scale=Math.min(1,limit/Math.max(source.naturalWidth,source.naturalHeight));
+          const width=Math.max(1,Math.round(source.naturalWidth*scale));
+          const height=Math.max(1,Math.round(source.naturalHeight*scale));
+          if(canvas.width!==width || canvas.height!==height){
+            canvas.width=width;canvas.height=height;
+            context.drawImage(source,0,0,width,height);
+          }
+          try{
+            canvas.toBlob(blob=>{
+              if(!blob){done(Error('Could not encode the image preview.'));return;}
+              if(blob.size<=900_000){done(null,blob);return;}
+              if(qualityIndex<qualities.length-1){qualityIndex++;encode();return;}
+              if(sizeIndex<sizes.length-1){sizeIndex++;qualityIndex=0;encode();return;}
+              done(Error('Image preview exceeds 900 KB after resizing.'));
+            },'image/jpeg',qualities[qualityIndex]);
+          }catch(error){done(error);}
+        }
+        encode();
       };
       source.onerror=()=>reject(Error('Unable to load photo. Check R2 access and CORS.'));
       source.src=image.currentSrc||image.src;

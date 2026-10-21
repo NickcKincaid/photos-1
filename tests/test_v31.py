@@ -40,7 +40,7 @@ class ContactSheetTests(unittest.TestCase):
         self.assertIn('content="Sample — photography by Nicholas Kincaid. A geometric concrete facade in afternoon light."',html)
         self.assertNotIn('>A geometric concrete facade in afternoon light.<',html)
         self.assertTrue((self.root/'dist/admin/admin-describe.js').is_file())
-        self.assertTrue((self.root/'dist/admin/admin-deployment.js').is_file())
+        self.assertTrue((self.root/'dist/admin/admin-ui.js').is_file())
         self.assertIn('is-contact-sheet', (self.root/'dist/site.js').read_text())
 
     def test_contact_sheet_is_absent_for_one_photo(self):

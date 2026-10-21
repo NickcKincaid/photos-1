@@ -1,3 +1,14 @@
+## V34 — Editor menus and reliability (2026-10-21)
+
+- Replaced unreliable header-based collapse script with native, accessible expand/collapse panels, separately controllable for each project, note and Storage subsection. Persistent only within the active browser tab.
+- Moved Save, Preview, Cancel and Delete into a clear and responsive action bar; removed visible deployment-status controls and automatic status polling.
+- Retained Cloudflare's private deployment API as a non-UI endpoint for existing integration compatibility.
+- Open the necessary panel automatically when selecting a photo for batch editing, creating a project, or encountering missing required metadata/invalid form inputs.
+- Hardened Workers AI preview preparation with incremental resizing and compression for complex, high-detail photos.
+- Added a 12-second timeout to upstream GitHub API requests, returning actionable retry guidance.
+- Serve R2 media with an image content type determined by validated file extension, not untrusted stored MIME metadata.
+- Preserved original V33 generation, regeneration, local AI usage tracking, R2, notes, Fit All, SEO, and image metadata.
+
 ## V33 — Merge repair, Fit All activation, and project cleanup (2026-10-21)
 
 - Resolved the four V32/V33 merge conflicts using V33 Moondream inference,

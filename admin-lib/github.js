@@ -14,16 +14,28 @@ export async function mapInBatches(items, size, callback) {
 export const slugify = value => (String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 65) || 'untitled');
 export async function gh(context, path, { method = 'GET', body = undefined } = {}) {
   let res;
-  try { res = await fetch(`${API}${path}`, {
-    method,
-    headers: { Authorization: `Bearer ${context.env.GITHUB_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'photography-portfolio-admin',
-      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  }); } catch {
-    const err = Error('Could not reach GitHub. Try again shortly.'); err.status = 502; throw err;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  try {
+    res = await fetch(`${API}${path}`, {
+      method,
+      signal: controller.signal,
+      headers: { Authorization: `Bearer ${context.env.GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'photography-portfolio-admin',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    const timedOut = controller.signal.aborted;
+    const err = Error(timedOut
+      ? 'GitHub did not respond within 12 seconds. Retry the action.'
+      : 'Could not reach GitHub. Try again shortly.');
+    err.status = timedOut ? 504 : 502;
+    throw err;
+  } finally {
+    clearTimeout(timeout);
   }
   if (!res.ok) {
     if (res.status === 404) { const err = Error('Not found'); err.status = 404; throw err; }

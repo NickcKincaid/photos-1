@@ -132,6 +132,32 @@ main[hidden] { display: none !important; }
 .ai-description-panel p { margin:7px 0; max-width:720px; }
 .ai-description-panel button { margin:4px 8px 4px 0; }
 .ai-description-panel button[hidden] { display:none; }
-.deploy-indicator { font-weight:400; color:var(--muted); font-size:10px; }
-.deploy-indicator[data-state="success"] { color:#3c6c4c; }
-.deploy-indicator[data-state="failed"] { color:#a33228; }
+
+/* V34: accessible, individually collapsible admin sections. */
+.admin-panel { border-top:1px solid var(--line); margin:0; min-width:0; }
+.admin-panel > summary { cursor:pointer; display:list-item; padding:14px 7px; font-weight:600; color:var(--ink); list-style-position:inside; }
+.admin-panel > summary:hover { background:#efefe9; }
+.admin-panel > summary:focus-visible { outline:2px solid var(--ink); outline-offset:-2px; }
+.admin-panel[open] > summary { border-bottom:1px solid var(--line); }
+.admin-panel-body { padding:15px 7px 19px; min-width:0; }
+.admin-panel-body > :first-child { margin-top:0; }
+.admin-panel .upload-zone, .admin-panel .ai-description-panel, .admin-panel .integrity-panel, .admin-panel .bulk-editor, .admin-panel .cover-crop { margin-top:0; border-top:0; padding-top:0; }
+.admin-panel .sharing-preview-field { padding-top:0; }
+.admin-panel .photos { margin-top:0; }
+.admin-panel .note-edit-fields { padding:0; }
+.storage-panel { max-width:850px; }
+.storage-panel h1 { font-size:12px; margin-bottom:10px; }
+.storage-panel .admin-panel-body { padding:15px 12px 22px; }
+.storage-panel .admin-panel > summary { padding:16px 12px; }
+.usage-figures { display:flex; gap:12px 24px; flex-wrap:wrap; }
+.usage-figures > div { min-width:110px; }
+.project-actions { gap:8px; padding-top:17px; }
+.project-actions #publish { margin-right:3px; }
+.project-actions .cancel-changes { background:transparent; color:var(--ink); border:1px solid var(--line); padding:9px 12px; }
+.project-actions .cancel-changes:hover { border-color:var(--ink); }
+.project-actions .delete-project { margin-left:auto; }
+@media(max-width:680px) {
+  .admin-panel-body { padding:12px 5px 15px; }
+  .project-actions .delete-project { margin-left:0; width:100%; text-align:center; }
+  .project-actions button { flex:1 1 auto; }
+}

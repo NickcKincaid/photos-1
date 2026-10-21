@@ -45,7 +45,7 @@ async function handle(context, headOnly) {
       : await context.env.PHOTO_BUCKET.get(key);
     if (object) {
       const headers = new Headers({
-        'Content-Type': object.httpMetadata?.contentType || serveType(key),
+        'Content-Type': serveType(key),
         'X-Content-Type-Options': 'nosniff',
         // Use a short TTL: migrated images may initially share URLs with static copies.
         'Cache-Control': requestedName ? 'private, no-store' : 'public, max-age=3600',

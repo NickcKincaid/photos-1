@@ -18,11 +18,11 @@
   <script src="/admin/admin-note-format.js" defer></script>
   <script src="/admin/admin-notes.js" defer></script>
   <script src="/admin/admin-storage.js" defer></script>
-  <script src="/admin/admin-deployment.js" defer></script>
+  <script src="/admin/admin-ui.js" defer></script>
   <script src="/admin/admin-describe.js" defer></script>
 </head>
 <body>
-  <header class="top"><a href="/">← Portfolio</a><span>Photography / editor <span id="deploy-indicator" class="deploy-indicator" role="status">· Deployment status pending</span></span><a class="private" href="/api/auth/logout">Sign out</a></header>
+  <header class="top"><a href="/">← Portfolio</a><span>Photography / editor</span><a class="private" href="/api/auth/logout">Sign out</a></header>
   <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button><button id="show-storage" type="button" aria-pressed="false">Storage &amp; backups</button></nav>
   <main id="projects-pane">
     <div class="sidebar">
@@ -36,6 +36,7 @@
     <section class="editor" aria-label="Project editor">
       <p class="status" role="status" id="status">Loading projects…</p>
       <form id="editor-form" hidden>
+<details class="admin-panel" data-panel="project-details" open><summary>Project details</summary><div class="admin-panel-body">
         <div class="fields">
           <label>Project name<input id="project-title" type="text" maxlength="120" required placeholder="Project title"></label>
           <label>Homepage position<input id="project-order" type="number" min="0" max="999999" step="1" value="1" required></label>
@@ -44,6 +45,9 @@
         <label class="project-blurb-editor" for="project-blurb">Project blurb <span class="muted">(optional — appears in open space beside the photographs)</span>
           <textarea id="project-blurb" rows="4" maxlength="1000" placeholder="A few words about the project…"></textarea>
         </label>
+
+</div></details>
+<details class="admin-panel" data-panel="uploads"><summary>Upload & cover crop</summary><div class="admin-panel-body">
         <div class="upload-zone">
           <div class="upload-label"><strong>Photographs</strong><span class="muted">First photo = cover. Use arrows to reorder.</span></div>
           <label class="file-button" for="photo-files">+ Add photos</label>
@@ -68,6 +72,9 @@
             </div>
           </div>
         </section>
+
+</div></details>
+<details class="admin-panel" data-panel="batch-edit"><summary>Batch edit</summary><div class="admin-panel-body">
         <section id="bulk-editor" class="bulk-editor" aria-label="Bulk photograph editor" hidden>
           <strong>Batch edit</strong><span id="bulk-count" class="muted">0 selected</span>
           <div class="bulk-actions">
@@ -88,6 +95,9 @@
           </div>
           <p class="muted">Batch changes are unsaved until you click Save project. Applying a setting overwrites that field only on selected photographs.</p>
         </section>
+
+</div></details>
+<details class="admin-panel" data-panel="ai-descriptions"><summary>Search & accessibility descriptions</summary><div class="admin-panel-body">
         <section id="ai-description" class="ai-description-panel" aria-label="Automatic photo descriptions">
           <strong>Search and accessibility descriptions</strong>
           <p class="muted">Use Cloudflare Workers AI to describe photographs for image alt text. These descriptions are not visible as photo captions. Existing descriptions are preserved; review generated wording before saving.</p>
@@ -95,12 +105,21 @@
           <button type="button" id="stop-descriptions" hidden>Stop</button>
           <p id="ai-description-status" class="muted" role="status">Requires a Workers AI binding named AI. Generates text only when you request it; AI usage may be billed.</p>
         </section>
+
+</div></details>
+<details class="admin-panel" data-panel="integrity"><summary>Check image links</summary><div class="admin-panel-body">
         <section id="image-integrity" class="integrity-panel" aria-label="Image integrity checker">
           <button type="button" id="check-images">Check this project's image links</button>
           <p id="image-check-status" class="muted" role="status">Checks originals and thumbnails without modifying R2.</p>
           <ul id="image-check-results" class="integrity-results"></ul>
         </section>
+
+</div></details>
+<details class="admin-panel" data-panel="photo-list" open><summary>Photographs & metadata</summary><div class="admin-panel-body">
         <div id="photos" class="photos"></div>
+
+</div></details>
+<details class="admin-panel" data-panel="sharing"><summary>Sharing & search preview</summary><div class="admin-panel-body">
         <label class="sharing-preview-field" for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span>
           <select id="social-image"><option value="">Use homepage cover</option></select>
           <div id="social-preview" class="social-preview" hidden aria-label="Approximate social sharing card preview">
@@ -109,7 +128,14 @@
           </div>
           <small class="muted">Approximate preview. Social apps may crop differently or cache an older image.</small>
         </label>
-        <div class="actions"><button id="publish" type="submit">Save project</button><button type="button" id="preview-project">Preview</button><button type="button" id="delete-project" class="delete-project" hidden>Delete project</button><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare deployments ↗</a></div>
+
+</div></details>
+        <div class="actions project-actions" role="group" aria-label="Project actions">
+          <button id="publish" type="submit">Save project</button>
+          <button type="button" id="preview-project">Preview</button>
+          <button type="button" id="v34-cancel-changes" class="cancel-changes">Cancel changes</button>
+          <button type="button" id="delete-project" class="delete-project" hidden>Delete project</button>
+        </div>
       </form>
     </section>
   </main>
@@ -121,6 +147,7 @@
     <section class="editor" aria-label="Notes editor">
       <p class="status" role="status" id="notes-status">Select a note or create one.</p>
       <form id="note-form" hidden>
+<details class="admin-panel" data-panel="note-editor" open><summary>Write & format note</summary><div class="admin-panel-body">
         <div class="note-edit-fields">
           <label>Title<input type="text" id="note-title" maxlength="120" required placeholder="Note title"></label>
           <div class="note-editor-label">Text <span class="muted">Lightweight formatting, no HTML required</span></div>
@@ -140,6 +167,8 @@
           <label class="check"><input type="checkbox" id="note-published"> Publish this note</label>
           <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site. Unsaved text is backed up locally in this browser.</p>
         </div>
+
+</div></details>
         <div class="actions"><button id="save-note" type="submit">Save note</button><button id="delete-note" type="button" class="delete-project" hidden>Delete note</button><a href="/notes/" target="_blank" rel="noopener">View notes ↗</a></div>
       </form>
     </section>
@@ -147,28 +176,51 @@
   <main id="storage-pane" class="storage-page" hidden>
     <section class="storage-panel" aria-label="Storage and backups">
       <h1>Storage &amp; backups</h1>
-      <p class="muted">Cloudflare R2 storage totals include optimized thumbnails. These figures are read from your private bucket when requested.</p>
-      <button id="storage-refresh" type="button">Check R2 storage</button>
-      <p id="storage-status" class="status" role="status">Not checked yet.</p>
-      <dl class="storage-stats" id="storage-stats" hidden>
-        <div><dt>Objects stored</dt><dd id="storage-objects">—</dd></div>
-        <div><dt>Photographs</dt><dd id="storage-photos">—</dd></div>
-        <div><dt>Storage used</dt><dd id="storage-bytes">—</dd></div>
-        <div><dt>Estimated Standard storage cost / month</dt><dd id="storage-cost">—</dd></div>
-      </dl>
-      <p class="muted" id="storage-caveat">Storage estimate excludes request charges. The free allowance, if eligible, is reflected in the estimate.</p>
-      <h2>Visitor statistics</h2>
-      <p>Cloudflare Web Analytics reports visitors, page views, popular project pages, referral sources, countries, and device types. It uses privacy-first aggregation rather than individual visitor profiles.</p>
-      <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">Open Cloudflare Web Analytics ↗</a> <span class="muted">In Workers &amp; Pages → your site → Metrics, enable Web Analytics if it is not already enabled. Visit Analytics &amp; Logs → Web Analytics to view the results.</span></p>
-      <h2>Latest Cloudflare deployment</h2>
-      <button type="button" id="deployment-refresh">Check deployment status</button>
-      <p class="muted" id="deployment-status" role="status">Waiting for deployment status…</p>
-      <p class="muted">Deployment information uses a server-only Cloudflare API token with Pages Read permission. No token is sent to this browser.</p>
-      <h2>Lightweight backups</h2>
-      <p>Weekly GitHub Actions snapshots contain project settings and Notes JSON. They do not duplicate your R2 photos or original camera files.</p>
-      <button id="download-metadata" type="button">Download a metadata backup now</button>
-      <p id="backup-status" class="status" role="status"></p>
-      <a href="https://github.com/NickcKincaid/photos-1/actions/workflows/backup-metadata.yml" target="_blank" rel="noopener noreferrer">View weekly backups on GitHub ↗</a>
+      <p class="muted">Expand a section to manage storage, review usage or download backups.</p>
+      <details class="admin-panel" data-panel="r2-storage" open>
+        <summary>R2 photo storage</summary>
+        <div class="admin-panel-body">
+          <p class="muted">Totals include optimized thumbnails. Inventory is only requested when you click Check R2 storage.</p>
+          <button id="storage-refresh" type="button">Check R2 storage</button>
+          <p id="storage-status" class="status" role="status">Not checked yet.</p>
+          <dl class="storage-stats" id="storage-stats" hidden>
+            <div><dt>Objects stored</dt><dd id="storage-objects">—</dd></div>
+            <div><dt>Photographs</dt><dd id="storage-photos">—</dd></div>
+            <div><dt>Storage used</dt><dd id="storage-bytes">—</dd></div>
+            <div><dt>Estimated Standard storage cost / month</dt><dd id="storage-cost">—</dd></div>
+          </dl>
+          <p class="muted" id="storage-caveat">Storage estimate excludes request charges. Account-wide free allowances, when eligible, are reflected in the estimate.</p>
+        </div>
+      </details>
+      <details class="admin-panel" data-panel="ai-usage">
+        <summary>Photo description AI usage</summary>
+        <div class="admin-panel-body" id="v34-ai-usage">
+          <div class="usage-figures">
+            <div>Requests (this browser): <strong data-usage="requests">0</strong></div>
+            <div>Generated: <strong data-usage="successes">0</strong></div>
+            <div>Failed: <strong data-usage="failures">0</strong></div>
+          </div>
+          <p>Model-reported tokens: <span data-usage="tokens">Not reported</span></p>
+          <p class="muted">Counts start with V33 and are saved only in this browser. They are not account-wide and do not represent Cloudflare neuron usage or billing.</p>
+          <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">View official Workers AI usage in Cloudflare ↗</a></p>
+        </div>
+      </details>
+      <details class="admin-panel" data-panel="analytics">
+        <summary>Visitor statistics</summary>
+        <div class="admin-panel-body">
+          <p>Cloudflare Web Analytics reports visits, popular project pages, referring sites, countries and devices using aggregated statistics.</p>
+          <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">Open Cloudflare Web Analytics ↗</a></p>
+        </div>
+      </details>
+      <details class="admin-panel" data-panel="backups">
+        <summary>Metadata backups</summary>
+        <div class="admin-panel-body">
+          <p>Weekly GitHub Actions snapshots store project and Notes JSON. R2 photographs and original camera files are not included.</p>
+          <button id="download-metadata" type="button">Download metadata backup</button>
+          <p id="backup-status" class="status" role="status"></p>
+          <a href="https://github.com/NickcKincaid/photos-1/actions/workflows/backup-metadata.yml" target="_blank" rel="noopener noreferrer">View weekly backups on GitHub ↗</a>
+        </div>
+      </details>
     </section>
   </main>
   <dialog class="draft-preview" id="draft-preview" aria-label="Unpublished project preview">

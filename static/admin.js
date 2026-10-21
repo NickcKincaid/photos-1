@@ -166,6 +166,7 @@
     $('project-published').checked=project ? Boolean(project.published):false;
     $('editor-form').hidden=false;
     status(project ? 'Editing project. Changes appear after Cloudflare redeploys.' : 'New project. Add photos and save when ready.');
+    if (!project) document.querySelector('[data-panel="uploads"]')?.setAttribute('open','');
     tryRestoreDraft(project);
     renderList();renderPhotos();updateDeleteState();
   }
@@ -237,6 +238,7 @@
     const incomplete=photos.findIndex(p=>missingMeta(p).length);
     if(incomplete<0)return;
     const row=$('photos').children[incomplete];
+    document.querySelector('[data-panel="photo-list"]')?.setAttribute('open','');
     const details=row?.querySelector('details');if(details)details.open=true;
     const key=missingMeta(photos[incomplete])[0][0];
     row?.querySelector(`input[data-meta-field="${key}"]`)?.focus();
@@ -371,6 +373,7 @@
         else {photo.meta[key]=formatted;if(field){field.value=formatted;field.setAttribute('aria-invalid','false');}}
       }
       if(!problems.length)continue;
+      document.querySelector('[data-panel="photo-list"]')?.setAttribute('open','');
       const details=row?.querySelector('details');
       if(details)details.open=true;
       const first=problems[0];
@@ -394,7 +397,7 @@
       const select=node('label','photo-select');
       const check=node('input');check.type='checkbox';check.checked=selectedPhotos.has(photo.path);check.disabled=locked;
       check.setAttribute('aria-label',`Select photograph ${i+1} for batch editing`);
-      check.addEventListener('change',()=>{if(check.checked)selectedPhotos.add(photo.path);else selectedPhotos.delete(photo.path);updateBulkState();});
+      check.addEventListener('change',()=>{if(check.checked){selectedPhotos.add(photo.path);document.querySelector('[data-panel="batch-edit"]')?.setAttribute('open','');}else selectedPhotos.delete(photo.path);updateBulkState();});
       select.appendChild(check);select.appendChild(node('span','','Select for batch edit'));detail.appendChild(select);
       const name=node('p','photo-name', (i===0?'Cover · ':'')+displayFilename(photo, i));
       detail.appendChild(name);
@@ -575,6 +578,7 @@
     if (orderDirty) { status('Save project order before saving this project.', 'error'); return; }
     if (uploadJobs.some(job=>job.state==='failed'||job.state==='queued')) {
       status('Retry or dismiss failed photo uploads before saving, so none are forgotten.','error');
+      document.querySelector('[data-panel="uploads"]')?.setAttribute('open','');
       $('upload-queue').scrollIntoView({block:'center'});return;
     }
     const title=$('project-title').value.trim();
