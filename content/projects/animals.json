@@ -19,6 +19,8 @@
     {
       "image": "/media/animals/bc0da06ffa064f36ab41b04e/animals-01.jpg",
       "id": "0d803f3a04fd4fa49e4572d9",
+      "width": 1323,
+      "height": 1323,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "focal_length": "500mm",
@@ -30,6 +32,8 @@
     {
       "image": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
       "id": "cdafa967ec854b8aad0965d2",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -42,6 +46,8 @@
     {
       "image": "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
       "id": "c0202e40c9a345a29c3d8a53",
+      "width": 2481,
+      "height": 2481,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
@@ -54,6 +60,8 @@
     {
       "image": "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
       "id": "78b4219d52c1411a83fc842d",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -66,6 +74,8 @@
     {
       "image": "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
       "id": "a958d7631e694f90aa29d772",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
