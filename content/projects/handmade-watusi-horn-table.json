@@ -14,10 +14,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "66 mm",
+      "focal_length": "66mm",
       "aperture": "f/8",
-      "shutter_speed": "1/500",
-      "iso": "160"
+      "shutter_speed": "1/500s",
+      "iso": "ISO 160",
+      "alt": "Four animal horns are displayed in a black rectangular frame against a gray concrete wall; the horns are positioned upright and angled slightly forward."
     },
     {
       "image": "/media/handmade-watusi-horn-table/a6a074de135d4f228739b8d5/handmade-watusi-horn-table-02.jpg",
@@ -25,10 +26,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "69 mm",
+      "focal_length": "69mm",
       "aperture": "f/8",
-      "shutter_speed": "1/500",
-      "iso": "125"
+      "shutter_speed": "1/500s",
+      "iso": "ISO 125",
+      "alt": "Four horns protrude from a dark wooden frame, against a light gray concrete wall."
     },
     {
       "image": "/media/handmade-watusi-horn-table/07c2d14201e5493cb6188790/handmade-watusi-horn-table-03.jpg",
@@ -36,11 +38,17 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/8",
-      "shutter_speed": "1/400",
-      "iso": "220"
+      "shutter_speed": "1/400s",
+      "iso": "ISO 220",
+      "alt": "Close-up of weathered animal tusks resting on dark wooden surface, angled diagonally with light falling across one tusk and casting shadows on adjacent tusks."
     }
   ],
-  "blurb": "Handcrafted and reversible, this bedside table features two sets of Watusi cattle horns that can be repositioned to the user's liking. The horns contrast with a stark, asymmetrical tabletop to create a distinctive piece. Only two produced."
+  "blurb": "Handcrafted and reversible, this bedside table features two sets of Watusi cattle horns that can be repositioned to the user's liking. The horns contrast with a stark, asymmetrical tabletop to create a distinctive piece. Only two produced.",
+  "social_image": "",
+  "cover_position": {
+    "x": 50,
+    "y": 50
+  }
 }
