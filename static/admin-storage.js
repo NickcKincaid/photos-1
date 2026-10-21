@@ -6,10 +6,19 @@
   // background polling, or R2 inventory request is needed to show it.
   const built=$('website-last-updated');
   if (built) {
-    const date=new Date(built.dateTime);
+    // UTC stays in the machine-readable datetime; each accessor sees the date
+    // converted by their own browser to their own time zone and locale.
+    const date=new Date(built.getAttribute('datetime'));
     if(Number.isFinite(date.getTime())) {
-      try { built.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short',timeZoneName:'short'}).format(date); }
-      catch {} // Keep the pre-rendered UTC date as a no-JS fallback.
+      try {
+        const formatted=new Intl.DateTimeFormat(undefined,{
+          year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'
+        }).format(date);
+        built.textContent=formatted;
+        built.title='Build time (UTC): '+date.toISOString();
+        const note=$('website-timezone-note');
+        if(note)note.textContent='(your local time · latest site build)';
+      } catch {} // Keep the explicit UTC fallback when formatting is unavailable.
     }
   }
   const byteText=bytes=>{

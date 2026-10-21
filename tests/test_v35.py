@@ -28,8 +28,8 @@ class V35Tests(unittest.TestCase):
         self.assertEqual(sorted(fields,key=lambda name:s.index('id="'+name+'"')),fields)
         panels=['project-details','uploads','photo-list','batch-edit','ai-descriptions','sharing','integrity']
         self.assertEqual(self.markup.panels[:7],panels)
-        self.assertIn('Identity &amp; description',s)
-        self.assertIn('Visibility &amp; homepage order',s)
+        self.assertIn('Identity &amp; Description',s)
+        self.assertIn('Visibility &amp; Homepage Order',s)
         self.assertIn('id="project-order" type="number" min="0"',s)
 
     def test_official_ai_usage_link_without_local_estimates(self):

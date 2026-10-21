@@ -22,150 +22,150 @@
   <script src="/admin/admin-describe.js" defer></script>
 </head>
 <body>
-  <header class="top"><a href="/">← Portfolio</a><span>Photography / editor</span><a class="private" href="/api/auth/logout">Sign out</a></header>
-  <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button><button id="show-storage" type="button" aria-pressed="false">Storage &amp; backups</button></nav>
+  <header class="top"><a href="/">← Portfolio</a><span>Photography / Editor</span><a class="private" href="/api/auth/logout">Sign out</a></header>
+  <nav class="editor-nav" aria-label="Editor sections"><button id="show-projects" type="button" aria-pressed="true">Projects</button><button id="show-notes" type="button" aria-pressed="false">Notes</button><button id="show-storage" type="button" aria-pressed="false">Storage &amp; Backups</button></nav>
   <main id="projects-pane">
     <div class="sidebar">
-      <div class="sidebar-head"><strong>Projects</strong><button type="button" id="add-project">+ New project</button></div>
+      <div class="sidebar-head"><strong>Projects</strong><button type="button" id="add-project">+ New Project</button></div>
       <p class="muted ordering-help">Drag projects to reorder on desktop, or use the arrows on mobile.</p>
       <p id="metadata-overview" class="muted" role="status">Checking metadata…</p>
-      <button type="button" id="review-missing" hidden>Open first incomplete project</button>
+      <button type="button" id="review-missing" hidden>Open First Incomplete Project</button>
       <div id="project-list" aria-label="Projects"><p class="muted">Loading…</p></div>
-      <button type="button" id="save-order" hidden disabled>Save project order</button>
+      <button type="button" id="save-order" hidden disabled>Save Project Order</button>
     </div>
     <section class="editor" aria-label="Project editor">
       <p class="status" role="status" id="status">Loading projects…</p>
       <form id="editor-form" hidden>
-<details class="admin-panel" data-panel="project-details" open><summary>Project details</summary><div class="admin-panel-body project-detail-body">
+<details class="admin-panel" data-panel="project-details" open><summary>Project Details</summary><div class="admin-panel-body project-detail-body">
         <fieldset class="project-settings-group">
-          <legend>Identity &amp; description</legend>
-          <label class="project-setting-field" for="project-title">Project name
-            <input id="project-title" type="text" maxlength="120" required placeholder="Project title">
+          <legend>Identity &amp; Description</legend>
+          <label class="project-setting-field" for="project-title">Project Name
+            <input id="project-title" type="text" maxlength="120" required placeholder="Project Name">
           </label>
-          <label class="project-setting-field" for="project-blurb"><span>Project blurb <span class="muted">(optional — visible beside the photographs)</span></span>
-            <textarea id="project-blurb" rows="4" maxlength="1000" placeholder="A few words about the project…"></textarea>
+          <label class="project-setting-field" for="project-blurb"><span>Project Description <span class="muted">(optional — visible beside the photographs)</span></span>
+            <textarea id="project-blurb" rows="4" maxlength="1000" placeholder="Describe this project…"></textarea>
           </label>
         </fieldset>
         <fieldset class="project-settings-group project-visibility">
-          <legend>Visibility &amp; homepage order</legend>
-          <label class="check"><input id="project-published" type="checkbox"> Show project on website</label>
-          <label class="project-setting-field order-field" for="project-order">Homepage position
+          <legend>Visibility &amp; Homepage Order</legend>
+          <label class="check"><input id="project-published" type="checkbox"> Show Project on Website</label>
+          <label class="project-setting-field order-field" for="project-order">Homepage Position
             <input id="project-order" type="number" min="0" max="999999" step="1" value="1" required>
           </label>
           <p class="muted project-hint">Lower numbers appear first. You can also reorder projects using the arrows in the sidebar.</p>
         </fieldset>
 </div></details>
-<details class="admin-panel" data-panel="uploads"><summary>Upload & cover crop</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="uploads"><summary>Upload &amp; Cover Crop</summary><div class="admin-panel-body">
         <div class="upload-zone">
           <div class="upload-label"><strong>Photographs</strong><span class="muted">First photo = cover. Use arrows to reorder.</span></div>
-          <label class="file-button" for="photo-files">+ Add photos</label>
+          <label class="file-button" for="photo-files">+ Add Photos</label>
           <input type="file" id="photo-files" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple>
           <div id="upload-queue" class="upload-queue" role="region" aria-label="Photo upload queue" hidden></div>
           <p class="muted">Drafts are unlisted, not confidential. Anyone with the exact media URL may still view uploaded photographs.</p>
           <p class="muted">Images are resized on your device, credited, and stored in Cloudflare R2. Your originals remain untouched. Project information stays in GitHub.</p>
           <p class="muted"><strong>Required for every photograph:</strong> focal length, aperture, shutter speed, and ISO. EXIF is filled in automatically when available; complete missing fields before saving any project.</p>
         </div>
-        <section id="cover-crop" class="cover-crop" aria-label="Homepage cover crop" hidden>
-          <div class="cover-crop-heading"><strong>Homepage cover crop</strong><span class="muted">Position the first photo as it appears on the homepage. Original remains unchanged.</span></div>
+        <section id="cover-crop" class="cover-crop" aria-label="Homepage Cover Crop" hidden>
+          <div class="cover-crop-heading"><strong>Homepage Cover Crop</strong><span class="muted">Position the first photo as it appears on the homepage. Original remains unchanged.</span></div>
           <div class="cover-crop-controls">
             <div class="cover-crop-preview" id="cover-crop-preview" title="Click to adjust the crop focal point">
               <img id="cover-crop-image" alt="Homepage photo crop preview">
             </div>
             <div class="cover-crop-sliders">
-              <label for="crop-x">Horizontal position <output id="crop-x-value" for="crop-x">50%</output></label>
+              <label for="crop-x">Horizontal Position <output id="crop-x-value" for="crop-x">50%</output></label>
               <input type="range" id="crop-x" min="0" max="100" step="1" value="50">
-              <label for="crop-y">Vertical position <output id="crop-y-value" for="crop-y">50%</output></label>
+              <label for="crop-y">Vertical Position <output id="crop-y-value" for="crop-y">50%</output></label>
               <input type="range" id="crop-y" min="0" max="100" step="1" value="50">
-              <button id="crop-reset" type="button">Center image</button>
+              <button id="crop-reset" type="button">Center Image</button>
             </div>
           </div>
         </section>
 
 </div></details>
-<details class="admin-panel" data-panel="photo-list" open><summary>Photographs & metadata</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="photo-list" open><summary>Photographs &amp; Metadata</summary><div class="admin-panel-body">
         <div id="photos" class="photos"></div>
 
 </div></details>
-<details class="admin-panel" data-panel="batch-edit"><summary>Batch edit</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="batch-edit"><summary>Batch Edit</summary><div class="admin-panel-body">
         <section id="bulk-editor" class="bulk-editor" aria-label="Bulk photograph editor" hidden>
-          <strong>Batch edit</strong><span id="bulk-count" class="muted">0 selected</span>
+          <strong>Batch Edit</strong><span id="bulk-count" class="muted">0 selected</span>
           <div class="bulk-actions">
-            <button type="button" id="bulk-select-all">Select all</button>
+            <button type="button" id="bulk-select-all">Select All</button>
             <button type="button" id="bulk-clear">Clear</button>
-            <button type="button" id="bulk-first">Move selected first</button>
-            <button type="button" id="bulk-last">Move selected last</button>
-            <button type="button" id="bulk-remove">Remove selected</button>
+            <button type="button" id="bulk-first">Move Selected First</button>
+            <button type="button" id="bulk-last">Move Selected Last</button>
+            <button type="button" id="bulk-remove">Remove Selected</button>
           </div>
           <div class="bulk-meta">
             <label>Setting <select id="bulk-field">
-              <option value="focal_length">Focal length</option><option value="aperture">Aperture</option>
-              <option value="shutter_speed">Shutter speed</option><option value="iso">ISO</option>
+              <option value="focal_length">Focal Length</option><option value="aperture">Aperture</option>
+              <option value="shutter_speed">Shutter Speed</option><option value="iso">ISO</option>
               <option value="camera">Camera</option><option value="lens">Lens</option>
             </select></label>
             <label>Value <input type="text" id="bulk-value" maxlength="180" placeholder="e.g. 35 mm"></label>
-            <button type="button" id="bulk-apply">Apply to selected</button>
+            <button type="button" id="bulk-apply">Apply to Selected</button>
           </div>
           <p class="muted">Batch changes are unsaved until you click Save project. Applying a setting overwrites that field only on selected photographs.</p>
         </section>
 
 </div></details>
-<details class="admin-panel" data-panel="ai-descriptions"><summary>Search & accessibility descriptions</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="ai-descriptions"><summary>Search &amp; Accessibility Descriptions</summary><div class="admin-panel-body">
         <section id="ai-description" class="ai-description-panel" aria-label="Automatic photo descriptions">
-          <strong>Search and accessibility descriptions</strong>
+          <strong>Search &amp; Accessibility Descriptions</strong>
           <p class="muted">Use Cloudflare Workers AI to describe photographs for image alt text. These descriptions are not visible as photo captions. Existing descriptions are preserved; review generated wording before saving.</p>
-          <button type="button" id="generate-descriptions">Generate missing descriptions</button>
+          <button type="button" id="generate-descriptions">Generate Missing Descriptions</button>
           <button type="button" id="stop-descriptions" hidden>Stop</button>
           <p id="ai-description-status" class="muted" role="status">Requires a Workers AI binding named AI. Generates text only when you request it; AI usage may be billed.</p>
         </section>
 
 </div></details>
-<details class="admin-panel" data-panel="sharing"><summary>Sharing & search preview</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="sharing"><summary>Sharing &amp; Search Preview</summary><div class="admin-panel-body">
         <div class="sharing-preview-field">
-          <label for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span></label>
-          <select id="social-image"><option value="">Use homepage cover</option></select>
+          <label for="social-image">Social Sharing Image <span class="muted">(optional — used when the project link is shared)</span></label>
+          <select id="social-image"><option value="">Use Homepage Cover</option></select>
           <div class="sharing-crop-controls">
             <div id="social-preview" class="social-preview" hidden aria-label="Social sharing card crop preview" title="Click the image to adjust the crop focal point">
               <img id="social-preview-image" alt="Preview of the selected sharing photograph">
               <span id="social-preview-title"></span>
             </div>
             <div id="social-crop-sliders" class="cover-crop-sliders" hidden>
-              <label for="social-crop-x">Horizontal position <output id="social-crop-x-value" for="social-crop-x">50%</output></label>
+              <label for="social-crop-x">Horizontal Position <output id="social-crop-x-value" for="social-crop-x">50%</output></label>
               <input type="range" id="social-crop-x" min="0" max="100" step="1" value="50">
-              <label for="social-crop-y">Vertical position <output id="social-crop-y-value" for="social-crop-y">50%</output></label>
+              <label for="social-crop-y">Vertical Position <output id="social-crop-y-value" for="social-crop-y">50%</output></label>
               <input type="range" id="social-crop-y" min="0" max="100" step="1" value="50">
-              <button type="button" id="social-crop-reset">Center image</button>
+              <button type="button" id="social-crop-reset">Center Image</button>
             </div>
           </div>
           <small class="muted">Adjust the crop without changing the original photo. Saving creates a 1200 × 630 image for social link previews. Apps may cache previous shares.</small>
         </div>
 
 </div></details>
-<details class="admin-panel" data-panel="integrity"><summary>Check image links</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="integrity"><summary>Check Image Links</summary><div class="admin-panel-body">
         <section id="image-integrity" class="integrity-panel" aria-label="Image integrity checker">
-          <button type="button" id="check-images">Check this project's image links</button>
+          <button type="button" id="check-images">Check Project Image Links</button>
           <p id="image-check-status" class="muted" role="status">Checks originals and thumbnails without modifying R2.</p>
           <ul id="image-check-results" class="integrity-results"></ul>
         </section>
 
 </div></details>
         <div class="actions project-actions" role="group" aria-label="Project actions">
-          <button id="publish" type="submit">Save project</button>
+          <button id="publish" type="submit">Save Project</button>
           <button type="button" id="preview-project">Preview</button>
-          <button type="button" id="v34-cancel-changes" class="cancel-changes">Cancel changes</button>
-          <button type="button" id="delete-project" class="delete-project" hidden>Delete project</button>
+          <button type="button" id="v34-cancel-changes" class="cancel-changes">Cancel Changes</button>
+          <button type="button" id="delete-project" class="delete-project" hidden>Delete Project</button>
         </div>
       </form>
     </section>
   </main>
   <main id="notes-pane" hidden>
     <aside class="sidebar" aria-label="Existing notes">
-      <div class="sidebar-head"><strong>Notes</strong><button id="add-note" type="button">+ New note</button></div>
+      <div class="sidebar-head"><strong>Notes</strong><button id="add-note" type="button">+ New Note</button></div>
       <div id="notes-list"><p class="muted">Open Notes to load posts.</p></div>
     </aside>
     <section class="editor" aria-label="Notes editor">
       <p class="status" role="status" id="notes-status">Select a note or create one.</p>
       <form id="note-form" hidden>
-<details class="admin-panel" data-panel="note-editor" open><summary>Write & format note</summary><div class="admin-panel-body">
+<details class="admin-panel" data-panel="note-editor" open><summary>Write &amp; Format Note</summary><div class="admin-panel-body">
         <div class="note-edit-fields">
           <label>Title<input type="text" id="note-title" maxlength="120" required placeholder="Note title"></label>
           <div class="note-editor-label">Text <span class="muted">Lightweight formatting, no HTML required</span></div>
@@ -182,56 +182,56 @@
           <label class="note-body-label"><span class="visually-hidden">Text</span><textarea id="note-body" rows="15" maxlength="12000" required placeholder="Write your note here. Paste a Spotify or YouTube URL on its own line to embed it."></textarea></label>
           <div id="note-preview" class="note-preview note-body" hidden aria-label="Note preview"></div>
           <p class="muted note-editor-help">Use **bold**, *italic*, # headings, - lists, > quotations, [text](https://example.com), or paste a Spotify/YouTube link on a separate line. Raw HTML isn't supported.</p>
-          <label class="check"><input type="checkbox" id="note-published"> Publish this note</label>
+          <label class="check"><input type="checkbox" id="note-published"> Publish This Note</label>
           <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site. Unsaved text is backed up locally in this browser.</p>
         </div>
 
 </div></details>
-        <div class="actions"><button id="save-note" type="submit">Save note</button><button id="delete-note" type="button" class="delete-project" hidden>Delete note</button><a href="/notes/" target="_blank" rel="noopener">View notes ↗</a></div>
+        <div class="actions"><button id="save-note" type="submit">Save Note</button><button id="delete-note" type="button" class="delete-project" hidden>Delete Note</button><a href="/notes/" target="_blank" rel="noopener">View Notes ↗</a></div>
       </form>
     </section>
   </main>
   <main id="storage-pane" class="storage-page" hidden>
     <section class="storage-panel" aria-label="Storage and backups">
-      <h1>Storage &amp; backups</h1>
+      <h1>Storage &amp; Backups</h1>
       <p class="muted">Expand a section to manage photo storage, visitor statistics, Workers AI usage, or backups.</p>
-      <p class="muted website-updated">Website last updated: <time id="website-last-updated" datetime="__SITE_BUILD_UTC__">__SITE_BUILD_LABEL__</time> <span class="muted">(latest site build)</span></p>
+      <p class="muted website-updated">Website Last Updated: <time id="website-last-updated" datetime="__SITE_BUILD_UTC__">__SITE_BUILD_LABEL__</time> <span id="website-timezone-note" class="muted">(UTC fallback · latest site build)</span></p>
       <details class="admin-panel" data-panel="r2-storage" open>
-        <summary>R2 photo storage</summary>
+        <summary>R2 Photo Storage</summary>
         <div class="admin-panel-body">
           <p class="muted">Totals include optimized thumbnails. Inventory is only requested when you click Check R2 storage.</p>
-          <button id="storage-refresh" type="button">Check R2 storage</button>
+          <button id="storage-refresh" type="button">Check R2 Storage</button>
           <p id="storage-status" class="status" role="status">Not checked yet.</p>
-          <p id="storage-last-checked" class="muted storage-checked" hidden>Last checked: <time id="storage-last-checked-time"></time></p>
+          <p id="storage-last-checked" class="muted storage-checked" hidden>Last Checked: <time id="storage-last-checked-time"></time></p>
           <dl class="storage-stats" id="storage-stats" hidden>
-            <div><dt>Objects stored</dt><dd id="storage-objects">—</dd></div>
+            <div><dt>Objects Stored</dt><dd id="storage-objects">—</dd></div>
             <div><dt>Photographs</dt><dd id="storage-photos">—</dd></div>
-            <div><dt>Storage used</dt><dd id="storage-bytes">—</dd></div>
-            <div><dt>Estimated Standard storage cost / month</dt><dd id="storage-cost">—</dd></div>
+            <div><dt>Storage Used</dt><dd id="storage-bytes">—</dd></div>
+            <div><dt>Estimated Standard Storage Cost / Month</dt><dd id="storage-cost">—</dd></div>
           </dl>
           <p class="muted" id="storage-caveat">Storage estimate excludes request charges. Account-wide free allowances, when eligible, are reflected in the estimate.</p>
         </div>
       </details>
       <details class="admin-panel" data-panel="analytics">
-        <summary>Visitor statistics</summary>
+        <summary>Visitor Statistics</summary>
         <div class="admin-panel-body">
           <p>Cloudflare Web Analytics reports visits, popular project pages, referring sites, countries and devices using aggregated statistics.</p>
           <p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">Open Cloudflare Web Analytics ↗</a></p>
         </div>
       </details>
       <details class="admin-panel" data-panel="workers-ai">
-        <summary>Workers AI usage</summary>
+        <summary>Workers AI Usage</summary>
         <div class="admin-panel-body">
           <p>Cloudflare shows actual Workers AI usage and neuron consumption. No estimates are calculated or stored by this website.</p>
           <p><a href="https://dash.cloudflare.com/0f2e0380eafff7a2d0f444bfb5efab09/ai/workers-ai/usage" target="_blank" rel="noopener noreferrer">View actual Workers AI usage in Cloudflare ↗</a></p>
         </div>
       </details>
       <details class="admin-panel" data-panel="backups">
-        <summary>Metadata backups</summary>
+        <summary>Metadata Backups</summary>
         <div class="admin-panel-body">
           <p>Save a copy of your site settings, project information (including photo order, image links, camera settings, and alt text), and Notes as JSON.</p>
           <p class="muted">Photographs stored in R2, original image files, and credentials are not included. GitHub Actions also creates weekly snapshots, retained for 30 days.</p>
-          <button id="download-metadata" type="button">Download metadata backup</button>
+          <button id="download-metadata" type="button">Download Metadata Backup</button>
           <p id="backup-status" class="status" role="status"></p>
           <a href="https://github.com/NickcKincaid/photos-1/actions/workflows/backup-metadata.yml" target="_blank" rel="noopener noreferrer">View weekly backups on GitHub ↗</a>
         </div>

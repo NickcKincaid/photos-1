@@ -14,7 +14,7 @@ with sync_playwright() as p:
     page.add_style_tag(content=css)
     page.evaluate('''() => {document.getElementById('editor-form').hidden=false;document.getElementById('status').textContent='Editing project.';document.getElementById('project-title').value='CDMX';}''')
     page.add_script_tag(content=script)
-    assert page.locator('details.admin-panel').count()==11, page.locator('details.admin-panel').count()
+    assert page.locator('details.admin-panel').count()==12, page.locator('details.admin-panel').count()
     assert page.locator('a:has-text("Cloudflare deployments")').count()==0
     assert page.locator('#deploy-indicator').count()==0
     assert page.locator('details[data-panel="project-details"]').get_attribute('open') is not None
@@ -45,4 +45,4 @@ with sync_playwright() as p:
     assert phone.evaluate('document.documentElement.scrollWidth <= innerWidth'),phone.evaluate('document.documentElement.scrollWidth')
     assert not errors, errors
     browser.close()
-print('V34 admin desktop/phone: 11 collapsible panels, form validation, provider link, mobile overflow passed')
+print('V34 admin desktop/phone: 12 collapsible panels, form validation, provider link, mobile overflow passed')

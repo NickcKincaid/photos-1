@@ -8,10 +8,10 @@ ROOT=Path(__file__).resolve().parents[1]
 class V35bTests(unittest.TestCase):
     def test_source_has_build_time_placeholder(self):
         html=(ROOT/'static/admin.html').read_text(encoding='utf-8')
-        self.assertIn('Website last updated:',html)
+        self.assertIn('Website Last Updated:',html)
         self.assertIn('datetime="__SITE_BUILD_UTC__"',html)
         self.assertIn('__SITE_BUILD_LABEL__',html)
-        self.assertIn('Last checked:',html)
+        self.assertIn('Last Checked:',html)
     def test_site_build_generates_real_timestamp(self):
         file=ROOT/'dist/admin/index.html'
         if not file.exists(): self.skipTest('Run python3 build.py first')

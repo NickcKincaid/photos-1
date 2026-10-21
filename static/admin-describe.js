@@ -7,11 +7,11 @@
   if(!generate || !stop || !notice)return;
   const panel=document.getElementById('ai-description');
   const regen=document.createElement('button');
-  regen.type='button';regen.id='regenerate-descriptions';regen.textContent='Regenerate all descriptions';
+  regen.type='button';regen.id='regenerate-descriptions';regen.textContent='Regenerate All Descriptions';
   regen.title='Replace saved and unsaved descriptions only after reviewing a confirmation. Requires Save project to publish.';
   generate.insertAdjacentElement('afterend',regen);
   const errors=document.createElement('details');errors.id='ai-description-errors';errors.hidden=true;
-  const summary=document.createElement('summary');summary.textContent='See photo errors';
+  const summary=document.createElement('summary');summary.textContent='See Photo Errors';
   const errorList=document.createElement('ol');errors.append(summary,errorList);panel?.append(errors);
   let running=false,cancelled=false,active=null;
 
@@ -154,7 +154,7 @@
       const actions=row.querySelector('.photo-buttons')||row.querySelector('.photo-details');
       if(!actions)continue;
       const btn=document.createElement('button');btn.type='button';btn.className='v33-photo-regenerate';
-      btn.textContent='Regenerate alt';btn.title='Regenerate this photograph’s description';
+      btn.textContent='Regenerate Alt';btn.title='Regenerate this photograph’s description';
       btn.addEventListener('click',()=>run([{row,i,field}],{overwrite:true,individual:true}));
       actions.append(btn);
     }

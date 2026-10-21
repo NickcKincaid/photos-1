@@ -23,9 +23,9 @@ with sync_playwright() as p:
         page.evaluate("() => document.getElementById('editor-form').hidden=false")
         page.add_script_tag(content=ui)
         page.add_script_tag(content=storage)
-        assert page.locator('details.admin-panel').count()==11
+        assert page.locator('details.admin-panel').count()==12
         titles=page.locator('#editor-form > details.admin-panel > summary').all_text_contents()
-        assert [s.strip() for s in titles]==['Project details','Upload & cover crop','Photographs & metadata','Batch edit','Search & accessibility descriptions','Sharing & search preview','Check image links'],titles
+        assert [s.strip() for s in titles]==['Project Details','Upload & Cover Crop','Photographs & Metadata','Batch Edit','Search & Accessibility Descriptions','Sharing & Search Preview','Check Image Links'],titles
         assert page.locator('#project-title').count()==1
         assert page.locator('#project-order').get_attribute('min')=='0'
         assert page.locator('details[data-panel="project-details"]').get_attribute('open') is not None

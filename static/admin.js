@@ -1,9 +1,9 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const requiredMeta = [['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO']];
+  const requiredMeta = [['focal_length','Focal Length'],['aperture','Aperture'],['shutter_speed','Shutter Speed'],['iso','ISO']];
   const requiredKeys = new Set(requiredMeta.map(([key]) => key));
-  const keys = [...requiredMeta,['camera','Camera'],['lens','Lens'],['alt','Image description / alt text']];
+  const keys = [...requiredMeta,['camera','Camera'],['lens','Lens'],['alt','Image Description / Alt Text']];
   const examples = {focal_length:'35mm',aperture:'f/5.6',shutter_speed:'1/250s',iso:'ISO 400'};
   const formatExposure = (key, value) => window.PortfolioExposure.normalizeExposureValue(key, value);
   const missingMeta = photo => requiredMeta.filter(([key]) => !formatExposure(key,photo.meta?.[key]));
@@ -348,7 +348,7 @@
     const assets=window.PortfolioTools.imageLinks(photos);
     if(!assets.length){$('image-check-status').textContent='No valid image URLs to check.';return;}
     const run=++imageCheck, controller=new AbortController();imageCheckAbort=controller;
-    const button=$('check-images');button.textContent='Stop image check';
+    const button=$('check-images');button.textContent='Stop Image Check';
     $('image-check-results').replaceChildren();
     $('image-check-status').textContent=`Checking 0 of ${assets.length} URLs…`;
     try {
@@ -365,7 +365,7 @@
         $('image-check-results').appendChild(li);
       }
     }catch(error){if(run===imageCheck)$('image-check-status').textContent='Image check failed: '+error.message;}
-    finally{if(run===imageCheck){imageCheckAbort=null;button.textContent="Check this project's image links";}}
+    finally{if(run===imageCheck){imageCheckAbort=null;button.textContent="Check Project Image Links";}}
   });
   function updateSocialPreview() {
     const box=$('social-preview');if(!box)return;
@@ -380,7 +380,7 @@
   function renderSocialImages() {
     const field=$('social-image');if(!field)return;
     field.replaceChildren();
-    const def=node('option','','Use homepage cover');def.value='';field.appendChild(def);
+    const def=node('option','','Use Homepage Cover');def.value='';field.appendChild(def);
     photos.forEach((photo,i)=>{
       const opt=node('option','',displayFilename(photo,i));opt.value=photo.path;field.appendChild(opt);
     });
@@ -467,7 +467,7 @@
       const check=node('input');check.type='checkbox';check.checked=selectedPhotos.has(photo.path);check.disabled=locked;
       check.setAttribute('aria-label',`Select photograph ${i+1} for batch editing`);
       check.addEventListener('change',()=>{if(check.checked){selectedPhotos.add(photo.path);document.querySelector('[data-panel="batch-edit"]')?.setAttribute('open','');}else selectedPhotos.delete(photo.path);updateBulkState();});
-      select.appendChild(check);select.appendChild(node('span','','Select for batch edit'));detail.appendChild(select);
+      select.appendChild(check);select.appendChild(node('span','','Select for Batch Edit'));detail.appendChild(select);
       const name=node('p','photo-name', (i===0?'Cover · ':'')+displayFilename(photo, i));
       detail.appendChild(name);
       const buttons=node('div','photo-buttons');
@@ -481,8 +481,8 @@
       const refreshMetaStatus = () => {
         const missing=missingMeta(photo);
         summary.textContent=missing.length
-          ? `Exposure settings required — missing ${missing.map(([,label])=>label).join(', ')}`
-          : 'Exposure settings complete · optional camera, lens and description';
+          ? `Exposure Settings Required — Missing ${missing.map(([,label])=>label).join(', ')}`
+          : 'Exposure Settings Complete · Optional Camera, Lens, and Description';
         more.classList.toggle('metadata-incomplete',Boolean(missing.length));
       };
       for(const [key,label] of keys){

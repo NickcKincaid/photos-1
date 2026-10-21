@@ -114,7 +114,7 @@
     previewVisible = !previewVisible;
     preview.hidden = !previewVisible;
     $('note-preview-toggle').setAttribute('aria-pressed', String(previewVisible));
-    $('note-preview-toggle').textContent = previewVisible ? 'Hide preview' : 'Preview';
+    $('note-preview-toggle').textContent = previewVisible ? 'Hide Preview' : 'Preview';
     if (previewVisible) renderPreview();
   });
   function replaceSelection(prefix, suffix='', placeholder='text') {

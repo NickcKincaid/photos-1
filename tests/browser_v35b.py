@@ -16,7 +16,7 @@ with sync_playwright() as p:
         page.add_style_tag(content=(root/'static/admin.css').read_text())
         page.add_script_tag(content=(root/'static/admin-storage.js').read_text())
         t=page.locator('#website-last-updated')
-        assert t.get_attribute('datetime') and 'Website last updated:' in page.locator('#storage-pane').inner_text()
+        assert t.get_attribute('datetime') and 'Website Last Updated:' in page.locator('#storage-pane').inner_text()
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.set_content('''<div class="works-grid"><article class="project-card"><a class="project-card-media"><img src="/slow-home.jpg" alt="Cover"></a></article></div><div class="project-photos"><a class="gallery-link"><img src="/slow-gallery.jpg" alt="Photo"></a></div>''')
         page.add_style_tag(content=css)
