@@ -157,5 +157,17 @@
       "iso": "ISO 100",
       "alt": "People are walking and playing on a sandy beach next to ocean waves."
     }
-  ]
+  ],
+  "social_position": {
+    "x": 50,
+    "y": 100
+  },
+  "social_card": {
+    "path": "/media/landscapes/04b59a5a420d4be198b2ae0a/sharing-1200x630.jpg",
+    "source": "/media/landscapes/f5391623fe3a46248613dd9e/landscapes-08.jpg",
+    "position": {
+      "x": 50,
+      "y": 100
+    }
+  }
 }
