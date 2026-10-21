@@ -416,3 +416,101 @@ test('V36 rejects malicious or incomplete image dimensions before committing',as
    }finally{gh.restore();}
  }
 });
+
+test('social sharing crop upload uses a new, private R2 JPEG path', async()=>{
+  const b=bucket(), jpeg=new Uint8Array([255,216,255,224,0,2,255,217]);
+  const request=new Request('https://nickckincaid.com/api/admin/upload',{
+    method:'POST',headers:{'Content-Type':'image/jpeg','X-Photo-Project':'tokyo','X-Photo-Variant':'social'},body:jpeg
+  });
+  const resp=await upload({request,env:{PHOTO_BUCKET:b}});
+  assert.equal(resp.status,200,await resp.clone().text());
+  const result=await resp.json();
+  assert.match(result.path,/^\/media\/tokyo\/[a-f0-9]{24}\/sharing-1200x630\.jpg$/);
+  assert.deepEqual(b.saved.get(result.path.slice(1)),jpeg);
+  assert.equal(result.width,undefined);
+});
+
+test('sharing crop API rejects WebP when a JPEG is required', async()=>{
+  const b=bucket();
+  const request=new Request('https://nickckincaid.com/api/admin/upload',{
+    method:'POST',headers:{'Content-Type':'image/webp','X-Photo-Project':'tokyo','X-Photo-Variant':'social'},
+    body:new Uint8Array([82,73,70,70,0,0,0,0,87,69,66,80])
+  });
+  assert.equal((await upload({request,env:{PHOTO_BUCKET:b}})).status,415);
+  assert.equal(b.saved.size,0);
+});
+
+test('project stores matching sharing crop and coordinates',async()=>{
+  const gh=mockGithub();try{
+    const photo=`/media/tokyo/${'7'.repeat(24)}/tokyo-01.jpg`;
+    const share=`/media/tokyo/${'e'.repeat(24)}/sharing-1200x630.jpg`;
+    const request=new Request('https://nickckincaid.com/api/admin/save',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        slug:'tokyo',revision:SHA,title:'Tokyo',order:1,published:true,
+        social_position:{x:15,y:78},social_card:{path:share,source:photo,position:{x:15,y:78}},
+        photos:[{kind:'r2',path:photo,meta:EXPOSURE}]
+      })
+    });
+    const resp=await save({request,env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){return {size:1}}}}});
+    assert.equal(resp.status,200,await resp.clone().text());
+    const saved=JSON.parse(gh.trees[0].tree.find(t=>t.path==='content/projects/tokyo.json').content);
+    assert.deepEqual(saved.social_position,{x:15,y:78});
+    assert.deepEqual(saved.social_card,{path:share,source:photo,position:{x:15,y:78}});
+  }finally{gh.restore();}
+});
+
+test('project rejects foreign sharing card and mismatched crop before GitHub save',async()=>{
+  const gh=mockGithub();try{
+    const photo=`/media/tokyo/${'7'.repeat(24)}/tokyo-01.jpg`;
+    for(const card of [
+      {path:`/media/another/${'e'.repeat(24)}/sharing-1200x630.jpg`,source:photo,position:{x:15,y:78}},
+      {path:`/media/tokyo/${'e'.repeat(24)}/sharing-1200x630.jpg`,source:photo,position:{x:16,y:78}},
+      {path:'/media/tokyo/../../evil.jpg',source:photo,position:{x:15,y:78}}
+    ]){
+      const request=new Request('https://nickckincaid.com/api/admin/save',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+          slug:'tokyo',revision:SHA,title:'Tokyo',order:1,published:true,
+          social_position:{x:15,y:78},social_card:card,
+          photos:[{kind:'r2',path:photo,meta:EXPOSURE}]
+        })
+      });
+      const resp=await save({request,env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){return {size:1}}}}});
+      assert.notEqual(resp.status,200);
+    }
+    assert.equal(gh.trees.length,0);
+  }finally{gh.restore();}
+});
+
+test('sharing position outside 0-100 is rejected',async()=>{
+  const gh=mockGithub();try{
+    const response=await save({request:new Request('https://nickckincaid.com/api/admin/save',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        slug:'tokyo',revision:SHA,title:'Tokyo',order:1,published:false,photos:[],social_position:{x:101,y:50}
+      })
+    }),env:{GITHUB_TOKEN:'test'}});
+    assert.notEqual(response.status,200);
+    assert.equal(gh.trees.length,0);
+  }finally{gh.restore();}
+});
+
+test('replacing a sharing crop deletes only its old R2 object after GitHub saves',async()=>{
+  const photo=`/media/tokyo/${'7'.repeat(24)}/tokyo-01.jpg`;
+  const oldShare=`/media/tokyo/${'c'.repeat(24)}/sharing-1200x630.jpg`;
+  const newShare=`/media/tokyo/${'e'.repeat(24)}/sharing-1200x630.jpg`;
+  const project={title:'Tokyo',published:true,cover:photo,gallery:[],order:1,
+    social_position:{x:50,y:50},social_card:{path:oldShare,source:photo,position:{x:50,y:50}},
+    photo_details:[{image:photo,storage:'r2',...EXPOSURE}]};
+  const gh=mockGithub(project),removed=[];
+  try{
+    const request=new Request('https://nickckincaid.com/api/admin/save',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        slug:'tokyo',revision:SHA,title:'Tokyo',order:1,published:true,
+        social_position:{x:30,y:50},social_card:{path:newShare,source:photo,position:{x:30,y:50}},
+        photos:[{kind:'existing',path:photo,meta:EXPOSURE}]
+      })
+    });
+    const resp=await save({request,env:{GITHUB_TOKEN:'test',PHOTO_BUCKET:{async head(){return {size:100}},async delete(keys){removed.push(...keys)}}}});
+    assert.equal(resp.status,200,await resp.clone().text());
+    assert.deepEqual(removed,[oldShare.slice(1)]);
+  }finally{gh.restore();}
+});

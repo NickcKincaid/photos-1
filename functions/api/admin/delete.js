@@ -28,6 +28,8 @@ function r2Keys(project) {
           key.startsWith(original.slice(0,-4) + '-')) keys.add(key);
     }
   }
+  const social=String(project.social_card?.path || '').slice(1);
+  if (/^media\/([a-z0-9-]{1,65})\/[a-f0-9]{24}\/sharing-1200x630\.jpg$/.test(social)) keys.add(social);
   return keys;
 }
 function optimizedPaths(items) {

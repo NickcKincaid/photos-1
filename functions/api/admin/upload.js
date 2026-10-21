@@ -15,12 +15,18 @@ export async function onRequestPost(context) {
     if (!PROJECT.test(project)) return json({error:'Enter a valid project name before uploading.'},400);
     if (!req.body) return json({error:'No image was provided.'},400);
     const type = req.headers.get('content-type') || '';
-    const expected = variant ? 'image/webp' : 'image/jpeg';
+    const social = variant === 'social';
+    const expected = variant && !social ? 'image/webp' : 'image/jpeg';
     if (type !== expected) return json({error:`Expected ${expected}.`},415);
     const declared = Number(req.headers.get('content-length') || 0);
     if (declared > MAX) return json({error:'The prepared image exceeds 3 MB.'},413);
     let key;
-    if (variant) {
+    if (social) {
+      // A real pre-cropped OG image, separate from the selected original photo.
+      // Unique keys avoid replacing a currently published sharing image before Save.
+      const uniqueFolder=crypto.randomUUID().replaceAll('-','').slice(0,24);
+      key=`media/${project}/${uniqueFolder}/sharing-1200x630.jpg`;
+    } else if (variant) {
       if (!['640','1280'].includes(variant)) return json({error:'Invalid thumbnail width.'},400);
       const match = ORIGINAL.exec(source);
       if (!match || match[1] !== project) return json({error:'Invalid thumbnail source.'},400);
@@ -56,10 +62,10 @@ export async function onRequestPost(context) {
       (isLossy || isLossless || isExtended) &&
       firstChunkBytes >= (isExtended ? 10 : isLossless ? 5 : 10) &&
       20 + firstChunkBytes + (firstChunkBytes % 2) <= image.length;
-    if (!(variant ? webp : jpeg)) return json({error:'File content is not a complete JPEG or WebP image.'},415);
+    if (!(variant && !social ? webp : jpeg)) return json({error:'File content is not a complete JPEG or WebP image.'},415);
     await context.env.PHOTO_BUCKET.put(key, image, {httpMetadata:{contentType:expected},
       customMetadata:{creator:'Nicholas Kincaid',copyright:'Copyright Nicholas Kincaid. All rights reserved.'}});
-    return json({path:'/'+key, storage:'r2', ...(variant?{width:Number(variant)}:{})});
+    return json({path:'/'+key, storage:'r2', ...(variant && !social?{width:Number(variant)}:{})});
   } catch (error) {
     const message = String(error?.message || '');
     const tooLarge = error?.status === 413 || /3 MB|upload size limit/i.test(message);

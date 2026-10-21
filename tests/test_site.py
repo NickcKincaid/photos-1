@@ -231,3 +231,21 @@ class DownloadFilenameTests(unittest.TestCase):
         self.assertIn('data-download-name="test-project-01.jpg"',page2)
         self.assertIn('data-download-name="test-project-02.jpg"',page2)
         self.assertEqual(cover, '/media/test/stable/first.jpg')
+
+class SharingCropTests(unittest.TestCase):
+    def test_share_image_uses_real_cropped_asset_when_valid(self):
+        import build
+        source='/media/example/photo.jpg'
+        card=f'/media/example/{"a"*24}/sharing-1200x630.jpg'
+        project={'slug':'example','cover':source,'social_position':{'x':10,'y':75},
+                 'social_card':{'source':source,'path':card,'position':{'x':10,'y':75}}}
+        self.assertEqual(build.sharing_card(project,[source]),card)
+        project['social_position']['x']=11
+        self.assertEqual(build.sharing_card(project,[source]),source)
+
+    def test_invalid_share_image_path_is_never_used(self):
+        import build
+        source='/media/example/photo.jpg'
+        for path in ('javascript:alert(1)','/media/example/../../evil.jpg','/media/elsewhere/'+'a'*24+'/sharing-1200x630.jpg'):
+            project={'slug':'example','social_card':{'path':path,'source':source,'position':{'x':50,'y':50}}}
+            self.assertEqual(build.sharing_card(project,[source]),source)

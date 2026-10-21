@@ -300,6 +300,22 @@ def cover_position(project: dict) -> tuple[int, int]:
     return values
 
 
+def sharing_card(project: dict, images: list[str]) -> str:
+    """Use a saved 1200×630 JPEG only when it matches the selected photo/crop.
+
+    Older projects without a generated card continue sharing the original image.
+    """
+    chosen = project.get('social_image') if project.get('social_image') in images else (images[0] if images else '')
+    card = project.get('social_card')
+    if isinstance(card, dict) and card.get('source') == chosen and card.get('position') == project.get('social_position', {'x':50,'y':50}):
+        path = card.get('path')
+        slug = project.get('slug')
+        if isinstance(path, str) and re.fullmatch(r'/media/[a-z0-9-]{1,65}/[0-9a-f]{24}/sharing-1200x630\.jpg', path):
+            if not slug or path.startswith(f'/media/{slug}/'):
+                return path
+    return chosen
+
+
 def cards(projects: list[dict]) -> str:
     blocks = []
     for i, p in enumerate(projects):
@@ -488,7 +504,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
             obj['description'] = reviewed_alt
         image_schema.append(obj)
     return document(p['title'], description, site, body,
-                    p.get('social_image') if p.get('social_image') in images else (images[0] if images else ''), p['url'], 'article',
+                    sharing_card(p, images), p['url'], 'article',
                     {'@context': 'https://schema.org', '@type': 'ImageGallery', 'name': p['title'],
                      'url': SITE_URL + p['url'], 'description': description,
                      'creator': {'@id': SITE_URL + '/#person'},

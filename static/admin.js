@@ -15,6 +15,7 @@
   let uploadRunning = false;
   let coverPosition={x:50,y:50};
   let socialImage='';
+  let socialPosition={x:50,y:50};
   function validCoverPosition(pos) {
     return pos && Number.isInteger(pos.x) && Number.isInteger(pos.y) &&
       pos.x>=0 && pos.x<=100 && pos.y>=0 && pos.y<=100 ? {x:pos.x,y:pos.y} : {x:50,y:50};
@@ -39,6 +40,24 @@
   $('crop-x').addEventListener('input',()=>setCropPosition(Number($('crop-x').value),coverPosition.y,true));
   $('crop-y').addEventListener('input',()=>setCropPosition(coverPosition.x,Number($('crop-y').value),true));
   $('crop-reset').addEventListener('click',()=>setCropPosition(50,50,true));
+  function setSocialPosition(x,y,mark=false) {
+    socialPosition={x:Math.max(0,Math.min(100,Math.round(x))),y:Math.max(0,Math.min(100,Math.round(y)))};
+    $('social-crop-x').value=String(socialPosition.x);
+    $('social-crop-y').value=String(socialPosition.y);
+    $('social-crop-x-value').textContent=socialPosition.x+'%';
+    $('social-crop-y-value').textContent=socialPosition.y+'%';
+    $('social-preview-image').style.objectPosition=socialPosition.x+'% '+socialPosition.y+'%';
+    if(mark) markDirty();
+  }
+  $('social-crop-x').addEventListener('input',()=>setSocialPosition(Number($('social-crop-x').value),socialPosition.y,true));
+  $('social-crop-y').addEventListener('input',()=>setSocialPosition(socialPosition.x,Number($('social-crop-y').value),true));
+  $('social-crop-reset').addEventListener('click',()=>setSocialPosition(50,50,true));
+  $('social-preview').addEventListener('click',e=>{
+    const img=$('social-preview-image');const r=img.getBoundingClientRect();
+    if(!r.width || !r.height || $('social-preview').hidden ||
+       e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom)return;
+    setSocialPosition(100*(e.clientX-r.left)/r.width,100*(e.clientY-r.top)/r.height,true);
+  });
   $('cover-crop-preview').addEventListener('click',e=>{
     const r=e.currentTarget.getBoundingClientRect();
     if (!r.width || !r.height) return;
@@ -77,7 +96,7 @@
     if (!dirty || locked || $('editor-form').hidden) return;
     const snapshot={title:$('project-title').value,blurb:$('project-blurb').value,
       order:$('project-order').value,published:$('project-published').checked,
-      crop:{...coverPosition},socialImage,
+      crop:{...coverPosition},socialImage,socialPosition:{...socialPosition},
       stagedSlug, photos:photos.map(({kind,path,meta,variants,width,height})=>({kind,path,meta,variants,width,height}))};
     window.PortfolioDrafts?.save('project',draftKey(),current?.revision,snapshot);
   }
@@ -96,6 +115,7 @@
     $('project-published').checked=Boolean(v.published);
     coverPosition=validCoverPosition(v.crop);
     socialImage=typeof v.socialImage==='string' ? v.socialImage : '';
+    socialPosition=validCoverPosition(v.socialPosition);
     if(!project && typeof v.stagedSlug==='string' && /^[a-z0-9-]{1,65}$/.test(v.stagedSlug)) stagedSlug=v.stagedSlug;
     if(Array.isArray(v.photos) && v.photos.length<=90 && v.photos.every(p=>
         ['existing','r2'].includes(p.kind) && /^\/media\/[a-zA-Z0-9_./-]+\.(?:jpg|jpeg|webp|png)$/i.test(p.path||'') && !(p.path||'').includes('..'))) {
@@ -156,6 +176,7 @@
     dirty = false;
     coverPosition=validCoverPosition(project?.cover_position);
     socialImage=typeof project?.social_image==='string' ? project.social_image : '';
+    socialPosition=validCoverPosition(project?.social_position);
     photos=[];
     if (project) {
       const overrides=new Map((project.photo_details || []).map(x => [x.image, x]));
@@ -350,9 +371,11 @@
     const box=$('social-preview');if(!box)return;
     const chosen=photos.find(p=>p.path===socialImage)||photos[0];
     box.hidden=!chosen;
+    $('social-crop-sliders').hidden=!chosen;
     if(!chosen)return;
     $('social-preview-image').src=chosen.preview || chosen.path;
     $('social-preview-title').textContent=$('project-title').value.trim()||current?.title||'Untitled';
+    setSocialPosition(socialPosition.x,socialPosition.y);
   }
   function renderSocialImages() {
     const field=$('social-image');if(!field)return;
@@ -365,7 +388,34 @@
     field.value=socialImage;
     updateSocialPreview();
   }
-  $('social-image').addEventListener('change', e=>{socialImage=e.target.value;markDirty();updateSocialPreview();});
+  $('social-image').addEventListener('change', e=>{socialImage=e.target.value;socialPosition={x:50,y:50};markDirty();updateSocialPreview();});
+  async function makeSharingCard(source, position, slug) {
+    // Social networks fetch og:image directly. CSS object-position alone would
+    // not alter the shared image, so render the exact crop once on Save.
+    const img=new Image();
+    img.decoding='async';
+    const loaded=new Promise((resolve,reject)=>{
+      const timeout=setTimeout(()=>reject(Error('Sharing photo took too long to load. Try again.')),20000);
+      img.onload=()=>{clearTimeout(timeout);resolve();};
+      img.onerror=()=>{clearTimeout(timeout);reject(Error('Could not load the selected sharing photo.'));};
+    });
+    img.src=source;
+    await loaded;
+    if(!img.naturalWidth || !img.naturalHeight)throw Error('Invalid sharing photograph.');
+    const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=630;
+    const ctx=canvas.getContext('2d');if(!ctx)throw Error('Image crop is unavailable in this browser.');
+    const scale=Math.max(canvas.width/img.naturalWidth,canvas.height/img.naturalHeight);
+    const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+    ctx.drawImage(img,(canvas.width-w)*position.x/100,(canvas.height-h)*position.y/100,w,h);
+    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Could not create sharing image.')),'image/jpeg',0.87));
+    // Keep the same bounded upload API as ordinary R2 photos.
+    if(blob.size>3000000)throw Error('Sharing crop exceeds the 3 MB upload limit.');
+    const resp=await fetch('/api/admin/upload',{method:'POST',credentials:'same-origin',
+      headers:{'content-type':'image/jpeg','X-Photo-Project':slug,'X-Photo-Variant':'social'},body:blob});
+    let result;try{result=await resp.json();}catch{throw Error('Sharing image upload did not return JSON.');}
+    if(!resp.ok || !result?.path)throw Error(result?.error||'Sharing image upload failed.');
+    return {path:result.path,source,position:{...position}};
+  }
   function validatePhotoMetadata() {
     for (const [index, photo] of photos.entries()) {
       photo.meta ??= {};
@@ -609,10 +659,22 @@
       locked=false;$('publish').disabled=false;
       status('The project name changed after uploading. Use the original name, save, then rename it.','error');return;
     }
-    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,social_image:socialImage,cover_position:coverPosition,order:Number($('project-order').value),published:$('project-published').checked,
+    const input={slug:current?.slug||null,revision:current?.revision||null,title,blurb:$('project-blurb').value,social_image:socialImage,
+      cover_position:coverPosition,social_position:socialPosition,order:Number($('project-order').value),published:$('project-published').checked,
       photos:photos.map(({kind,path,sha,meta,variants,width,height})=>({kind,...(kind==='new'?{sha}:{path}),meta,
         ...(validPixels(width)&&validPixels(height)?{width,height}:{}),...(variants?{variants}:{})}))};
     try{
+      const shareSource=photos.find(p=>p.path===socialImage)||photos[0];
+      if(shareSource){
+        const existing=current?.social_card;
+        const same=existing?.source===shareSource.path && existing?.position?.x===socialPosition.x &&
+          existing?.position?.y===socialPosition.y && typeof existing.path==='string';
+        if(same)input.social_card=existing;
+        else{
+          status('Preparing and uploading the cropped sharing image…');
+          input.social_card=await makeSharingCard(shareSource.path,socialPosition,current?.slug||stagedSlug||slugify(title));
+        }
+      }else input.social_card=null;
       status('Saving project data in GitHub (photos are already in R2)…');
       const saved=await api('save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
       dirty=false;

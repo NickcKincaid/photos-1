@@ -120,14 +120,24 @@
 
 </div></details>
 <details class="admin-panel" data-panel="sharing"><summary>Sharing & search preview</summary><div class="admin-panel-body">
-        <label class="sharing-preview-field" for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span>
+        <div class="sharing-preview-field">
+          <label for="social-image">Social sharing image <span class="muted">(optional — used when the project link is shared)</span></label>
           <select id="social-image"><option value="">Use homepage cover</option></select>
-          <div id="social-preview" class="social-preview" hidden aria-label="Approximate social sharing card preview">
-            <img id="social-preview-image" alt="Preview of selected sharing photograph">
-            <span id="social-preview-title"></span>
+          <div class="sharing-crop-controls">
+            <div id="social-preview" class="social-preview" hidden aria-label="Social sharing card crop preview" title="Click the image to adjust the crop focal point">
+              <img id="social-preview-image" alt="Preview of the selected sharing photograph">
+              <span id="social-preview-title"></span>
+            </div>
+            <div id="social-crop-sliders" class="cover-crop-sliders" hidden>
+              <label for="social-crop-x">Horizontal position <output id="social-crop-x-value" for="social-crop-x">50%</output></label>
+              <input type="range" id="social-crop-x" min="0" max="100" step="1" value="50">
+              <label for="social-crop-y">Vertical position <output id="social-crop-y-value" for="social-crop-y">50%</output></label>
+              <input type="range" id="social-crop-y" min="0" max="100" step="1" value="50">
+              <button type="button" id="social-crop-reset">Center image</button>
+            </div>
           </div>
-          <small class="muted">Approximate preview. Social apps may crop differently or cache an older image.</small>
-        </label>
+          <small class="muted">Adjust the crop without changing the original photo. Saving creates a 1200 × 630 image for social link previews. Apps may cache previous shares.</small>
+        </div>
 
 </div></details>
 <details class="admin-panel" data-panel="integrity"><summary>Check image links</summary><div class="admin-panel-body">

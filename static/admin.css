@@ -103,7 +103,12 @@ main[hidden] { display: none !important; }
 
 .social-preview {max-width:330px;border:1px solid var(--line);background:#fff;margin:4px 0 1px;overflow:hidden}
 .social-preview[hidden] {display:none}
-.social-preview img {display:block;width:100%;aspect-ratio:1.91;object-fit:cover;background:#dddcd8}
+.social-preview img {display:block;width:100%;aspect-ratio:1200/630;object-fit:cover;object-position:50% 50%;background:#dddcd8}
+.sharing-crop-controls {display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.sharing-crop-controls .social-preview {width:min(330px,100%);flex:none;cursor:crosshair;margin:4px 0 1px}
+.sharing-crop-controls .social-preview img {pointer-events:none}
+.sharing-crop-controls .cover-crop-sliders {min-width:min(200px,100%);max-width:300px}
+@media(max-width:680px){.sharing-crop-controls{gap:10px}.sharing-crop-controls .social-preview{width:min(330px,100%)}}
 .social-preview span {display:block;padding:7px 9px;font-size:11px;font-weight:600;overflow-wrap:anywhere}
 
 /* V27: make incomplete exposure settings obvious without changing the public gallery. */

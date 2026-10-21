@@ -4,6 +4,7 @@ import { json, readLimited } from '../../../admin-lib/session.js';
 const fields = ['camera','lens','focal_length','aperture','shutter_speed','iso','alt'];
 const REQUIRED_EXPOSURE = [['focal_length','Focal length'],['aperture','Aperture'],['shutter_speed','Shutter speed'],['iso','ISO']];
 const R2_IMAGE = /^\/media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))\.jpg$/;
+const R2_SOCIAL = /^\/media\/([a-z0-9-]{1,65})\/[a-f0-9]{24}\/sharing-1200x630\.jpg$/;
 const R2_VARIANT = /^\/media\/([a-z0-9-]{1,65})\/(?:(?:\1-[0-9]{2,3}-[a-f0-9]{24})|(?:[a-f0-9]{24}\/\1-[0-9]{2,3}))-(640|1280)\.webp$/;
 function validVariants(value, original, slug) {
   if (value == null) return [];
@@ -36,6 +37,12 @@ export async function onRequestPost(context) {
         !Number.isInteger(coverPosition.x) || !Number.isInteger(coverPosition.y) ||
         coverPosition.x < 0 || coverPosition.x > 100 || coverPosition.y < 0 || coverPosition.y > 100) {
       throw Error('Invalid homepage cover position (expected percentages from 0 to 100).');
+    }
+    const socialPosition = input.social_position == null ? {x:50,y:50} : input.social_position;
+    if (!socialPosition || typeof socialPosition !== 'object' || Array.isArray(socialPosition) ||
+        !Number.isInteger(socialPosition.x) || !Number.isInteger(socialPosition.y) ||
+        socialPosition.x < 0 || socialPosition.x > 100 || socialPosition.y < 0 || socialPosition.y > 100) {
+      throw Error('Invalid sharing crop position (expected 0–100 percentages).');
     }
     const create = !input.slug;
     const slug = create ? slugify(title) : String(input.slug);
@@ -135,11 +142,31 @@ export async function onRequestPost(context) {
     }
     const socialImage = String(input.social_image || '');
     if (socialImage && !newRefs.includes(socialImage)) throw Error('Choose a sharing image from this project.');
+    const sharingSource = socialImage || newRefs[0] || '';
+    // Preserve old clients' projects (which have no social_card), but never
+    // accept a media URL that was not produced by our dedicated R2 uploader.
+    let socialCard = null;
+    const submittedCard = input.social_card === undefined ? previous.social_card : input.social_card;
+    if (submittedCard != null) {
+      const card = submittedCard;
+      const cardPath = String(card?.path || '');
+      if (!card || typeof card !== 'object' || Array.isArray(card) || !sharingSource ||
+          !R2_SOCIAL.test(cardPath) || !cardPath.startsWith(`/media/${slug}/`) ||
+          card.source !== sharingSource || !card.position ||
+          card.position.x !== socialPosition.x || card.position.y !== socialPosition.y) {
+        throw Error('Sharing crop is out of date. Regenerate the social preview before saving.');
+      }
+      if (!context.env.PHOTO_BUCKET || !await context.env.PHOTO_BUCKET.head(cardPath.slice(1))) {
+        throw Error('Sharing preview image is missing from R2. Try saving again.');
+      }
+      socialCard = {path:cardPath,source:sharingSource,position:{...socialPosition}};
+    }
     const published = Boolean(input.published);
     if (published && !newRefs.length) throw Error('Add at least one photograph before publishing.');
     const order = Number(input.order);
     if (!Number.isSafeInteger(order) || order < 0 || order > 999999) throw Error('Homepage order must be a whole number between 0 and 999999.');
-    const next = { ...previous, title, blurb, published, order, social_image: socialImage, cover_position: coverPosition, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
+    const next = { ...previous, title, blurb, published, order, social_image: socialImage, cover_position: coverPosition, social_position:socialPosition,
+      social_card:socialCard, cover: newRefs[0] || '', gallery: newRefs.slice(1), photo_details: details };
     // One atomic Git commit for all changes to this project, including new files.
     const ref = await gh(context, '/git/ref/heads/main');
     const head = await gh(context, `/git/commits/${ref.object.sha}`);
@@ -154,7 +181,9 @@ export async function onRequestPost(context) {
       d && d.storage === 'r2' && typeof d.image === 'string' &&
       previouslyPublished.has(d.image) && !newRefs.includes(d.image));
     let cleanupWarning = '';
-    if (removed.length && context.env.PHOTO_BUCKET) {
+    const oldShare = String(previous.social_card?.path || '');
+    const replacedShare = R2_SOCIAL.test(oldShare) && oldShare.startsWith(`/media/${slug}/`) && oldShare !== socialCard?.path ? oldShare : '';
+    if ((removed.length || replacedShare) && context.env.PHOTO_BUCKET) {
       try {
         const listing = await gh(context, '/contents/content/projects?ref=main');
         const protectedPaths = new Set();
@@ -163,7 +192,7 @@ export async function onRequestPost(context) {
           if (file.type !== 'file' || !file.name.endsWith('.json') || file.name === `${slug}.json`) continue;
           const doc = await gh(context, `/contents/content/projects/${encodeURIComponent(file.name)}?ref=main`);
           const other = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(doc.content.replace(/\s/g,'')),x=>x.charCodeAt(0))));
-          for (const url of [other.cover,...(other.gallery || [])]) if (typeof url === 'string') protectedPaths.add(url);
+          for (const url of [other.cover,...(other.gallery || []),other.social_card?.path]) if (typeof url === 'string') protectedPaths.add(url);
         }
         const keys=[];
         for (const d of removed) {
@@ -176,6 +205,7 @@ export async function onRequestPost(context) {
             if (R2_VARIANT.test('/'+variant) && variant.startsWith(key.replace(/\.jpg$/, '')+'-')) keys.push(variant);
           }
         }
+        if (replacedShare && !protectedPaths.has(replacedShare)) keys.push(replacedShare.slice(1));
         if (keys.length) await context.env.PHOTO_BUCKET.delete([...new Set(keys)]);
       } catch (error) {
         cleanupWarning = 'Project saved, but old R2 photos could not be removed automatically. Check bucket storage later.';
