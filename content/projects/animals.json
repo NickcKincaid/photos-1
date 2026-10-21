@@ -3,7 +3,7 @@
   "blurb": "",
   "published": true,
   "order": 7,
-  "social_image": "",
+  "social_image": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
   "cover_position": {
     "x": 81,
     "y": 50
@@ -87,15 +87,15 @@
     }
   ],
   "social_position": {
-    "x": 100,
-    "y": 19
+    "x": 50,
+    "y": 50
   },
   "social_card": {
-    "path": "/media/animals/b58f32e7b90d43c6974e7bea/sharing-1200x630.jpg",
-    "source": "/media/animals/bc0da06ffa064f36ab41b04e/animals-01.jpg",
+    "path": "/media/animals/d810fba28ba54548b5b49c73/sharing-1200x630.jpg",
+    "source": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
     "position": {
-      "x": 100,
-      "y": 19
+      "x": 50,
+      "y": 50
     }
   }
 }
