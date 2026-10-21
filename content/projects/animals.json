@@ -88,14 +88,14 @@
   ],
   "social_position": {
     "x": 100,
-    "y": 26
+    "y": 19
   },
   "social_card": {
-    "path": "/media/animals/2e066d58fe344f709fa56b54/sharing-1200x630.jpg",
+    "path": "/media/animals/b58f32e7b90d43c6974e7bea/sharing-1200x630.jpg",
     "source": "/media/animals/bc0da06ffa064f36ab41b04e/animals-01.jpg",
     "position": {
       "x": 100,
-      "y": 26
+      "y": 19
     }
   }
 }
