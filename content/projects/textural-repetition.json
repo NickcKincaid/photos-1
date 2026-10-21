@@ -24,10 +24,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "59 mm",
+      "focal_length": "59mm",
       "aperture": "f/7.1",
-      "shutter_speed": "1/40",
-      "iso": "450"
+      "shutter_speed": "1/40s",
+      "iso": "ISO 450",
+      "alt": "A grid of dark metal wire mesh forms the backdrop, revealing a colorful, patterned textile beneath. Vertical strips of fabric in muted tones are visible through the mesh, partially obscured by shadows and reflections."
     },
     {
       "image": "/media/textural-repetition/70573d8b8edf45519727cb22/textural-repetition-03.jpg",
@@ -35,10 +36,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/6.3",
-      "shutter_speed": "1/100",
-      "iso": "140"
+      "shutter_speed": "1/100s",
+      "iso": "ISO 140",
+      "alt": "A vertical wooden slat wall with evenly spaced, gray planks shows minor surface imperfections and a vertical gap between planks. A vertical gap is visible near the center, revealing a lighter-colored strip of wood."
     },
     {
       "image": "/media/textural-repetition/b335ea77806e4d6bb59d572d/textural-repetition-02.jpg",
@@ -46,10 +48,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
-      "focal_length": "500 mm",
+      "focal_length": "500mm",
       "aperture": "f/8",
-      "shutter_speed": "1/640",
-      "iso": "500"
+      "shutter_speed": "1/640s",
+      "iso": "ISO 500",
+      "alt": "A multi-story residential building with uniformly spaced balconies, each featuring white curtains and metal railings. Sunlight illuminates shadows and highlights the architectural grid, emphasizing the repetitive pattern and clean lines."
     },
     {
       "image": "/media/textural-repetition/81171ddb5dc740d0944dcbb5/textural-repetition-04.jpg",
@@ -57,10 +60,11 @@
       "storage": "r2",
       "camera": "Canon EOS Rebel T7i",
       "lens": "EF-S55-250mm f/4-5.6 IS",
-      "focal_length": "116 mm",
+      "focal_length": "116mm",
       "aperture": "f/11",
-      "shutter_speed": "1/200",
-      "iso": "1250"
+      "shutter_speed": "1/200s",
+      "iso": "ISO 1250",
+      "alt": "The photograph shows stone steps or seating arranged in a terraced, stepped pattern, viewed from above. Grass grows between stones, and shadows fall across the surface."
     },
     {
       "image": "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
@@ -68,10 +72,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/7.1",
-      "shutter_speed": "1/640",
-      "iso": "560"
+      "shutter_speed": "1/640s",
+      "iso": "ISO 560",
+      "alt": "A concrete building facade with repeating curved balconies, each featuring white-framed windows."
     },
     {
       "image": "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg",
@@ -79,10 +84,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/9",
-      "shutter_speed": "1/200",
-      "iso": "220"
+      "shutter_speed": "1/200s",
+      "iso": "ISO 220",
+      "alt": "A yellow building facade with evenly spaced windows and air conditioning units. Sunlight creates strong shadows across the building’s surface, highlighting the rectangular grid of windows."
     },
     {
       "image": "/media/textural-repetition/2dda3425255d42feb7c654ff/textural-repetition-07.jpg",
@@ -90,10 +96,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
-      "focal_length": "500 mm",
+      "focal_length": "500mm",
       "aperture": "f/8",
-      "shutter_speed": "1/40",
-      "iso": "360"
+      "shutter_speed": "1/40s",
+      "iso": "ISO 360",
+      "alt": "Aerial view of vineyard rows stretching diagonally across the frame, planted with rows of vines extending from terraced slopes."
     },
     {
       "image": "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg",
@@ -101,10 +108,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/11",
-      "shutter_speed": "1/60",
-      "iso": "640"
+      "shutter_speed": "1/60s",
+      "iso": "ISO 640",
+      "alt": "A long, dark hallway with evenly spaced windows along one side, letting in bright daylight."
     }
   ],
   "social_image": ""

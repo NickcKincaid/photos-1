@@ -35,10 +35,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "102 mm",
+      "focal_length": "102mm",
       "aperture": "f/5",
-      "shutter_speed": "1/30",
-      "iso": "720"
+      "shutter_speed": "1/30s",
+      "iso": "ISO 720",
+      "alt": "A long, thin yellow chain hangs vertically from metal rings beneath a white industrial building wall. Below, exposed pipes and wiring run along the wall and ceiling. A single overhead light fixture illuminates the scene."
     },
     {
       "image": "/media/nameyourvices/d95b0ec613e444ebb70cd8b5/nameyourvices-04.jpg",
@@ -46,10 +47,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "70 mm",
+      "focal_length": "70mm",
       "aperture": "f/4",
-      "shutter_speed": "1/40",
-      "iso": "6400"
+      "shutter_speed": "1/40s",
+      "iso": "ISO 6400",
+      "alt": "A dark industrial interior with angled metal beams and gridded windows; no sporting event or street scene is depicted."
     },
     {
       "image": "/media/nameyourvices/873ea5ea8a3d4a6a9d89ad55/nameyourvices-01.jpg",
@@ -57,10 +59,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/8",
-      "shutter_speed": "1/125",
-      "iso": "3600"
+      "shutter_speed": "1/125s",
+      "iso": "ISO 3600",
+      "alt": "A steep, concrete stairway with metal handrails leads upward, flanked by weathered, rectangular blocks with small doorways and window openings."
     },
     {
       "image": "/media/nameyourvices/64b2953413bb49738e7c46d9/nameyourvices-02.jpg",
@@ -68,10 +71,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/9",
-      "shutter_speed": "1/500",
-      "iso": "110"
+      "shutter_speed": "1/500s",
+      "iso": "ISO 110",
+      "alt": "Scaffolding with metal stairs and platforms forms a complex, interconnected structure against a gray sky. Vertical metal poles and horizontal crossbeams create horizontal and vertical lines across the frame."
     },
     {
       "image": "/media/nameyourvices/5f3a270f4dbe4a0ca4926193/nameyourvices-05.jpg",
@@ -79,10 +83,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/5",
-      "shutter_speed": "1/250",
-      "iso": "200"
+      "shutter_speed": "1/250s",
+      "iso": "ISO 200",
+      "alt": "A street lamp with long, thin, dark streamers extending upward against a pale sky; one streamer trails left and curls upward, while the other hangs loosely."
     },
     {
       "image": "/media/nameyourvices/dc72421aa5314cb6b3e76e92/nameyourvices-06.jpg",
@@ -90,10 +95,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/7.1",
-      "shutter_speed": "1/100",
-      "iso": "180"
+      "shutter_speed": "1/100s",
+      "iso": "ISO 180",
+      "alt": "A metal framework structure with horizontal bars and diagonal crossbeams, silhouetted against a bright sky. Vertical metal bars form a grid pattern, with chains visible along some sections."
     },
     {
       "image": "/media/nameyourvices/3107713eec4a4d4b8b1f3aa6/nameyourvices-09.jpg",
@@ -101,10 +107,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "86 mm",
+      "focal_length": "86mm",
       "aperture": "f/4",
-      "shutter_speed": "1/80",
-      "iso": "500"
+      "shutter_speed": "1/80s",
+      "iso": "ISO 500",
+      "alt": "A weathered, broken tree trunk lies horizontally in a dark forest at night, partially obscured by bare branches and low-lying vegetation. A thin rope is tied around the trunk near the base."
     },
     {
       "image": "/media/nameyourvices/47f92ccece4f4baa9626cd5b/nameyourvices-14.jpg",
@@ -112,10 +119,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/8",
-      "shutter_speed": "1/50",
-      "iso": "3200"
+      "shutter_speed": "1/50s",
+      "iso": "ISO 3200",
+      "alt": "A gloved hand holds a curved blade with a worn handle against a plain gray wall; no sport, street scene, or identifiable objects are visible."
     },
     {
       "image": "/media/nameyourvices/0c8147a7befe4c879cac0271/nameyourvices-10.jpg",
@@ -123,10 +131,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "68 mm",
+      "focal_length": "68mm",
       "aperture": "f/8",
-      "shutter_speed": "1/320",
-      "iso": "160"
+      "shutter_speed": "1/320s",
+      "iso": "ISO 160",
+      "alt": "Three dark utility poles support multiple horizontal wires, each terminating in clusters of evenly spaced white rectangular fixtures. The sky is uniform and gray, devoid of clouds or sky features."
     },
     {
       "image": "/media/nameyourvices/33325300190c49f38d552fa8/nameyourvices-11.jpg",
@@ -134,10 +143,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/5.6",
-      "shutter_speed": "1/80",
-      "iso": "5000"
+      "shutter_speed": "1/80s",
+      "iso": "ISO 5000",
+      "alt": "A white cross made of felt or wool fabric is centered on a black background. The cross is formed by intersecting two rectangular strips of felt, with visible fibers and slight fraying along the edges. The material appears soft and"
     },
     {
       "image": "/media/nameyourvices/8e0bf9efdf064494a06d1d96/nameyourvices-13.jpg",
@@ -145,10 +155,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
-      "focal_length": "500 mm",
+      "focal_length": "500mm",
       "aperture": "f/8",
-      "shutter_speed": "1/500",
-      "iso": "125"
+      "shutter_speed": "1/500s",
+      "iso": "ISO 125",
+      "alt": "A water tower stands silhouetted against a pale sky, flanked by two dark buildings with gabled roofs and a white fence running between them on a dark slope."
     },
     {
       "image": "/media/nameyourvices/d3fbe42a9b3042f895a2665c/nameyourvices-14.jpg",
@@ -156,10 +167,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "37 mm",
+      "focal_length": "37mm",
       "aperture": "f/4",
-      "shutter_speed": "1/100",
-      "iso": "6400"
+      "shutter_speed": "1/100s",
+      "iso": "ISO 6400",
+      "alt": "A shadow of a person is cast on a horizontal-grooved wall surface, angled slightly downward to the right. The shadow is dark and solid, with no discernible facial features or body parts."
     },
     {
       "image": "/media/nameyourvices/e2b65b5615944d539a211d76/nameyourvices-14.jpg",
@@ -167,10 +179,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/7.1",
-      "shutter_speed": "1/160",
-      "iso": "10000"
+      "shutter_speed": "1/160s",
+      "iso": "ISO 10000",
+      "alt": "A wide, empty industrial space with a smooth concrete floor, corrugated metal walls, and a ceiling fan. Large windows along the back wall reveal industrial structures and lighting fixtures."
     },
     {
       "image": "/media/nameyourvices/8ef5f1c8381944a89ff6973f/nameyourvices-18.jpg",
@@ -178,10 +191,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/6.3",
-      "shutter_speed": "1/80",
-      "iso": "100"
+      "shutter_speed": "1/80s",
+      "iso": "ISO 100",
+      "alt": "A dark metal framework with regularly spaced bolts forms curved, interconnected beams against a pale sky."
     },
     {
       "image": "/media/nameyourvices/32e7195af7b8461a9df37c92/nameyourvices-15.jpg",
@@ -189,10 +203,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/5.6",
-      "shutter_speed": "1/250",
-      "iso": "3600"
+      "shutter_speed": "1/250s",
+      "iso": "ISO 3600",
+      "alt": "A calm lake reflects the dark evergreen trees lining its far bank. Fallen branches and logs rest along the water’s edge, partially submerged and silhouetted against the dark water."
     },
     {
       "image": "/media/nameyourvices/55c9b057c4844a01b2770f2d/nameyourvices-16.jpg",
@@ -200,10 +215,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
-      "focal_length": "500",
+      "focal_length": "500mm",
       "aperture": "f/8",
-      "shutter_speed": "1/40",
-      "iso": "6400"
+      "shutter_speed": "1/40s",
+      "iso": "ISO 6400",
+      "alt": "A circular light fixture hangs in a dark room, casting a faint glow. Rain streaks fall from the upper right, illuminating the scene."
     },
     {
       "image": "/media/nameyourvices/c8c036d183aa4611a96da6f5/nameyourvices-20.jpg",
@@ -211,10 +227,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "87 mm",
+      "focal_length": "87mm",
       "aperture": "f/8",
-      "shutter_speed": "1/100",
-      "iso": "110"
+      "shutter_speed": "1/100s",
+      "iso": "ISO 110",
+      "alt": "A tall, multi-story residential building with numerous balconies stands against a clear sky. Dark trees partially obscure the lower levels of the structure."
     },
     {
       "image": "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg",
@@ -222,10 +239,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
-      "focal_length": "40 mm",
+      "focal_length": "40mm",
       "aperture": "f/5.6",
-      "shutter_speed": "1/250",
-      "iso": "100"
+      "shutter_speed": "1/250s",
+      "iso": "ISO 100",
+      "alt": "A dark rectangular vent or grille is mounted on a weathered concrete wall. The wall shows rough texture and minor surface imperfections. A small dark spot is visible on the wall surface near the vent."
     }
   ]
 }

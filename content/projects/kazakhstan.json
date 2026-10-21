@@ -18,10 +18,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/6.3",
-      "shutter_speed": "1/1000",
-      "iso": "110"
+      "shutter_speed": "1/1000s",
+      "iso": "ISO 110",
+      "alt": "A small white house sits beside a dirt road in a flat, grassy field, with rolling hills and distant mountains visible in the background under a cloudy sky."
     },
     {
       "image": "/media/kazakhstan/8e9c33ec39904b44b6eb6368/kazakhstan-02.jpg",
@@ -29,10 +30,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/6.3",
-      "shutter_speed": "1/250",
-      "iso": "500"
+      "shutter_speed": "1/250s",
+      "iso": "ISO 500",
+      "alt": "A residential area with colorful houses nestled among green hills and forested slopes. Mountains rise in the background under a hazy sky."
     },
     {
       "image": "/media/kazakhstan/4be176d05bf64343a2482a23/kazakhstan-03.jpg",
@@ -40,10 +42,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/5.6",
-      "shutter_speed": "1/1250",
-      "iso": "100"
+      "shutter_speed": "1/1250s",
+      "iso": "ISO 100",
+      "alt": "A cable car system transports people up a snowy slope. Five empty chairlift seats hang from cables against a white, snow-covered slope."
     },
     {
       "image": "/media/kazakhstan/3c6572753da84b2bb2515df3/kazakhstan-05.jpg",
@@ -51,10 +54,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "73 mm",
+      "focal_length": "73mm",
       "aperture": "f/9",
-      "shutter_speed": "1/640",
-      "iso": "110"
+      "shutter_speed": "1/640s",
+      "iso": "ISO 110",
+      "alt": "A snow-covered mountain peak with jagged, dark rock faces under a clear blue sky. Sunlight illuminates deep shadows and highlights the texture of the rock."
     },
     {
       "image": "/media/kazakhstan/a7ce36e52061449d8f88c50e/kazakhstan-04.jpg",
@@ -62,10 +66,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "120 mm",
+      "focal_length": "120mm",
       "aperture": "f/7.1",
-      "shutter_speed": "1/500",
-      "iso": "200"
+      "shutter_speed": "1/500s",
+      "iso": "ISO 200",
+      "alt": "A street scene shows a red brick building with ornate architectural details, a blue and green awning displaying “Bercke Bank,” and a large billboard featuring a portrait of a man. Power lines crisscross overhead, and a snow-capped mountain"
     },
     {
       "image": "/media/kazakhstan/f4ae4a3e08264318858193f2/kazakhstan-06.jpg",
@@ -73,10 +78,11 @@
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
-      "focal_length": "24 mm",
+      "focal_length": "24mm",
       "aperture": "f/5.6",
-      "shutter_speed": "1/250",
-      "iso": "2000"
+      "shutter_speed": "1/250s",
+      "iso": "ISO 2000",
+      "alt": "A weathered white metal door with faded paint and prominent red spray-painted boots is flanked by two similarly aged white metal doors with Cyrillic text and faded red spray-painted boots. The doors are set within a concrete wall with"
     }
   ],
   "cover_position": {
