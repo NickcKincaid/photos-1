@@ -3,7 +3,7 @@
   "blurb": "",
   "published": true,
   "order": 7,
-  "social_image": "",
+  "social_image": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
   "cover_position": {
     "x": 81,
     "y": 50
@@ -85,5 +85,17 @@
       "iso": "ISO 280",
       "alt": "A black dog lies on gray and white paving stones, looking directly at the camera. Its front paws are visible, and its fur appears slightly ruffled."
     }
-  ]
+  ],
+  "social_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_card": {
+    "path": "/media/animals/d810fba28ba54548b5b49c73/sharing-1200x630.jpg",
+    "source": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
+    "position": {
+      "x": 50,
+      "y": 50
+    }
+  }
 }

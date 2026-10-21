@@ -86,5 +86,17 @@
     "x": 50,
     "y": 50
   },
-  "social_image": ""
+  "social_image": "",
+  "social_position": {
+    "x": 50,
+    "y": 41
+  },
+  "social_card": {
+    "path": "/media/kyrgyzstan/4a3153e4df0d40bf8a78fac5/sharing-1200x630.jpg",
+    "source": "/media/kyrgyzstan/a8974d874c1747ca85326968/kyrgyzstan-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 41
+    }
+  }
 }
