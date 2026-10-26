@@ -25,8 +25,8 @@
     "/media/west-coast-america/f0be71fa9bb643cf90877300/west-coast-america-03.jpg",
     "/media/west-coast-america/55a0b93aeee749d9aa245f1c/west-coast-america-04.jpg",
     "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg",
-    "/media/west-coast-america/ec2bc4e5628f475f95746ee5/west-coast-america-05.jpg",
-    "/media/west-coast-america/52aada1944404615b90e53b7/west-coast-america-06.jpg"
+    "/media/west-coast-america/52aada1944404615b90e53b7/west-coast-america-06.jpg",
+    "/media/west-coast-america/7d15335ff2a74fe0a0fa5b1c/west-coast-america-06.jpg"
   ],
   "photo_details": [
     {
@@ -86,18 +86,6 @@
       "alt": "Cattle graze in a grassy field bordered by a dirt embankment and a shallow stream. Trees with autumn foliage line the slope behind them. A red barn is visible to the right. Power lines run across the slope."
     },
     {
-      "image": "/media/west-coast-america/ec2bc4e5628f475f95746ee5/west-coast-america-05.jpg",
-      "id": "0e60b4af74384bd68f8043db",
-      "width": 1867,
-      "height": 2800,
-      "storage": "r2",
-      "focal_length": "250mm",
-      "aperture": "f/5.6",
-      "shutter_speed": "1/250s",
-      "iso": "ISO 200",
-      "alt": "A tall, pointed structure topped with a dark cross stands prominently in the foreground, overlooking a residential area and a body of water. A white sailboat is visible on the water in the distance. Power lines cross the scene in the"
-    },
-    {
       "image": "/media/west-coast-america/52aada1944404615b90e53b7/west-coast-america-06.jpg",
       "id": "714b9a346abc4c9d8e3b24e7",
       "width": 2800,
@@ -110,6 +98,18 @@
       "shutter_speed": "1/80s",
       "iso": "ISO 100",
       "alt": "A red wooden walkway extends toward a white building with dark roofing and a small tower, situated near a body of water under a clear blue sky. White railings line both sides of the path. Dry, sandy ground flanks the walkway, and distant"
+    },
+    {
+      "image": "/media/west-coast-america/7d15335ff2a74fe0a0fa5b1c/west-coast-america-06.jpg",
+      "id": "134df179ca72494fbd90dffe",
+      "width": 1874,
+      "height": 2800,
+      "storage": "r2",
+      "focal_length": "250mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/200s",
+      "iso": "ISO 400",
+      "alt": "A high-angle view shows a cityscape with a prominent church steeple topped with a dark green cross. Across the water, a large white passenger ship is visible. In the distance, hazy hills rise above the horizon. Power lines cross the"
     }
   ]
 }
