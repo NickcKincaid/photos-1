@@ -5,15 +5,93 @@
   "order": 2,
   "social_image": "",
   "cover_position": {
-    "x": 50,
-    "y": 50
+    "x": 100,
+    "y": 0
   },
   "social_position": {
     "x": 50,
     "y": 50
   },
-  "social_card": null,
-  "cover": "",
-  "gallery": [],
-  "photo_details": []
+  "social_card": {
+    "path": "/media/west-coast-america/2eb7d9f702c44e648a89a433/sharing-1200x630.jpg",
+    "source": "/media/west-coast-america/f277ccad8c7447b5a5c07d28/west-coast-america-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 50
+    }
+  },
+  "cover": "/media/west-coast-america/f277ccad8c7447b5a5c07d28/west-coast-america-01.jpg",
+  "gallery": [
+    "/media/west-coast-america/39b8de97ce5f42a5a2a623a3/west-coast-america-02.jpg",
+    "/media/west-coast-america/f0be71fa9bb643cf90877300/west-coast-america-03.jpg",
+    "/media/west-coast-america/9af8efa58e08448994f518ff/west-coast-america-04.jpg",
+    "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg"
+  ],
+  "photo_details": [
+    {
+      "image": "/media/west-coast-america/f277ccad8c7447b5a5c07d28/west-coast-america-01.jpg",
+      "id": "9b85ea85adb848ad9c3a5d62",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "115mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/250s",
+      "iso": "ISO 125"
+    },
+    {
+      "image": "/media/west-coast-america/39b8de97ce5f42a5a2a623a3/west-coast-america-02.jpg",
+      "id": "b6e72f2688ff4069801e7fd8",
+      "width": 2000,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "75mm",
+      "aperture": "f/4",
+      "shutter_speed": "1/1000s",
+      "iso": "ISO 180"
+    },
+    {
+      "image": "/media/west-coast-america/f0be71fa9bb643cf90877300/west-coast-america-03.jpg",
+      "id": "88b7a605f1f945369752c9b8",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "82mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/400s",
+      "iso": "ISO 400"
+    },
+    {
+      "image": "/media/west-coast-america/9af8efa58e08448994f518ff/west-coast-america-04.jpg",
+      "id": "cf57605e51a547d6b2622974",
+      "width": 2800,
+      "height": 1863,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "115mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/1250s",
+      "iso": "ISO 400"
+    },
+    {
+      "image": "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg",
+      "id": "f47ce0d6a7de4cb6a4dd9a76",
+      "width": 2800,
+      "height": 1863,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/11",
+      "shutter_speed": "1/320s",
+      "iso": "ISO 800"
+    }
+  ]
 }
