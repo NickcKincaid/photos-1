@@ -40,7 +40,8 @@
       "focal_length": "115mm",
       "aperture": "f/5.6",
       "shutter_speed": "1/250s",
-      "iso": "ISO 125"
+      "iso": "ISO 125",
+      "alt": "A US flag hangs on a pole near a pine tree beside a dark body of water; no sporting event, street scene, or identifiable participants are visible."
     },
     {
       "image": "/media/west-coast-america/f0be71fa9bb643cf90877300/west-coast-america-03.jpg",
@@ -53,7 +54,8 @@
       "focal_length": "82mm",
       "aperture": "f/8",
       "shutter_speed": "1/400s",
-      "iso": "ISO 400"
+      "iso": "ISO 400",
+      "alt": "A light gray two-story house with a dark gray roof and white trim is surrounded by trees with yellow autumn leaves. A covered porch with white columns and railings extends along the front."
     },
     {
       "image": "/media/west-coast-america/55a0b93aeee749d9aa245f1c/west-coast-america-04.jpg",
@@ -66,7 +68,8 @@
       "focal_length": "40mm",
       "aperture": "f/7.1",
       "shutter_speed": "1/160s",
-      "iso": "ISO 125"
+      "iso": "ISO 125",
+      "alt": "A paved alleyway between industrial buildings leads toward a distant road and buildings, with overhead wires overhead."
     },
     {
       "image": "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg",
@@ -79,7 +82,8 @@
       "focal_length": "120mm",
       "aperture": "f/11",
       "shutter_speed": "1/320s",
-      "iso": "ISO 800"
+      "iso": "ISO 800",
+      "alt": "Cattle graze in a grassy field bordered by a dirt embankment and a shallow stream. Trees with autumn foliage line the slope behind them. A red barn is visible to the right. Power lines run across the slope."
     },
     {
       "image": "/media/west-coast-america/ec2bc4e5628f475f95746ee5/west-coast-america-05.jpg",
@@ -90,7 +94,8 @@
       "focal_length": "250mm",
       "aperture": "f/5.6",
       "shutter_speed": "1/250s",
-      "iso": "ISO 200"
+      "iso": "ISO 200",
+      "alt": "A tall, pointed structure topped with a dark cross stands prominently in the foreground, overlooking a residential area and a body of water. A white sailboat is visible on the water in the distance. Power lines cross the scene in the"
     },
     {
       "image": "/media/west-coast-america/52aada1944404615b90e53b7/west-coast-america-06.jpg",
@@ -103,7 +108,8 @@
       "focal_length": "40mm",
       "aperture": "f/16",
       "shutter_speed": "1/80s",
-      "iso": "ISO 100"
+      "iso": "ISO 100",
+      "alt": "A red wooden walkway extends toward a white building with dark roofing and a small tower, situated near a body of water under a clear blue sky. White railings line both sides of the path. Dry, sandy ground flanks the walkway, and distant"
     }
   ]
 }
