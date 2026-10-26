@@ -1,7 +1,7 @@
 {
   "title": "West Coast America",
   "blurb": "",
-  "published": false,
+  "published": true,
   "order": 2,
   "social_image": "",
   "cover_position": {
@@ -10,14 +10,14 @@
   },
   "social_position": {
     "x": 50,
-    "y": 50
+    "y": 7
   },
   "social_card": {
-    "path": "/media/west-coast-america/2eb7d9f702c44e648a89a433/sharing-1200x630.jpg",
+    "path": "/media/west-coast-america/53a76630f7244a708b4aa406/sharing-1200x630.jpg",
     "source": "/media/west-coast-america/f277ccad8c7447b5a5c07d28/west-coast-america-01.jpg",
     "position": {
       "x": 50,
-      "y": 50
+      "y": 7
     }
   },
   "cover": "/media/west-coast-america/f277ccad8c7447b5a5c07d28/west-coast-america-01.jpg",
