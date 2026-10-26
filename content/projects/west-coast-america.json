@@ -1,0 +1,19 @@
+{
+  "title": "West Coast America",
+  "blurb": "",
+  "published": false,
+  "order": 2,
+  "social_image": "",
+  "cover_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_card": null,
+  "cover": "",
+  "gallery": [],
+  "photo_details": []
+}
