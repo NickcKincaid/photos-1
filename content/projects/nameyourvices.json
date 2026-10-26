@@ -28,7 +28,8 @@
     "/media/nameyourvices/c8c036d183aa4611a96da6f5/nameyourvices-20.jpg",
     "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg",
     "/media/nameyourvices/9d3f29b1702b415daf30a00b/nameyourvices-19.jpg",
-    "/media/nameyourvices/1f86f3625882447c9e1dd678/nameyourvices-20.jpg"
+    "/media/nameyourvices/1f86f3625882447c9e1dd678/nameyourvices-20.jpg",
+    "/media/nameyourvices/201cdf470c194f77873500a9/nameyourvices-21.jpg"
   ],
   "photo_details": [
     {
@@ -310,6 +311,19 @@
       "shutter_speed": "1/1250s",
       "iso": "ISO 220",
       "alt": "A tall evergreen stands beside a slender conifer with yellow-green foliage, illuminated by dappled sunlight filtering through overhead canopy. Fall colors are visible on nearby reddish-leaved shrubs and patches of ground cover."
+    },
+    {
+      "image": "/media/nameyourvices/201cdf470c194f77873500a9/nameyourvices-21.jpg",
+      "id": "41bd66fc0df345ebb479285e",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "101mm",
+      "aperture": "f/5",
+      "shutter_speed": "1/320s",
+      "iso": "ISO 125"
     }
   ],
   "social_position": {
