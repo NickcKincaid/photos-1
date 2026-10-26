@@ -13,7 +13,9 @@
     "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
     "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
     "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
-    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg"
+    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
+    "/media/animals/1e2a1723d8274e51a4c211fa/animals-06.jpg",
+    "/media/animals/6b9e6f79c29a490cbd431629/animals-07.jpg"
   ],
   "photo_details": [
     {
@@ -84,6 +86,32 @@
       "shutter_speed": "1/200s",
       "iso": "ISO 280",
       "alt": "A black dog lies on gray and white paving stones, looking directly at the camera. Its front paws are visible, and its fur appears slightly ruffled."
+    },
+    {
+      "image": "/media/animals/1e2a1723d8274e51a4c211fa/animals-06.jpg",
+      "id": "08d6766aa6974d0f9c782244",
+      "width": 2800,
+      "height": 2000,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/320s",
+      "iso": "ISO 180"
+    },
+    {
+      "image": "/media/animals/6b9e6f79c29a490cbd431629/animals-07.jpg",
+      "id": "e5dc5543803640b38841f1bd",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "24mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/320s",
+      "iso": "ISO 140"
     }
   ],
   "social_position": {
