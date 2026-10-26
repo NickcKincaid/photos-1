@@ -23,7 +23,10 @@
   "cover": "/media/west-coast-america/f277ccad8c7447b5a5c07d28/west-coast-america-01.jpg",
   "gallery": [
     "/media/west-coast-america/f0be71fa9bb643cf90877300/west-coast-america-03.jpg",
-    "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg"
+    "/media/west-coast-america/55a0b93aeee749d9aa245f1c/west-coast-america-04.jpg",
+    "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg",
+    "/media/west-coast-america/ec2bc4e5628f475f95746ee5/west-coast-america-05.jpg",
+    "/media/west-coast-america/52aada1944404615b90e53b7/west-coast-america-06.jpg"
   ],
   "photo_details": [
     {
@@ -53,6 +56,19 @@
       "iso": "ISO 400"
     },
     {
+      "image": "/media/west-coast-america/55a0b93aeee749d9aa245f1c/west-coast-america-04.jpg",
+      "id": "b79e0566ffbf42c8a50bc356",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/160s",
+      "iso": "ISO 125"
+    },
+    {
       "image": "/media/west-coast-america/dea92726a93f4ad7b35b73ab/west-coast-america-05.jpg",
       "id": "f47ce0d6a7de4cb6a4dd9a76",
       "width": 2800,
@@ -64,6 +80,30 @@
       "aperture": "f/11",
       "shutter_speed": "1/320s",
       "iso": "ISO 800"
+    },
+    {
+      "image": "/media/west-coast-america/ec2bc4e5628f475f95746ee5/west-coast-america-05.jpg",
+      "id": "0e60b4af74384bd68f8043db",
+      "width": 1867,
+      "height": 2800,
+      "storage": "r2",
+      "focal_length": "250mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/250s",
+      "iso": "ISO 200"
+    },
+    {
+      "image": "/media/west-coast-america/52aada1944404615b90e53b7/west-coast-america-06.jpg",
+      "id": "714b9a346abc4c9d8e3b24e7",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 40mm f/2",
+      "focal_length": "40mm",
+      "aperture": "f/16",
+      "shutter_speed": "1/80s",
+      "iso": "ISO 100"
     }
   ]
 }
