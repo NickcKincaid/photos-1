@@ -26,7 +26,9 @@
     "/media/nameyourvices/32e7195af7b8461a9df37c92/nameyourvices-15.jpg",
     "/media/nameyourvices/55c9b057c4844a01b2770f2d/nameyourvices-16.jpg",
     "/media/nameyourvices/c8c036d183aa4611a96da6f5/nameyourvices-20.jpg",
-    "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg"
+    "/media/nameyourvices/2dfb79a5740e41cd8dc6e366/nameyourvices-17.jpg",
+    "/media/nameyourvices/9d3f29b1702b415daf30a00b/nameyourvices-19.jpg",
+    "/media/nameyourvices/1f86f3625882447c9e1dd678/nameyourvices-20.jpg"
   ],
   "photo_details": [
     {
@@ -280,6 +282,44 @@
       "shutter_speed": "1/250s",
       "iso": "ISO 100",
       "alt": "A dark rectangular vent or grille is mounted on a weathered concrete wall. The wall shows rough texture and minor surface imperfections. A small dark spot is visible on the wall surface near the vent."
+    },
+    {
+      "image": "/media/nameyourvices/9d3f29b1702b415daf30a00b/nameyourvices-19.jpg",
+      "id": "8e59eb5da0c2445a99808bef",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/6.3",
+      "shutter_speed": "1/1250s",
+      "iso": "ISO 12800"
+    },
+    {
+      "image": "/media/nameyourvices/1f86f3625882447c9e1dd678/nameyourvices-20.jpg",
+      "id": "587a6898c7f64057a8fb6341",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/1250s",
+      "iso": "ISO 220"
     }
-  ]
+  ],
+  "social_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_card": {
+    "path": "/media/nameyourvices/b330623bb01f401a833d93e1/sharing-1200x630.jpg",
+    "source": "/media/nameyourvices/49eea71c08084c9ebc226a3b/nameyourvices-12.jpg",
+    "position": {
+      "x": 50,
+      "y": 50
+    }
+  }
 }
