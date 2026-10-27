@@ -497,8 +497,20 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     # saved, reviewed alt text is included; don't invent AI descriptions here.
     image_schema = []
     for position, photo in enumerate(images, 1):
+        # Google's image metadata requires creator to resolve to a typed Person
+        # or Organization on this page, not only an @id found on the homepage.
+        # Keep the public credit consistent with the site's existing footer.
         obj = {'@type': 'ImageObject', 'contentUrl': SITE_URL + photo,
-               'creator': {'@id': SITE_URL + '/#person'}}
+               'creator': {'@type': 'Person', '@id': SITE_URL + '/#person',
+                           'name': site['name'], 'url': SITE_URL + '/'},
+               'creditText': site['name'],
+               'copyrightNotice': f'© {date.today().year} {site["name"]}',
+               'acquireLicensePage': SITE_URL + '/inquire/'}
+        # Do not invent a license URL or grant reuse rights. A license link can
+        # be supplied later if the photographer publishes actual license terms.
+        license_link = safe_href(site.get('image_license_url'))
+        if license_link:
+            obj['license'] = license_link
         reviewed_alt = image_alt(p, photo, '')
         if reviewed_alt:
             obj['description'] = reviewed_alt

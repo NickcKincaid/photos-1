@@ -83,6 +83,36 @@ class SearchMetadataTests(unittest.TestCase):
                       project_html)
         structured = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', project_html, re.S).group(1))
         self.assertEqual(structured['@type'], 'ImageGallery')
+        photo = structured['image'][0]
+        self.assertEqual(photo['creator']['@type'], 'Person')
+        self.assertEqual(photo['creator']['name'], 'Nicholas Kincaid')
+        self.assertEqual(photo['creditText'], 'Nicholas Kincaid')
+        self.assertIn('Nicholas Kincaid', photo['copyrightNotice'])
+        self.assertEqual(photo['acquireLicensePage'], 'https://nickckincaid.com/inquire/')
+        self.assertNotIn('license', photo)  # Never make up a reuse license.
+
+    def test_optional_license_only_appears_when_explicitly_configured(self):
+        self.add_project()
+        settings = self.root / 'content' / 'site.json'
+        contents = json.loads(settings.read_text())
+        contents['image_license_url'] = 'https://nickckincaid.com/licensing/'
+        settings.write_text(json.dumps(contents))
+        self.site.run()
+        html = (self.root / 'dist' / 'projects' / 'cdmx' / 'index.html').read_text()
+        schema = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', html, re.S).group(1))
+        self.assertEqual(schema['image'][0]['license'], contents['image_license_url'])
+
+    def test_sitemap_urls_all_point_to_generated_pages(self):
+        self.add_project()
+        self.site.run()
+        root = ET.fromstring((self.root / 'dist' / 'sitemap.xml').read_text())
+        ns = {'s': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+        for loc in root.findall('s:url/s:loc', ns):
+            url = loc.text
+            self.assertTrue(url.startswith(self.site.SITE_URL + '/'))
+            route = url[len(self.site.SITE_URL):]
+            expected = self.root / 'dist' / route.lstrip('/') / 'index.html'
+            self.assertTrue(expected.is_file(), f'Broken sitemap URL: {url}')
 
     def test_note_markup_is_clean_and_dates_are_real(self):
         (self.root / 'content' / 'notes' / 'travel.json').write_text(json.dumps({
