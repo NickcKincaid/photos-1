@@ -1,8 +1,8 @@
 {
   "title": "Textural Repetition",
-  "blurb": "An ongoing project that serves as a meditation on recurring visual motifs found in human-made environments.",
+  "blurb": "An ongoing project that serves as a meditation on recurring visual motifs found in human-made and natural environments.",
   "published": true,
-  "order": 6,
+  "order": 7,
   "cover_position": {
     "x": 56,
     "y": 83
@@ -15,7 +15,8 @@
     "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
     "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg",
     "/media/textural-repetition/2dda3425255d42feb7c654ff/textural-repetition-07.jpg",
-    "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg"
+    "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg",
+    "/media/textural-repetition/fa46f9c185d442c4afab6876/textural-repetition-09.jpg"
   ],
   "photo_details": [
     {
@@ -129,7 +130,33 @@
       "shutter_speed": "1/60s",
       "iso": "ISO 640",
       "alt": "A long, dark hallway with evenly spaced windows along one side, letting in bright daylight."
+    },
+    {
+      "image": "/media/textural-repetition/fa46f9c185d442c4afab6876/textural-repetition-09.jpg",
+      "id": "e30a1b3745db40dba706f816",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/250s",
+      "iso": "ISO 280",
+      "alt": "A close-up of a yellow metal structure showing significant rust and wear. A bolt is visible in a circular opening."
     }
   ],
-  "social_image": ""
+  "social_image": "",
+  "social_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_card": {
+    "path": "/media/textural-repetition/8a3817d4a93c4869be109df0/sharing-1200x630.jpg",
+    "source": "/media/textural-repetition/57f2927b42834b24932aac33/textural-repetition-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 50
+    }
+  }
 }

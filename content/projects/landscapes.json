@@ -18,7 +18,8 @@
     "/media/landscapes/0376f5b67b6c44daa59c34fe/landscapes-06.jpg",
     "/media/landscapes/d95eab4278a447b2bc7cc93b/landscapes-07.jpg",
     "/media/landscapes/0794f4c314314de29ba463fc/landscapes-09.jpg",
-    "/media/landscapes/a63545575e1e47e58f13665f/landscapes-10.jpg"
+    "/media/landscapes/a63545575e1e47e58f13665f/landscapes-10.jpg",
+    "/media/landscapes/cca5baea176a4f35b35073e9/landscapes-11.jpg"
   ],
   "photo_details": [
     {
@@ -156,6 +157,20 @@
       "shutter_speed": "1/2000s",
       "iso": "ISO 100",
       "alt": "People are walking and playing on a sandy beach next to ocean waves."
+    },
+    {
+      "image": "/media/landscapes/cca5baea176a4f35b35073e9/landscapes-11.jpg",
+      "id": "549b53edc2af436db4d7102f",
+      "width": 2800,
+      "height": 1863,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "94mm",
+      "aperture": "f/5.6",
+      "shutter_speed": "1/800s",
+      "iso": "ISO 125",
+      "alt": "A wide, flat, grassy plain stretches toward a dense line of evergreen trees under a mostly blue sky with light, wispy clouds."
     }
   ],
   "social_position": {
