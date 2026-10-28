@@ -1,0 +1,91 @@
+[
+  {
+    "path": "admin-lib/session.js",
+    "sha256": "db4c3bb5b1b56269e15732aacff68148339338f90e3cc0595700e2acbb6eeaa3",
+    "allowed": [
+      "78ad24c0073ca8af956d9307aba6e8770fdfe441b91bd206d7a8097db12c0a5f",
+      "db4c3bb5b1b56269e15732aacff68148339338f90e3cc0595700e2acbb6eeaa3"
+    ]
+  },
+  {
+    "path": "functions/api/admin/backup.js",
+    "sha256": "0ebccde5a97051e2e726b6fd6648b0ffd95db60d37d8e77df11132fe1aae3d55",
+    "allowed": [
+      "198c13e8a0ca4b8e6bea211dee1135ef802aa09f4d182022a0c207872427f056"
+    ]
+  },
+  {
+    "path": "functions/api/admin/save.js",
+    "sha256": "b5d32b8f4fd5bd3edc496a7cc0e8e908cd0f5944fc110706fb6af8951c956081",
+    "allowed": [
+      "4e24526b70611e9cf3aed21f92e7da3cd6926e3c3a3fd33f81e8a2144f7cd121",
+      "b5d32b8f4fd5bd3edc496a7cc0e8e908cd0f5944fc110706fb6af8951c956081"
+    ]
+  },
+  {
+    "path": "functions/api/admin/storage.js",
+    "sha256": "7d0421470f5870a2c39e0220ef7e6679ce15508f7ad5f30934d51d72a34829ae",
+    "allowed": [
+      "d19005c59728937d3245796030550fe64f3e4c606a76718592633324b376bc84",
+      "7d0421470f5870a2c39e0220ef7e6679ce15508f7ad5f30934d51d72a34829ae"
+    ]
+  },
+  {
+    "path": "functions/api/auth/callback.js",
+    "sha256": "21fe22c798d634e225613dd180146f40a418e9958fa748f11636ed3ae00ff2c9",
+    "allowed": [
+      "dac9e515dbf406c3f3f3fc05557ac9f9bee354530f5f24011b640302004e6265",
+      "21fe22c798d634e225613dd180146f40a418e9958fa748f11636ed3ae00ff2c9"
+    ]
+  },
+  {
+    "path": "scripts/verify_metadata_backup.py",
+    "sha256": "7bb6d2b825beca6835173982204390b05f0d24ba95b584bf519e2a1c3aeb607a",
+    "allowed": [
+      "c32cd36d893befdb36b155ede0c9b8df059daf6a1f4517dbeaa7abb9e6ad6910"
+    ]
+  },
+  {
+    "path": "static/admin.js",
+    "sha256": "3b3bc346ca1aa50cf524a11fc75616790f00c5a99ca487b566849142978b5d65",
+    "allowed": [
+      "3b48eea1edffdfe7b35c23414daaa9b68762b81e0940434a5f802f07a3e9a7b3"
+    ]
+  },
+  {
+    "path": "static/admin-notes.js",
+    "sha256": "b1915f048d9c45158dab76ff59a816618959382e243366dfee137b5aa8687b93",
+    "allowed": [
+      "fea20fa18474ba2c27d78050210e74559ee1713da92adc43f14349bd27948ee2"
+    ]
+  },
+  {
+    "path": "static/admin-storage.js",
+    "sha256": "774b9a386b299d079937f851785aa8f3fcf9899a04d6fb2f31cb7852c1758b6c",
+    "allowed": [
+      "42c3db7512582a6100fb41e82ec5defea62514bded8aa19b412f52a29e26dcdb"
+    ]
+  },
+  {
+    "path": "tests/v24_api.test.mjs",
+    "sha256": "9cb4cfe5df6faaae10955c1434277095c919c1e62ad9a4d61065c32982249593",
+    "allowed": [
+      "102b49f7e2659b2b4890d3a1bc7b4b917a9acf61ddf690af447e176ccc703ca2"
+    ]
+  },
+  {
+    "path": "tests/v36d_sweep.test.mjs",
+    "sha256": "672247dcba4611f0db08d98b4234d0be846ea7621f37570c767d1d38aa1926ce",
+    "allowed": []
+  },
+  {
+    "path": "tests/v37_quality.test.mjs",
+    "sha256": "a75195556b6607dac019d87ce41e2d73f221e87a326569a743e8fb75603f7ee1",
+    "allowed": []
+  },
+  {
+    "path": "tests/test_v37_quality.py",
+    "sha256": "5539b068097aea3ac66423c75d63135b8ce9a095b84430f25595d71a53ae6054",
+    "allowed": []
+  }
+]
