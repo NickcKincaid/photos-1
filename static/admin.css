@@ -188,3 +188,12 @@ main[hidden] { display: none !important; }
 .note-edit-fields select { background: transparent; border: 1px solid var(--line); padding: 10px; font: inherit; color: var(--ink); width: 100%; max-width: 360px; }
 .note-heading .note-date-link { color: var(--muted); text-decoration: none; }
 .note-heading .note-date-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Note date clarity: lightweight, local-time preview of persisted timestamps. */
+.note-date-times { display: grid; gap: 7px; margin: -2px 0 0; }
+.note-date-times > div { display: grid; grid-template-columns: minmax(130px, 160px) minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.note-date-times dt { color: var(--muted); }
+.note-date-times dd { margin: 0; overflow-wrap: anywhere; }
+.note-date-times .note-date-selected { border-top: 1px solid var(--line); padding-top: 8px; font-weight: 600; }
+.note-date-times .note-date-selected dt { color: var(--ink); }
+@media (max-width: 460px) { .note-date-times > div { grid-template-columns: 1fr; gap: 2px; } }

@@ -1,6 +1,6 @@
 import { oauthOrigin, configured, redirect } from '../../../admin-lib/session.js';
 export function onRequestGet(context) {
-  if (!configured(context.env)) return new Response('Admin setup incomplete. See ADMIN_SETUP.md.',{status:503});
+  if (!configured(context.env)) return new Response('Admin setup incomplete. See docs/ADMIN_SETUP.md.',{status:503});
   const origin = oauthOrigin(context.env);
   // Sessions and OAuth state cookies must be created on the canonical hostname.
   if (new URL(context.request.url).origin !== origin) return redirect(origin + '/api/auth/login');

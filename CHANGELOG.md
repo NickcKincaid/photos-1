@@ -1,3 +1,31 @@
+## V38 — Content-preserving cleanup, Notes date visibility and release safety
+
+- Used the user-provided `photos-1(2).zip` as the authoritative starting point; kept all eight project JSON files, all three Note JSON files (including the unpublished `tbc` draft), and `content/site.json` without changing any data values (only Windows line endings were normalized). No historical content was reintroduced.
+- Retained the latest public inquiry email `contact@nickckincaid.com`, Notes optional titles and neutral `note-<id>` URLs, and sharing, SEO, admin, and gallery functionality from the chosen baseline.
+- Show Started, First Published, and Currently Shown On Website in the Notes editor, formatted in the viewer's local time; switching date display updates immediately.
+- Added a read-only `npm run content-check` pre-push safety command and optional `--compare-zip` mode to prevent accidental content loss when replacing source folders.
+- Consolidated documentation and retained the lightweight public design. No new runtime library, secrets, or R2 storage changes.
+
+## Repository Cleanup — October 2026
+
+- Organized ongoing setup and deployment guides under `docs/`; retained the complete historical `CHANGELOG.md` in the project root. Removed the duplicate, outdated V37 standalone release-notes file after consolidating its changes below.
+- Removed only generated local build artifacts from the distributable copy; kept historical browser tests, compatibility endpoints, `.pages.yml`, and the optimization manifest because they may still serve active workflows.
+- Normalized line-ending-only working tree differences across existing JSON and placeholder files, without changing any saved project, photo, or note values.
+- Added `.gitattributes` to avoid recurring Windows CRLF churn, and extended `.gitignore` for local editors, caches, temporary files, and update archives.
+- Expanded CI to validate content, source helpers and workflows rather than only selected frontend code changes.
+
+## V37b / V37a — Contact and Notes
+
+- Set the public inquiry address to `contact@nickckincaid.com` and retained per-project inquiry subject lines.
+- Allowed optional Notes titles; punctuation-only titles use neutral `note-<id>` URLs, with historical untitled URLs redirected when applicable.
+- Added the option to display either a Note's creation timestamp or first-publication timestamp, preserving both values.
+
+## V37 — Reliability and integrity
+
+- Preserved V36d protections against duplicate photo references, sharing cards appearing in photo inventories and stalled OAuth requests.
+- Pinned multi-file GitHub metadata backups to one immutable commit and recorded their source revision.
+- Added bounded client requests for Notes, project editing and photo uploads to prevent indefinite waiting.
+
 ## V36 — Stability, SEO, security and accessibility (2026-10-21)
 
 - Persist intrinsic pixel dimensions (width and height) for future photograph uploads and existing photographs opened in the editor and explicitly saved. Public gallery images use accurate dimensions to reserve loading space when available; older untouched R2 content retains the V35b fallback.

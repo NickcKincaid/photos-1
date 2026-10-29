@@ -189,7 +189,12 @@
               <option value="created">When Note Was Started</option>
             </select>
           </label>
-          <p class="muted">The start time is recorded when you begin a new note; publication time is recorded when it first goes public. Changing the displayed date does not change its actual publication record. Drafts stay private to the Notes listing until published.</p>
+          <dl class="note-date-times" aria-label="Note dates">
+            <div><dt>Started</dt><dd><time id="note-started-date">—</time></dd></div>
+            <div><dt>First Published</dt><dd><time id="note-first-published-date">—</time></dd></div>
+            <div class="note-date-selected"><dt>Currently Shown On Website</dt><dd><time id="note-displayed-date">—</time></dd></div>
+          </dl>
+          <p class="muted">Dates are shown in your browser's local time. The start time is recorded when you begin a new note; publication time is recorded when it first goes public. Changing the displayed date does not change its actual publication record. Drafts stay private until published.</p>
         </div>
 
 </div></details>

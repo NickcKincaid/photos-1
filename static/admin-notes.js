@@ -31,6 +31,31 @@
     return !dirty || window.confirm(message);
   }
   function noteKey() { return selected?.slug || 'new'; }
+  const localDateFormatter = new Intl.DateTimeFormat(undefined, {
+    year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZoneName:'short'
+  });
+  function showNoteDate(id, value, fallback) {
+    const target = $(id);
+    const parsed = typeof value === 'string' && value ? new Date(value) : null;
+    if (parsed && Number.isFinite(parsed.getTime())) {
+      target.dateTime = parsed.toISOString();
+      target.textContent = localDateFormatter.format(parsed);
+    } else {
+      target.removeAttribute('datetime');
+      target.textContent = fallback;
+    }
+  }
+  function updateNoteDates() {
+    // Existing notes use persisted timestamps; a new note shows the editor-start time.
+    // Never present a newly generated timestamp as an older note's recorded start date.
+    const created = selected?.slug ? selected.created_at : startedAt;
+    const published = selected?.published_at || null;
+    showNoteDate('note-started-date', created, 'Not recorded');
+    showNoteDate('note-first-published-date', published, 'Not published yet');
+    const useCreated = $('note-date-mode').value === 'created';
+    showNoteDate('note-displayed-date', useCreated ? created : published,
+      useCreated ? 'Creation date unavailable' : 'Will appear when first published');
+  }
   function persistDraft() {
     if(!dirty || busy || $('note-form').hidden) return;
     window.PortfolioDrafts?.save('note',noteKey(),selected?.revision,{
@@ -55,6 +80,7 @@
     dirty=true;
     showStatus('Local draft recovered. Review and save to publish.');
     if(previewVisible) renderPreview();
+    updateNoteDates();
   }
   setInterval(persistDraft,1800);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)persistDraft();});
@@ -76,6 +102,7 @@
     $('note-form').hidden = false;
     showStatus(note ? (note.published ? 'Published note. Changes will redeploy after saving.' : 'Unpublished draft.') : 'New note. The start time is recorded now; publication time is recorded when you first publish.');
     tryRestoreDraft(note);
+    updateNoteDates();
     renderList();
     return true;
   }
@@ -188,7 +215,7 @@
   });
   $('add-note').addEventListener('click', () => newSelection(null));
   for (const id of ['note-title', 'note-body']) $(id).addEventListener('input', () => { dirty = true; if (id === 'note-body' && previewVisible) { clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 250); } });
-  for (const id of ['note-published', 'note-date-mode']) $(id).addEventListener('change', () => { dirty = true; });
+  for (const id of ['note-published', 'note-date-mode']) $(id).addEventListener('change', () => { dirty = true; updateNoteDates(); });
   window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
   $('note-form').addEventListener('submit', async e => {
     e.preventDefault();

@@ -6,7 +6,7 @@ export async function onRequest(context) {
   if (path === '/admin' || path.startsWith('/admin/')) {
     const session = await verifySession(context);
     if (!session.ok) {
-      if (session.status === 503) return new Response('Admin setup incomplete. See ADMIN_SETUP.md.', {
+      if (session.status === 503) return new Response('Admin setup incomplete. See docs/ADMIN_SETUP.md.', {
         status: 503, headers: { 'cache-control': 'no-store' }
       });
       return redirect('/api/auth/login');
