@@ -1,11 +1,3 @@
-## V38 — Content-preserving cleanup, Notes date visibility and release safety
-
-- Used the user-provided `photos-1(2).zip` as the authoritative starting point; kept all eight project JSON files, all three Note JSON files (including the unpublished `tbc` draft), and `content/site.json` without changing any data values (only Windows line endings were normalized). No historical content was reintroduced.
-- Retained the latest public inquiry email `contact@nickckincaid.com`, Notes optional titles and neutral `note-<id>` URLs, and sharing, SEO, admin, and gallery functionality from the chosen baseline.
-- Show Started, First Published, and Currently Shown On Website in the Notes editor, formatted in the viewer's local time; switching date display updates immediately.
-- Added a read-only `npm run content-check` pre-push safety command and optional `--compare-zip` mode to prevent accidental content loss when replacing source folders.
-- Consolidated documentation and retained the lightweight public design. No new runtime library, secrets, or R2 storage changes.
-
 ## Repository Cleanup — October 2026
 
 - Organized ongoing setup and deployment guides under `docs/`; retained the complete historical `CHANGELOG.md` in the project root. Removed the duplicate, outdated V37 standalone release-notes file after consolidating its changes below.

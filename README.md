@@ -33,18 +33,17 @@ Requires Python 3 and Node.js for tests. The static build uses the Python standa
 npm test
 npm run audit
 npm run build
-npm run content-check
 ```
 
 The build generates **`dist/`**. This output is disposable and ignored by Git; Cloudflare recreates it on deployment. Historical browser tests may require Chromium/Playwright and are not part of the default test command.
 
 ## Publish with GitHub Desktop
 
-1. Open the `photos-1` directory (containing `.git`) in GitHub Desktop, select `main`, and review the changes. **Verify that no `content/` or `media/` files were deleted unexpectedly.**
-2. Run `npm run content-check` to catch accidental deletion of tracked content/media, then commit and **Push origin** to deploy through the existing Cloudflare GitHub integration.
+1. Open the `photos-1` directory (containing `.git`) in GitHub Desktop, select `main`, and review the changes.
+2. Commit the cleanup. Click **Push origin** to deploy through the existing Cloudflare GitHub integration.
 3. Confirm the Cloudflare deployment succeeded, then spot-check the gallery, Notes and `/admin/`.
 
-**Do not delete** `.git`, `content/` or `media/`. This release uses the provided `photos-1(2).zip` as the authoritative content source and does not recreate deleted Notes or projects from older Git history. Do not commit local secrets or image backups into this repository. GitHub repository copies do **not** back up photographs stored in Cloudflare R2. For setup and rollback, see [deployment guide](docs/DEPLOYMENT.md).
+**Do not delete** `.git`, `content/` or `media/`. Do not commit local secrets or image backups into this repository. GitHub repository copies do **not** back up photographs stored in Cloudflare R2. For setup and rollback, see [deployment guide](docs/DEPLOYMENT.md).
 
 ## Configuration and limits
 
