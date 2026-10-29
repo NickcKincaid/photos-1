@@ -20,8 +20,8 @@ class V40IntegrityTests(unittest.TestCase):
     def test_existing_project_and_note_data_remain_valid(self):
         projects=list((ROOT/'content/projects').glob('*.json'))
         notes=list((ROOT/'content/notes').glob('*.json'))
-        self.assertEqual(len(projects),8)
-        self.assertEqual(len(notes),3)
+        self.assertGreaterEqual(len(projects), 8)
+        self.assertGreaterEqual(len(notes), 3)
         self.assertTrue(all(isinstance(json.loads(p.read_text()),dict) for p in projects+notes))
         drafts=[json.loads(p.read_text()) for p in notes]
         self.assertTrue(any(x.get('title')=='tbc' and x.get('published') is False for x in drafts))

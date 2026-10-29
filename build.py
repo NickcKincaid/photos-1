@@ -24,6 +24,7 @@ CONTENT = ROOT / 'content'
 OUT = ROOT / 'dist'
 SITE_URL = 'https://nickckincaid.com'
 CONTACT_EMAIL = 'contact@nickckincaid.com'
+SITE_VERSION = 'V40b'
 IMAGE_SIZES_HOME = '(max-width: 600px) calc(100vw - 24px), (max-width: 900px) 50vw, 33vw'
 IMAGE_SIZES_GALLERY = '(max-width: 600px) calc(100vw - 24px), 50vw'
 _OPTIMIZED = None
@@ -666,6 +667,9 @@ def run() -> None:
         raise ValueError('Missing website update timestamp placeholders in admin.html')
     admin_html = admin_html.replace('__SITE_BUILD_UTC__', esc(built_at.isoformat()))
     admin_html = admin_html.replace('__SITE_BUILD_LABEL__', esc(built_at.strftime('%b %d, %Y %H:%M UTC')))
+    if admin_html.count('__SITE_VERSION__') != 1:
+        raise ValueError('Missing website version placeholder in admin.html')
+    admin_html = admin_html.replace('__SITE_VERSION__', esc(SITE_VERSION))
     (admin_dir / 'index.html').write_text(admin_html, encoding='utf-8')
     for required in re.findall(r'<script\b[^>]*\bsrc=[\"\'](/admin/[A-Za-z0-9._-]+\.js)[\"\']', admin_html):
         if not (admin_dir / required.rsplit('/', 1)[-1]).is_file():
