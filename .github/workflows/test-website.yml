@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed to inspect content deleted by earlier commits in the push.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -35,5 +37,22 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*.py'
       - name: Check authenticated API and upload handlers
         run: node --test tests/*.test.mjs
+      - name: Detect committed project and Notes deletions
+        shell: bash
+        env:
+          PUSH_BASE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          BASE="${PR_BASE:-$PUSH_BASE}"
+          if [[ -z "$BASE" || "$BASE" =~ ^0+$ ]]; then
+            if git rev-parse --verify HEAD^ >/dev/null 2>&1; then BASE=HEAD^; else BASE=''; fi
+          fi
+          if [[ -n "$BASE" ]]; then
+            python3 scripts/check_content_integrity.py --base-ref "$BASE"
+          else
+            python3 scripts/check_content_integrity.py
+          fi
+      - name: Run source audit
+        run: python3 scripts/audit_project.py
       - name: Verify site generation
         run: python3 build.py

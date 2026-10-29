@@ -5,6 +5,7 @@ No network requests, no R2 writes, and no modifications to project JSON.
 """
 from __future__ import annotations
 import ast
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import shutil
@@ -50,12 +51,20 @@ node = shutil.which('node')
 if not node:
     warnings.append('Node.js not found; skipped JavaScript syntax scan.')
 else:
-    for file in files({'.js', '.mjs'}):
-        result = subprocess.run([node, '--check', str(file)], capture_output=True, text=True)
-        if result.returncode:
-            errors.append(f'JavaScript syntax: {file.relative_to(ROOT)}: {result.stderr[:240]}')
-        else:
-            counters['javascript'] += 1
+    # Running many Node syntax checks serially can stall developer audits on
+    # slower machines. Bound both parallelism and per-file execution time.
+    def check_js(file):
+        try:
+            result = subprocess.run([node, '--check', str(file)], capture_output=True,
+                                    text=True, timeout=12)
+            return None if result.returncode == 0 else f'{file.relative_to(ROOT)}: {result.stderr[:240]}'
+        except (subprocess.TimeoutExpired, OSError) as error:
+            return f'{file.relative_to(ROOT)}: {error}'
+    js_files = sorted(files({'.js', '.mjs'}))
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for file, problem in zip(js_files, pool.map(check_js, js_files)):
+            if problem: errors.append(f'JavaScript syntax: {problem}')
+            else: counters['javascript'] += 1
 
 for file in files({'.json'}):
     try:

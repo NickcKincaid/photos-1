@@ -1,3 +1,27 @@
+## V40 — Automatic Photo Dimensions and Deep Reliability Audit (2026-10-29)
+
+- Replaced the V39a manual dimension-capture button with a private automatic, per-project backfill when opening an older project in Admin. The endpoint reads bounded JPEG header ranges from the existing R2 objects and persists only missing dimensions using a GitHub revision guard; no new photograph copies are stored and no Save Project click is required.
+- Removed the V39a local-original-path scanner and its private CSV workflow. The browser cannot recover local Windows paths from Cloudflare R2, and the user already retains originals locally. Existing optional GitHub metadata exports remain unchanged.
+- Added tests for JPEG parsing, R2 byte ranges, stale-revision protection, no-op saves, project metadata preservation, and rejected invalid paths.
+- Re-ran repository unit tests, build, source audit, and content-preservation checks. No content JSON files changed and the public minimal gallery layout remains unchanged.
+- Full limitations, tests, and rollout details: `docs/V40_AUDIT_AND_PATCH_NOTES.md`.
+
+## V39 — Comprehensive Reliability and Content Safeguards
+
+- Fixed legacy photograph migration by buffering downloaded static assets to a strict 25 MB limit before uploading a known-length body to R2.
+- Corrected the content-integrity check to detect projects and Notes deleted **in already committed changes** (`--base-ref`), with GitHub Actions coverage.
+- Added regression tests for R2 migration, committed content deletion, sitemap/canonicals, JSON-LD, public contact links, and private Notes not appearing in the build.
+- Completed a comprehensive source and browser review. No visual changes, new frontend dependencies, or content rewrites.
+- Full patch notes, findings, and remaining production checks: `docs/V39_AUDIT_AND_PATCH_NOTES.md`.
+
+## V38 — Content-preserving cleanup, Notes date visibility and release safety
+
+- Used the user-provided `photos-1(2).zip` as the authoritative starting point; kept all eight project JSON files, all three Note JSON files (including the unpublished `tbc` draft), and `content/site.json` without changing any data values (only Windows line endings were normalized). No historical content was reintroduced.
+- Retained the latest public inquiry email `contact@nickckincaid.com`, Notes optional titles and neutral `note-<id>` URLs, and sharing, SEO, admin, and gallery functionality from the chosen baseline.
+- Show Started, First Published, and Currently Shown On Website in the Notes editor, formatted in the viewer's local time; switching date display updates immediately.
+- Added a read-only `npm run content-check` pre-push safety command and optional `--compare-zip` mode to prevent accidental content loss when replacing source folders.
+- Consolidated documentation and retained the lightweight public design. No new runtime library, secrets, or R2 storage changes.
+
 ## Repository Cleanup — October 2026
 
 - Organized ongoing setup and deployment guides under `docs/`; retained the complete historical `CHANGELOG.md` in the project root. Removed the duplicate, outdated V37 standalone release-notes file after consolidating its changes below.
@@ -185,3 +209,8 @@ This full-source release consolidates the existing minimal portfolio, V13 editor
 - Generated descriptions are stored in the existing `photo_details.alt` field and used for HTML image alt attributes, not on-screen photo captions. When no project blurb/description is provided, the project meta description may use the first reviewed photo description as a private metadata fallback.
 - New targeted JavaScript/Python regressions cover deployment state mapping, server-only credentials, JPEG request validation, caption sanitization, contact sheet markup, and nonvisible alt descriptions.
 - Cloudflare deployment API and Workers AI calls cannot be fully validated without enabling user-specific bindings/secrets and executing a real request after deployment.
+
+## V39a — Original Source Index & Photo Dimensions
+- Added an opt-in photo-dimension backfill in the admin. Existing R2 originals are measured with bounded concurrent image loads, and values are saved only when the project is explicitly saved.
+- Added a **private, local-only** photo-source CSV tool for recording verified original Windows file paths and optional unverified filename suggestions. The index does not upload any photographs or personal filesystem paths.
+- No extra media backup or duplicate R2 storage. No changes to existing project, Notes, or site JSON.

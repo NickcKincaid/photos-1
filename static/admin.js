@@ -210,6 +210,8 @@
     if (!project) document.querySelector('[data-panel="uploads"]')?.setAttribute('open','');
     tryRestoreDraft(project);
     renderList();renderPhotos();updateDeleteState();
+    // Allow the editor to become usable first; this does not mark it dirty.
+    if (project) setTimeout(() => { void backfillDimensions(project); }, 750);
   }
   function updateOrderState() {
     const save = $('save-order');
@@ -453,6 +455,64 @@
     }
     return true;
   }
+  // One-time, opt-in backfill. Load original photos (never thumbnails) only on
+  // request. This uses the same photo URLs as the gallery, no new Cloudflare API.
+  // It changes the in-memory draft; nothing is sent to GitHub until Save Project.
+  async function measurePhoto(path, timeoutMs=18000) {
+    return new Promise((resolve,reject)=>{
+      const image=new Image();
+      let done=false;
+      const finish=(error, size)=>{
+        if(done)return;
+        done=true;clearTimeout(timer);image.onload=null;image.onerror=null;
+        if(error){image.src='';reject(error);}else resolve(size);
+      };
+      const timer=setTimeout(()=>finish(Error('Image loading timed out.')),timeoutMs);
+      image.onload=()=>{
+        if(!validPixels(image.naturalWidth)||!validPixels(image.naturalHeight)) {
+          finish(Error('The image did not report valid dimensions.'));return;
+        }
+        finish(null,{width:image.naturalWidth,height:image.naturalHeight});
+      };
+      image.onerror=()=>finish(Error('The original image could not be loaded.'));
+      image.src=path;
+      if(image.complete && image.naturalWidth)image.onload();
+    });
+  }
+  // Background, one-time dimension backfill for legacy JPEGs. New uploads already
+  // have dimensions; only missing dimensions are sent to the private endpoint.
+  const dimensionsRequested = new Set();
+  async function backfillDimensions(project) {
+    if (!project || dimensionsRequested.has(project.slug) ||
+        !(project.photo_details || []).some(p => p.storage === 'r2' &&
+          !(validPixels(p.width) && validPixels(p.height)))) return;
+    dimensionsRequested.add(project.slug);
+    try {
+      const result = await api('dimensions', {method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({slug:project.slug,revision:project.revision})});
+      const latest = projects.find(p => p.slug === project.slug);
+      if (!latest || latest.revision !== project.revision) return;
+      latest.revision = result.revision;
+      const sizes = new Map(result.dimensions.map(d => [d.image,d]));
+      for (const detail of latest.photo_details || []) {
+        const d=sizes.get(detail.image);
+        if(d){detail.width=d.width;detail.height=d.height;}
+      }
+      if (current?.slug === project.slug) {
+        current.revision = result.revision;
+        for(const photo of photos) {
+          const d=sizes.get(photo.path);
+          if(d && !(validPixels(photo.width)&&validPixels(photo.height))) {
+            photo.width=d.width;photo.height=d.height;
+          }
+        }
+      }
+    } catch(error) {
+      // Read errors or concurrent edits must not interrupt normal project editing.
+      console.warn('Automatic photo dimensions deferred:',error.message);
+    }
+  }
   function renderPhotos() {
     updateCoverCrop();
     renderSocialImages();
@@ -463,8 +523,8 @@
     photos.forEach((photo,i)=>{
       const row=node('div','photo-row');const img=node('img');img.alt=`Photograph ${i+1}`;
       img.src=photo.preview || photo.path;img.loading='lazy';
-      // Learn dimensions from older R2 photographs as the editor displays them.
-      // They will be persisted on the next explicit Save, not via an auto-commit.
+      // Dimensions on old images can also be detected during rendering;
+      // backfillDimensions persists them without requiring Save Project.
       const learnOriginalDimensions = () => {
         // Never replace a full-resolution measurement with the 360px local preview.
         if (!photo.preview && !(validPixels(photo.width) && validPixels(photo.height)) &&

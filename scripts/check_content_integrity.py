@@ -40,10 +40,23 @@ def compare_zip(root: Path, archive: Path):
     return missing, len(original), len(current)
 
 
-def git_deletions(root: Path):
-    proc = subprocess.run(['git','-C',str(root),'diff','HEAD','--name-status','-z','--','content/','media/'],
+def git_deletions(root: Path, base_ref: str | None = None):
+    """Detect uncommitted or already committed content/media deletions.
+
+    Rename detection is disabled so changed content file names are reviewed
+    rather than silently overlooked by this safety check.
+    """
+    import re
+    if base_ref is not None:
+        if not re.fullmatch(r'[A-Za-z0-9_./^~+-]{1,160}', base_ref) or base_ref.startswith('-'):
+            return [], 'Invalid baseline revision for content check.'
+        refs = [base_ref, 'HEAD']
+    else:
+        refs = ['HEAD']
+    proc = subprocess.run(['git','-C',str(root),'-c','diff.renames=false',
+                           'diff',*refs,'--name-status','-z','--','content/','media/'],
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
-    if proc.returncode: return [], 'Git working-tree comparison unavailable: '+proc.stderr.decode('utf-8','replace').strip()
+    if proc.returncode: return [], 'Git content comparison unavailable: '+proc.stderr.decode('utf-8','replace').strip()
     entries = proc.stdout.decode('utf-8','replace').split('\0')
     missing = []
     i=0
@@ -55,7 +68,7 @@ def git_deletions(root: Path):
     return missing, ''
 
 
-def inspect(root: Path, archive: Path | None = None):
+def inspect(root: Path, archive: Path | None = None, base_ref: str | None = None):
     errors=[]
     projects=sorted((root/'content/projects').glob('*.json'))
     notes=sorted((root/'content/notes').glob('*.json'))
@@ -67,7 +80,7 @@ def inspect(root: Path, archive: Path | None = None):
             errors.append(f'Unreadable JSON: {p.relative_to(root)} ({err})')
     if not projects: errors.append('No project JSON files found.')
     if not notes: errors.append('No Notes JSON files found.')
-    removed,message=git_deletions(root)
+    removed,message=git_deletions(root,base_ref)
     if message: errors.append(message)
     if removed: errors.append('Tracked content/media deletions (review individually): '+', '.join(removed))
     if archive:
@@ -79,8 +92,9 @@ def inspect(root: Path, archive: Path | None = None):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--compare-zip', type=Path, help='Optional trusted previous source ZIP')
+    parser.add_argument('--base-ref', help='Compare already committed deletions from this Git revision to HEAD (for CI)')
     args=parser.parse_args()
-    errors,projects,notes=inspect(ROOT,args.compare_zip)
+    errors,projects,notes=inspect(ROOT,args.compare_zip,args.base_ref)
     print(f'Content guard: {projects} projects, {notes} Notes; deletions/JSON problems: {len(errors)}')
     for err in errors: print('ERROR:',err)
     if errors:

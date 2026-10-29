@@ -3,9 +3,10 @@ import io
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 import zipfile
-from scripts.check_content_integrity import content_paths, compare_zip
+from scripts.check_content_integrity import content_paths, compare_zip, git_deletions
 
 class ContentGuardTests(unittest.TestCase):
     def test_normalizes_archive_prefixes_without_losing_paths(self):
@@ -26,6 +27,34 @@ class ContentGuardTests(unittest.TestCase):
             missing,prev,current=compare_zip(root,bundle)
             self.assertEqual(missing,['content/notes/missing.json'])
             self.assertEqual((prev,current),(2,1))
+
+    def test_committed_deletion_is_detected_from_previous_revision(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            (root/'content/notes').mkdir(parents=True)
+            (root/'content/projects').mkdir(parents=True)
+            note=root/'content/notes/precious.json'
+            note.write_text('{"title":"Precious"}')
+            (root/'content/projects/a.json').write_text('{}')
+            def git(*args):
+                return subprocess.run(['git','-C',str(root),*args],check=True,capture_output=True,text=True)
+            git('init','-b','main')
+            git('config','user.email','test@example.com')
+            git('config','user.name','Content Integrity Test')
+            git('add','content')
+            git('commit','-m','Original content')
+            note.unlink()
+            git('add','-u')
+            git('commit','-m','Accidental note deletion')
+            # A working-tree-only scan misses the deletion after the commit.
+            self.assertEqual(git_deletions(root)[0],[])
+            self.assertEqual(git_deletions(root,'HEAD^')[0],['content/notes/precious.json'])
+
+    def test_invalid_baseline_revision_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            missing,error=git_deletions(Path(td),'--not-a-ref')
+            self.assertEqual(missing,[])
+            self.assertIn('Invalid baseline',error)
 
     def test_detects_deleted_project_without_flagging_other_files(self):
         with tempfile.TemporaryDirectory() as td:
