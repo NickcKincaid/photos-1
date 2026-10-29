@@ -28,7 +28,9 @@
       "aperture": "f/3.2",
       "shutter_speed": "1/8000s",
       "iso": "ISO 560",
-      "alt": "Rainbow-colored metal bars form a gate or fence, with peeling yellow paint and scattered debris. A rectangular board with faded paper and markings is affixed to the bars."
+      "alt": "Rainbow-colored metal bars form a gate or fence, with peeling yellow paint and scattered debris. A rectangular board with faded paper and markings is affixed to the bars.",
+      "width": 2800,
+      "height": 1863
     },
     {
       "image": "/media/cdmx/83cb3dadc1a6474587267f5a/cdmx-01.jpg",
@@ -40,7 +42,9 @@
       "aperture": "f/5",
       "shutter_speed": "1/3200s",
       "iso": "ISO 1800",
-      "alt": "Two boxers face off in a boxing ring; one wears red, the other white; spectators watch from behind ropes; white ropes and corner padding are visible."
+      "alt": "Two boxers face off in a boxing ring; one wears red, the other white; spectators watch from behind ropes; white ropes and corner padding are visible.",
+      "width": 2800,
+      "height": 1867
     },
     {
       "image": "/media/cdmx/6390a0e791354fae87d27542/cdmx-02.jpg",
@@ -52,7 +56,9 @@
       "aperture": "f/5.6",
       "shutter_speed": "1/6400s",
       "iso": "ISO 640",
-      "alt": "Two people walk past a closed storefront with a blue and red striped awning. The awning covers the entrance and part of the sidewalk. Metal bars and utility lines are visible on the building facade."
+      "alt": "Two people walk past a closed storefront with a blue and red striped awning. The awning covers the entrance and part of the sidewalk. Metal bars and utility lines are visible on the building facade.",
+      "width": 2688,
+      "height": 1792
     },
     {
       "image": "/media/cdmx/029adcc6ab4a4a69b167e072/cdmx-03.jpg",
@@ -63,7 +69,9 @@
       "aperture": "f/5.6",
       "shutter_speed": "1/6400s",
       "iso": "ISO 640",
-      "alt": "A man walks across a street carrying plastic bags, passing a pink multi-story building with balconies and a low gray wall at its base. Trees and utility poles are visible nearby."
+      "alt": "A man walks across a street carrying plastic bags, passing a pink multi-story building with balconies and a low gray wall at its base. Trees and utility poles are visible nearby.",
+      "width": 2000,
+      "height": 2800
     },
     {
       "image": "/media/cdmx/e9192a8055cc4de593c95111/cdmx-06.jpg",
@@ -75,7 +83,9 @@
       "aperture": "f/4.5",
       "shutter_speed": "1/4000s",
       "iso": "ISO 1800",
-      "alt": "An elderly man with gray hair sits on a bench beside a trash can, wearing a dark jacket and striped pants. A red blanket rests beside him, and a black plastic bag sits nearby. Behind him, a green metal fence and leafy foliage frame the"
+      "alt": "An elderly man with gray hair sits on a bench beside a trash can, wearing a dark jacket and striped pants. A red blanket rests beside him, and a black plastic bag sits nearby. Behind him, a green metal fence and leafy foliage frame the",
+      "width": 2105,
+      "height": 2105
     },
     {
       "image": "/media/cdmx/bb316a20da41432990e2b00c/cdmx-07.jpg",
@@ -87,7 +97,9 @@
       "aperture": "f/7.1",
       "shutter_speed": "1/400s",
       "iso": "ISO 640",
-      "alt": "A person wearing a light blue shirt and light blue shorts exits a doorway beneath a yellow awning. Behind them, a storefront displays a red awning reading “REP COSTA RICA No18” above a closed metal gate. Electrical wires crisscross above"
+      "alt": "A person wearing a light blue shirt and light blue shorts exits a doorway beneath a yellow awning. Behind them, a storefront displays a red awning reading “REP COSTA RICA No18” above a closed metal gate. Electrical wires crisscross above",
+      "width": 2800,
+      "height": 1863
     },
     {
       "image": "/media/cdmx/0e4ae4fb9cb94257914e456a/cdmx-07.jpg",
@@ -99,7 +111,9 @@
       "aperture": "f/4.5",
       "shutter_speed": "1/8000s",
       "iso": "ISO 500",
-      "alt": "A low-angle view shows the silhouette of a tall tower and domed structure against a cloudy sky with visible sunbeams breaking through."
+      "alt": "A low-angle view shows the silhouette of a tall tower and domed structure against a cloudy sky with visible sunbeams breaking through.",
+      "width": 2800,
+      "height": 2800
     }
   ]
 }
