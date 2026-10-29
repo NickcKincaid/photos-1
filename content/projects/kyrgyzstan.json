@@ -14,6 +14,8 @@
     {
       "image": "/media/kyrgyzstan/a8974d874c1747ca85326968/kyrgyzstan-01.jpg",
       "id": "fa3cb87aac5b4ac490ae504a",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -26,6 +28,8 @@
     {
       "image": "/media/kyrgyzstan/cd0dff362ff94b35b9404ab5/kyrgyzstan-02.jpg",
       "id": "92c25a0180484e6890ac758b",
+      "width": 2800,
+      "height": 1635,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -38,6 +42,8 @@
     {
       "image": "/media/kyrgyzstan/8fe4938fc1194b1799c2bac5/kyrgyzstan-03.jpg",
       "id": "7c306e6868274a17a79265fa",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -50,6 +56,8 @@
     {
       "image": "/media/kyrgyzstan/57a197dbe71c4319972527a0/kyrgyzstan-04.jpg",
       "id": "8791d81f4cba4b338e43a205",
+      "width": 1863,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -62,6 +70,8 @@
     {
       "image": "/media/kyrgyzstan/27ac443d2ce94e649e4270ee/kyrgyzstan-05.jpg",
       "id": "4bfe527acda34daebef677c1",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -76,5 +86,17 @@
     "x": 50,
     "y": 50
   },
-  "social_image": ""
+  "social_image": "",
+  "social_position": {
+    "x": 50,
+    "y": 41
+  },
+  "social_card": {
+    "path": "/media/kyrgyzstan/4a3153e4df0d40bf8a78fac5/sharing-1200x630.jpg",
+    "source": "/media/kyrgyzstan/a8974d874c1747ca85326968/kyrgyzstan-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 41
+    }
+  }
 }

@@ -1,8 +1,8 @@
 {
   "title": "Textural Repetition",
-  "blurb": "An ongoing project that serves as a meditation on recurring visual motifs found in human-made environments.",
+  "blurb": "An ongoing project that serves as a meditation on recurring visual motifs found in human-made and natural environments.",
   "published": true,
-  "order": 6,
+  "order": 7,
   "cover_position": {
     "x": 56,
     "y": 83
@@ -15,12 +15,15 @@
     "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
     "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg",
     "/media/textural-repetition/2dda3425255d42feb7c654ff/textural-repetition-07.jpg",
-    "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg"
+    "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg",
+    "/media/textural-repetition/fa46f9c185d442c4afab6876/textural-repetition-09.jpg"
   ],
   "photo_details": [
     {
       "image": "/media/textural-repetition/57f2927b42834b24932aac33/textural-repetition-01.jpg",
       "id": "032fea4fbd4a4c2f9e464d70",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -33,6 +36,8 @@
     {
       "image": "/media/textural-repetition/70573d8b8edf45519727cb22/textural-repetition-03.jpg",
       "id": "190d737f804c416bbb9a69d7",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -45,6 +50,8 @@
     {
       "image": "/media/textural-repetition/b335ea77806e4d6bb59d572d/textural-repetition-02.jpg",
       "id": "25884ca140944408beaf1b8f",
+      "width": 2800,
+      "height": 1863,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
@@ -57,6 +64,8 @@
     {
       "image": "/media/textural-repetition/81171ddb5dc740d0944dcbb5/textural-repetition-04.jpg",
       "id": "c91c3d5ac3f94352a14f74fe",
+      "width": 2164,
+      "height": 2800,
       "storage": "r2",
       "camera": "Canon EOS Rebel T7i",
       "lens": "EF-S55-250mm f/4-5.6 IS",
@@ -69,6 +78,8 @@
     {
       "image": "/media/textural-repetition/f396a49d884d48adb5a40fe5/textural-repetition-06.jpg",
       "id": "dd3dfaf53e954bc499ad28cf",
+      "width": 2800,
+      "height": 1575,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -81,6 +92,8 @@
     {
       "image": "/media/textural-repetition/4f1b10ba9ab94053bf36bd47/textural-repetition-07.jpg",
       "id": "29fb3efe8a034cd1a50d04cc",
+      "width": 1867,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -93,6 +106,8 @@
     {
       "image": "/media/textural-repetition/2dda3425255d42feb7c654ff/textural-repetition-07.jpg",
       "id": "c04e1d0ae2524ee79a7f26f9",
+      "width": 2800,
+      "height": 1863,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
@@ -105,6 +120,8 @@
     {
       "image": "/media/textural-repetition/b1a50508213a4619ab0a700b/textural-repetition-08.jpg",
       "id": "31f3d9cc0edf4c68b9dd0d06",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 40mm f/2",
@@ -113,7 +130,33 @@
       "shutter_speed": "1/60s",
       "iso": "ISO 640",
       "alt": "A long, dark hallway with evenly spaced windows along one side, letting in bright daylight."
+    },
+    {
+      "image": "/media/textural-repetition/fa46f9c185d442c4afab6876/textural-repetition-09.jpg",
+      "id": "e30a1b3745db40dba706f816",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/8",
+      "shutter_speed": "1/250s",
+      "iso": "ISO 280",
+      "alt": "A close-up of a yellow metal structure showing significant rust and wear. A bolt is visible in a circular opening."
     }
   ],
-  "social_image": ""
+  "social_image": "",
+  "social_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_card": {
+    "path": "/media/textural-repetition/8a3817d4a93c4869be109df0/sharing-1200x630.jpg",
+    "source": "/media/textural-repetition/57f2927b42834b24932aac33/textural-repetition-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 50
+    }
+  }
 }

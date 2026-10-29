@@ -2,8 +2,8 @@
   "title": "Animals",
   "blurb": "",
   "published": true,
-  "order": 7,
-  "social_image": "",
+  "order": 8,
+  "social_image": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
   "cover_position": {
     "x": 81,
     "y": 50
@@ -12,13 +12,17 @@
   "gallery": [
     "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
     "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
+    "/media/animals/1e2a1723d8274e51a4c211fa/animals-06.jpg",
     "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
-    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg"
+    "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
+    "/media/animals/6b9e6f79c29a490cbd431629/animals-07.jpg"
   ],
   "photo_details": [
     {
       "image": "/media/animals/bc0da06ffa064f36ab41b04e/animals-01.jpg",
       "id": "0d803f3a04fd4fa49e4572d9",
+      "width": 1323,
+      "height": 1323,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "focal_length": "500mm",
@@ -30,6 +34,8 @@
     {
       "image": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
       "id": "cdafa967ec854b8aad0965d2",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -42,6 +48,8 @@
     {
       "image": "/media/animals/71f019d46f0c4e428a25dad4/animals-03.jpg",
       "id": "c0202e40c9a345a29c3d8a53",
+      "width": 2481,
+      "height": 2481,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "0.0 mm f/0.0",
@@ -52,8 +60,23 @@
       "alt": "A mature elk with large antlers rests on grassy terrain, facing left. Dry, grayish vegetation is scattered across the foreground and background."
     },
     {
+      "image": "/media/animals/1e2a1723d8274e51a4c211fa/animals-06.jpg",
+      "id": "08d6766aa6974d0f9c782244",
+      "width": 2800,
+      "height": 2000,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "120mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/320s",
+      "iso": "ISO 180"
+    },
+    {
       "image": "/media/animals/cc81f787473845d68dbd1837/animals-04.jpg",
       "id": "78b4219d52c1411a83fc842d",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -66,6 +89,8 @@
     {
       "image": "/media/animals/79c15fd230254a17a21c81de/animals-05.jpg",
       "id": "a958d7631e694f90aa29d772",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -74,6 +99,31 @@
       "shutter_speed": "1/200s",
       "iso": "ISO 280",
       "alt": "A black dog lies on gray and white paving stones, looking directly at the camera. Its front paws are visible, and its fur appears slightly ruffled."
+    },
+    {
+      "image": "/media/animals/6b9e6f79c29a490cbd431629/animals-07.jpg",
+      "id": "e5dc5543803640b38841f1bd",
+      "width": 2800,
+      "height": 2800,
+      "storage": "r2",
+      "camera": "NIKON Z 6",
+      "lens": "NIKKOR Z 24-120mm f/4 S",
+      "focal_length": "24mm",
+      "aperture": "f/7.1",
+      "shutter_speed": "1/320s",
+      "iso": "ISO 140"
     }
-  ]
+  ],
+  "social_position": {
+    "x": 50,
+    "y": 50
+  },
+  "social_card": {
+    "path": "/media/animals/d810fba28ba54548b5b49c73/sharing-1200x630.jpg",
+    "source": "/media/animals/c8cb3ac993994bb4ad989da2/animals-02.jpg",
+    "position": {
+      "x": 50,
+      "y": 50
+    }
+  }
 }

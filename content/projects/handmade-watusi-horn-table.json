@@ -1,7 +1,7 @@
 {
   "title": "Watusi Horn Table",
   "published": true,
-  "order": 2,
+  "order": 3,
   "cover": "/media/handmade-watusi-horn-table/00232f36de234e2c905d50cb/handmade-watusi-horn-table-01.jpg",
   "gallery": [
     "/media/handmade-watusi-horn-table/a6a074de135d4f228739b8d5/handmade-watusi-horn-table-02.jpg",
@@ -11,6 +11,8 @@
     {
       "image": "/media/handmade-watusi-horn-table/00232f36de234e2c905d50cb/handmade-watusi-horn-table-01.jpg",
       "id": "9d251b0c93ac49e6beacd62b",
+      "width": 2800,
+      "height": 1867,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -23,6 +25,8 @@
     {
       "image": "/media/handmade-watusi-horn-table/a6a074de135d4f228739b8d5/handmade-watusi-horn-table-02.jpg",
       "id": "f4110d924f6248b7ba308521",
+      "width": 2800,
+      "height": 1863,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -35,6 +39,8 @@
     {
       "image": "/media/handmade-watusi-horn-table/07c2d14201e5493cb6188790/handmade-watusi-horn-table-03.jpg",
       "id": "b183782f8c8b4884a7037a2d",
+      "width": 2800,
+      "height": 2800,
       "storage": "r2",
       "camera": "NIKON Z 6",
       "lens": "NIKKOR Z 24-120mm f/4 S",
@@ -50,5 +56,17 @@
   "cover_position": {
     "x": 50,
     "y": 50
+  },
+  "social_position": {
+    "x": 50,
+    "y": 92
+  },
+  "social_card": {
+    "path": "/media/handmade-watusi-horn-table/307f67fe65cd4920bba65c69/sharing-1200x630.jpg",
+    "source": "/media/handmade-watusi-horn-table/00232f36de234e2c905d50cb/handmade-watusi-horn-table-01.jpg",
+    "position": {
+      "x": 50,
+      "y": 92
+    }
   }
 }
