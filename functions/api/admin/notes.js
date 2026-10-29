@@ -24,7 +24,8 @@ export async function onRequestGet(context) {
       return {slug: file.name.slice(0,-5), revision: item.sha,
         title: String(note.title || ''), body: String(note.body || ''),
         published: note.published === true,
-        published_at: note.published_at || null};
+        created_at: note.created_at || null, published_at: note.published_at || null,
+        date_mode: note.date_mode === 'created' ? 'created' : 'published'};
     });
     notes.sort((a,b) => (b.published_at || '').localeCompare(a.published_at || '') || a.title.localeCompare(b.title));
     return json({notes});
@@ -38,9 +39,10 @@ export async function onRequestPost(context) {
     try { input = JSON.parse(new TextDecoder('utf-8', {fatal:true}).decode(bytes)); }
     catch { bad('Invalid note data.'); }
     if (!input || typeof input !== 'object' || Array.isArray(input)) bad('Invalid note data.');
-    if (typeof input.title !== 'string' || !input.title.trim() || input.title.trim().length > 120) bad('Note title must be 1–120 characters.');
+    if (typeof input.title !== 'string' || input.title.trim().length > 120) bad('Note title must be 120 characters or fewer.');
     if (typeof input.body !== 'string' || !input.body.trim() || input.body.length > 12000) bad('Note text must be 1–12,000 characters.');
     if (typeof input.published !== 'boolean') bad('Invalid publication setting.');
+    if (input.date_mode != null && !['created', 'published'].includes(input.date_mode)) bad('Invalid date display setting.');
     const title = input.title.trim();
     const body = input.body.trim().replace(/\r\n/g, '\n');
     const now = new Date().toISOString();
@@ -48,7 +50,10 @@ export async function onRequestPost(context) {
     const creating = input.slug == null;
     if (creating) {
       if (input.revision != null) bad('Invalid new note revision.');
-      slug = `${slugify(title).slice(0, 48)}-${crypto.randomUUID().slice(0, 8)}`;
+      // A blank or punctuation-only title should never create an 'untitled-*' URL.
+      const readable = slugify(title);
+      const prefix = readable === 'untitled' ? 'note' : readable.slice(0, 48);
+      slug = `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
     } else {
       slug = String(input.slug);
       revision = String(input.revision || '');
@@ -57,11 +62,20 @@ export async function onRequestPost(context) {
       if (file.sha !== revision) bad('This note changed in GitHub. Refresh before saving.', 409);
       previous = decodeContent(file.content);
     }
+    // The browser records when the editor was first opened. Server validates the
+    // timestamp, then treats it as immutable after the first GitHub save.
+    let start = now;
+    if (creating && typeof input.started_at === 'string') {
+      const ms = Date.parse(input.started_at);
+      if (Number.isFinite(ms) && ms >= Date.UTC(2000, 0, 1) && ms <= Date.now() + 300000)
+        start = new Date(ms).toISOString();
+    }
     const note = {title, body, published: input.published,
-      created_at: previous.created_at || now,
+      created_at: previous.created_at || start,
       published_at: input.published ? ((previous.published && previous.published_at) || now) : (previous.published_at || null),
+      date_mode: input.date_mode || previous.date_mode || 'published',
       updated_at: now};
-    const payload = { message: `${creating ? 'Create' : 'Update'} note: ${title.slice(0, 70)}`,
+    const payload = { message: `${creating ? 'Create' : 'Update'} note: ${(title || 'No Title').slice(0, 70)}`,
       content: encode(JSON.stringify(note, null, 2) + '\n'), branch: 'main' };
     if (!creating) payload.sha = revision;
     await gh(context, `${NOTE_DIR}/${slug}.json`, {method: 'PUT', body: payload});
@@ -80,9 +94,9 @@ export async function onRequestDelete(context) {
     const file = await gh(context, `${NOTE_DIR}/${slug}.json?ref=main`);
     if (file.sha !== revision) bad('This note changed in GitHub. Refresh before deleting.', 409);
     const previous = decodeContent(file.content);
-    if (!previous.title || String(input?.confirmTitle || '').trim() !== previous.title) bad('Confirmation title does not match.');
+    if (String(input?.confirmTitle ?? '').trim() !== String(previous.title || '').trim()) bad('Confirmation title does not match.');
     await gh(context, `${NOTE_DIR}/${slug}.json`, {method: 'DELETE', body: {
-      message: `Delete note: ${String(previous.title).slice(0, 70)}`,
+      message: `Delete note: ${String(previous.title || 'No Title').slice(0, 70)}`, 
       sha: revision, branch: 'main'
     }});
     return json({ok:true});

@@ -84,7 +84,7 @@ test('delete requires current revision and matching confirmation',async () => {
 test('limit note text and reject empty posts', async () => {
   const mock=githubMock();
   try {
-    assert.equal((await onRequestPost(context('POST',{title:'',body:'Hello',published:true}))).status,400);
+    assert.equal((await onRequestPost(context('POST',{title:'',body:'',published:true}))).status,400);
     assert.equal((await onRequestPost(context('POST',{title:'Hello',body:'x'.repeat(12001),published:true}))).status,400);
     assert.equal(mock.db.size,0);
   } finally {mock.restore();}
@@ -100,4 +100,64 @@ test('non-ASCII notes within character limit save without false request size fai
     const data=await res.json();
     assert.equal(mock.db.get(data.slug).note.body,body);
   } finally {mock.restore();}
+});
+
+
+test('untitled and punctuation-only titles save with neutral stable note URLs', async () => {
+  const mock = githubMock();
+  try {
+    for (const title of ['', '-', '---']) {
+      const response = await onRequestPost(context('POST', {
+        title, body: 'A text-only note', published: true,
+        date_mode: 'published'
+      }));
+      assert.equal(response.status, 200);
+      const saved = await response.json();
+      assert.match(saved.slug, /^note-[a-f0-9]{8}$/);
+      assert.equal(mock.db.get(saved.slug).note.title, title);
+    }
+    assert.equal(mock.db.size, 3);
+  } finally { mock.restore(); }
+});
+
+test('start date can be shown without changing actual first-public timestamp', async () => {
+  const mock = githubMock();
+  const started = '2026-01-05T09:30:00.000Z';
+  try {
+    const createdResponse = await onRequestPost(context('POST', {
+      title: '', body: 'A note without a title', published: false,
+      started_at: started, date_mode: 'created'
+    }));
+    assert.equal(createdResponse.status, 200);
+    const {slug} = await createdResponse.json();
+    assert.equal(mock.db.get(slug).note.created_at, started);
+    assert.equal(mock.db.get(slug).note.published_at, null);
+    const publishedResponse = await onRequestPost(context('POST', {
+      slug, revision: SHA2, title: '', body: 'A note without a title',
+      published: true, date_mode: 'created'
+    }));
+    assert.equal(publishedResponse.status, 200);
+    const afterPublish = mock.db.get(slug).note;
+    assert.equal(afterPublish.created_at, started);
+    assert.notEqual(afterPublish.published_at, started);
+    const publishedAt = afterPublish.published_at;
+    const changeMode = await onRequestPost(context('POST', {
+      slug, revision: SHA2, title: '', body: 'A note without a title',
+      published: true, date_mode: 'published'
+    }));
+    assert.equal(changeMode.status, 200);
+    assert.equal(mock.db.get(slug).note.published_at, publishedAt);
+    assert.equal(mock.db.get(slug).note.created_at, started);
+    const list = await onRequestGet(context());
+    const data = await list.json();
+    assert.equal(data.notes[0].date_mode, 'published');
+    assert.equal(data.notes[0].created_at, started);
+    assert.equal((await onRequestPost(context('POST', {
+      slug, revision: SHA2, title: '', body: 'A note',
+      published: true, date_mode: 'not-valid'
+    }))).status, 400);
+    assert.equal((await onRequestDelete(context('DELETE', {
+      slug, revision: SHA2, confirmTitle: ''
+    }))).status, 200);
+  } finally { mock.restore(); }
 });

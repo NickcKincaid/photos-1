@@ -48,6 +48,15 @@ class PortfolioBuildTests(unittest.TestCase):
             with self.subTest(source=source):
                 self.assertTrue((admin_dir / source.rsplit('/', 1)[-1]).is_file(), source)
 
+    def test_public_contact_routes_to_domain_email(self):
+        # Contact details are generated from a single constant, not old personal mail links.
+        self.site.run()
+        inquiry = (self.root / 'dist' / 'inquire' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('href="mailto:contact@nickckincaid.com"', inquiry)
+        self.assertIn('>contact@nickckincaid.com ↗</a>', inquiry)
+        self.assertNotIn('@gmail.com', inquiry)
+        self.assertEqual(self.site.CONTACT_EMAIL, 'contact@nickckincaid.com')
+
     def test_header_is_text_only_while_favicon_is_retained(self):
         self.site.run()
         home = (self.root / 'dist' / 'index.html').read_text()
@@ -137,6 +146,48 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertIn('Nicholas Kincaid', detail)
         self.assertIn('Notes', listing)
 
+    def test_titleless_notes_and_two_date_modes_keep_publication_metadata_accurate(self):
+        notes = self.root / 'content' / 'notes'
+        notes.mkdir(parents=True)
+        (notes / 'untitled-8268656c.json').write_text(json.dumps({
+            'title': '-', 'body': 'A street note', 'published': True,
+            'created_at': '2026-07-01T09:30:00Z',
+            'published_at': '2026-10-25T15:00:00Z',
+            'date_mode': 'created'}))
+        (notes / 'note-aabbccdd.json').write_text(json.dumps({
+            'title': '', 'body': 'Titleless content', 'published': True,
+            'created_at': '2026-06-01T09:30:00Z',
+            'published_at': '2026-10-26T15:00:00Z',
+            'date_mode': 'published'}))
+        self.site.run()
+        index = (self.root / 'dist' / 'notes' / 'index.html').read_text()
+        detail = (self.root / 'dist' / 'notes' / 'note-8268656c' / 'index.html').read_text()
+        titleless = (self.root / 'dist' / 'notes' / 'note-aabbccdd' / 'index.html').read_text()
+        redirects = (self.root / 'dist' / '_redirects').read_text()
+        sitemap = (self.root / 'dist' / 'sitemap.xml').read_text()
+        self.assertIn('/notes/untitled-8268656c/ /notes/note-8268656c/ 301', redirects)
+        self.assertFalse((self.root / 'dist' / 'notes' / 'untitled-8268656c').exists())
+        self.assertIn('/notes/note-8268656c/', sitemap)
+        self.assertNotIn('/notes/untitled-8268656c/', sitemap)
+        self.assertIn('data-date-label="Started"', detail)
+        self.assertIn('01 Jul 2026', detail)
+        self.assertIn('datePublished', detail)
+        self.assertIn('2026-10-25T15:00:00+00:00', detail)
+        self.assertIn('class="visually-hidden">Note</h1>', titleless)
+        self.assertIn('class="note-date-link"', index)
+        self.assertNotIn('<h1></h1>', titleless)
+        self.assertIn('data-date-label="Published"', titleless)
+
+    def test_note_redirect_alias_conflict_fails_closed(self):
+        notes = self.root / 'content' / 'notes'
+        notes.mkdir(parents=True)
+        value = {'title': '', 'body': 'Text', 'published': True,
+                 'published_at': '2026-10-25T15:00:00Z'}
+        for name in ('untitled-8268656c', 'note-8268656c'):
+            (notes / (name + '.json')).write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError, 'Duplicate Notes URL'):
+            self.site.run()
+
     def test_public_metadata_displays_focal_aperture_shutter_and_iso(self):
         (self.root / 'media' / 'test' / 'pic.jpg').write_bytes(b'\xff\xd8\xff\xd9')
         (self.root / 'content' / 'projects' / 'test.json').write_text(json.dumps({
@@ -167,7 +218,7 @@ class PortfolioBuildTests(unittest.TestCase):
         self.assertIn('href="#photo=' + 'c'*24 + '"', page)
         self.assertIn('data-full-src="/media/test/pic.jpg', page)
         self.assertIn('project-bottom-inquiry', page)
-        self.assertIn('mailto:nicholas.kincaid2@gmail.com', page)
+        self.assertIn('mailto:contact@nickckincaid.com', page)
         self.assertIn('Projects', page)
 
     def test_rejects_remote_or_traversal_photo_references(self):

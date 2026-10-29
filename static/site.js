@@ -41,7 +41,7 @@
     if (!Number.isFinite(date.getTime())) continue;
     try {
       stamp.textContent = formatter.format(date);
-      stamp.setAttribute('aria-label', `Published ${stamp.textContent}`);
+      stamp.setAttribute('aria-label', `${stamp.dataset.dateLabel || 'Published'} ${stamp.textContent}`);
       // Retain an unambiguous UTC reference in the title attribute.
     } catch { /* keep the pre-rendered UTC text */ }
   }

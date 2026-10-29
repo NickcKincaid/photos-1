@@ -72,7 +72,7 @@
     const button=$('download-metadata');button.disabled=true;
     $('backup-status').textContent='Preparing project and Notes backup…';
     try {
-      const blob=await requestWithDeadline('/api/admin/backup',35,async response=>{
+      const blob=await requestWithDeadline('/api/admin/backup',90,async response=>{
         if(!response.ok) {
           let result;try{result=await response.json();}catch{}
           throw Error(result?.error||`Metadata export failed (${response.status}).`);

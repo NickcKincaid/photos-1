@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent
 CONTENT = ROOT / 'content'
 OUT = ROOT / 'dist'
 SITE_URL = 'https://nickckincaid.com'
+CONTACT_EMAIL = 'contact@nickckincaid.com'
 IMAGE_SIZES_HOME = '(max-width: 600px) calc(100vw - 24px), (max-width: 900px) 50vw, 33vw'
 IMAGE_SIZES_GALLERY = '(max-width: 600px) calc(100vw - 24px), 50vw'
 _OPTIMIZED = None
@@ -481,7 +482,7 @@ def project_page(site: dict, p: dict, index: int, projects: list[dict]) -> str:
     {('<button class="contact-sheet-toggle" type="button" aria-pressed="false" hidden>Fit All</button>') if len(images) > 1 else ''}
   </div>
   {gallery}
-  <div class="project-bottom-inquiry"><a href="mailto:nicholas.kincaid2@gmail.com?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
+  <div class="project-bottom-inquiry"><a href="mailto:{CONTACT_EMAIL}?subject={quote('Photo inquiry: ' + p['title'])}">Inquire about this project ↗</a></div>
 </main>{footer(site)}{lightbox(p['title'])}'''
     description = seo_summary(p.get('blurb') or p.get('description'))
     if not description:
@@ -533,22 +534,43 @@ def clean_time(raw: str) -> datetime | None:
         return None
 
 
+def public_note_slug(file_slug: str) -> str:
+    """Replace historical `untitled-<id>` URLs without changing GitHub filenames.
+
+    The suffix is immutable, so editing the note body or title later won't
+    change its public address. The build writes a permanent redirect.
+    """
+    match = re.fullmatch(r'untitled-([a-f0-9]{8})', file_slug)
+    return 'note-' + match.group(1) if match else file_slug
+
+
 def load_notes() -> list[dict]:
     entries = []
+    seen = set()
     for path in sorted((CONTENT / 'notes').glob('*.json')):
         note = read_json(path)
-        when = clean_time(note.get('published_at'))
-        if not note.get('published') or not when:
+        published = clean_time(note.get('published_at'))
+        if not note.get('published') or not published:
             continue
         title = str(note.get('title') or '').strip()
         text = str(note.get('body') or '').strip()
-        if not title or not text:
+        if not text:
             continue
-        entries.append({'slug': slugify(path.stem), 'title': title,
-                        'body': text, 'published_at': when,
+        original = slugify(path.stem)
+        slug = public_note_slug(original)
+        if slug in seen:
+            raise ValueError(f'Duplicate Notes URL after legacy migration: {slug}')
+        seen.add(slug)
+        created = clean_time(note.get('created_at')) or published
+        mode = 'created' if note.get('date_mode') == 'created' else 'published'
+        display_date = created if mode == 'created' else published
+        entries.append({'slug': slug, 'original_slug': original, 'title': title,
+                        'body': text, 'published_at': published,
+                        'created_at': created, 'display_date': display_date,
+                        'date_mode': mode,
                         'updated_at': clean_time(note.get('updated_at')),
-                        'url': '/notes/' + slugify(path.stem) + '/'})
-    return sorted(entries, key=lambda n: (n['published_at'], n['slug']), reverse=True)
+                        'url': '/notes/' + slug + '/'})
+    return sorted(entries, key=lambda n: (n['display_date'], n['slug']), reverse=True)
 
 
 def note_content(note: dict) -> str:
@@ -556,47 +578,57 @@ def note_content(note: dict) -> str:
 
 
 def timestamp(note: dict) -> str:
-    published = note['published_at']
-    iso = published.strftime('%Y-%m-%dT%H:%M:%SZ')
-    shown = published.strftime('%d %b %Y · %H:%M UTC')
-    return f'<time datetime="{iso}" data-local-published title="Published {shown}">{shown}</time>'
+    when = note['display_date']
+    label = 'Started' if note['date_mode'] == 'created' else 'Published'
+    iso = when.strftime('%Y-%m-%dT%H:%M:%SZ')
+    shown = when.strftime('%d %b %Y · %H:%M UTC')
+    return f'<time datetime="{iso}" data-local-published data-date-label="{label}" title="{label} {shown}">{shown}</time>'
 
 
 def notes_page(site: dict, notes: list[dict], share_cover: str = '') -> str:
     pieces = []
     for n in notes:
-        pieces.append(f'''<article class="note-entry" id="{esc(n['slug'])}">
-  <div class="note-heading"><h2><a href="{esc(n['url'])}">{esc(n['title'])}</a></h2>{timestamp(n)}</div>
+        if n['title']:
+            heading = f'<h2><a href="{esc(n["url"])}">{esc(n["title"])}</a></h2>{timestamp(n)}'
+        else:
+            # A titleless entry remains navigable via its timestamp.
+            heading = (f'<h2 class="visually-hidden">Note</h2>'
+                       f'<a class="note-date-link" href="{esc(n["url"])}" aria-label="Open note from {esc(n["display_date"].strftime("%d %b %Y"))}">{timestamp(n)}</a>')
+        pieces.append(f"""<article class="note-entry" id="{esc(n['slug'])}">
+  <div class="note-heading">{heading}</div>
   {note_content(n)}
-</article>''')
-    body = f'''{nav(site, 'notes')}<main id="main" class="page notes-main">
+</article>""")
+    body = f"""{nav(site, 'notes')}<main id="main" class="page notes-main">
   <h1 class="visually-hidden">Notes</h1>
   {''.join(pieces) if pieces else '<p class="empty-state">No notes yet.</p>'}
-</main>{footer(site)}'''
+</main>{footer(site)}"""
     return document('Notes', 'Notes by Nicholas Kincaid.', site, body, cover=share_cover, path='/notes/')
 
 
 def note_page(site: dict, note: dict, share_cover: str = '') -> str:
-    body = f'''{nav(site, 'notes')}<main id="main" class="page notes-main">
-  <article class="note-entry"><div class="note-heading"><h1>{esc(note['title'])}</h1>{timestamp(note)}</div>
+    heading = f'<h1>{esc(note["title"])}</h1>' if note['title'] else '<h1 class="visually-hidden">Note</h1>'
+    body = f"""{nav(site, 'notes')}<main id="main" class="page notes-main">
+  <article class="note-entry"><div class="note-heading">{heading}{timestamp(note)}</div>
   {note_content(note)}</article>
-</main>{footer(site)}'''
+</main>{footer(site)}"""
     description = seo_summary(note['body']) or f'A note by {site["name"]}.'
     published = note['published_at'].isoformat()
     modified = (note.get('updated_at') or note['published_at']).isoformat()
+    seo_title = note['title'] or 'Note'
     schema = {'@context': 'https://schema.org', '@type': 'BlogPosting',
-              'headline': note['title'], 'url': SITE_URL + note['url'],
+              'headline': note['title'] or seo_summary(note['body'], 100) or 'Note',
+              'url': SITE_URL + note['url'],
               'description': description, 'datePublished': published, 'dateModified': modified,
               'author': {'@id': SITE_URL + '/#person'},
               'mainEntityOfPage': SITE_URL + note['url']}
-    return document(note['title'], description, site, body, cover=share_cover,
+    return document(seo_title, description, site, body, cover=share_cover,
                     path=note['url'], kind='article', structured=schema)
 
 
 def inquire_page(site: dict, share_cover: str = '') -> str:
     body = f'''{nav(site, 'inquire')}<main id="main" class="page inquire-main">
   <h1>Inquire</h1>
-  <a href="mailto:nicholas.kincaid2@gmail.com">nicholas.kincaid2@gmail.com ↗</a>
+  <a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL} ↗</a>
 </main>{footer(site)}'''
     return document('Inquire', 'Photography inquiries and contact for Nicholas Kincaid.', site, body, cover=share_cover, path='/inquire/')
 
@@ -652,6 +684,13 @@ def run() -> None:
         outdir = notes_out / note['slug']
         outdir.mkdir(parents=True, exist_ok=True)
         (outdir / 'index.html').write_text(note_page(site, note, projects[0]['cover'] if projects else ''), encoding='utf-8')
+    # Preserve links Google or visitors have already seen for old untitled URLs.
+    redirects = [f'/notes/{note["original_slug"]}/ /notes/{note["slug"]}/ 301'
+                 for note in notes if note['original_slug'] != note['slug']]
+    if redirects:
+        redirects_file = OUT / '_redirects'
+        with redirects_file.open('a', encoding='utf-8') as file:
+            file.write('\n'.join(redirects) + '\n')
     inquire_out = OUT / 'inquire'
     inquire_out.mkdir(parents=True, exist_ok=True)
     (inquire_out / 'index.html').write_text(inquire_page(site, projects[0]['cover'] if projects else ''), encoding='utf-8')

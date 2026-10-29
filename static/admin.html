@@ -167,7 +167,7 @@
       <form id="note-form" hidden>
 <details class="admin-panel" data-panel="note-editor" open><summary>Write &amp; Format Note</summary><div class="admin-panel-body">
         <div class="note-edit-fields">
-          <label>Title<input type="text" id="note-title" maxlength="120" required placeholder="Note title"></label>
+          <label>Title <span class="muted">(Optional)</span><input type="text" id="note-title" maxlength="120" placeholder="Leave blank for a titleless note"></label>
           <div class="note-editor-label">Text <span class="muted">Lightweight formatting, no HTML required</span></div>
           <div class="note-toolbar" role="toolbar" aria-label="Note formatting">
             <button type="button" data-note-format="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
@@ -183,7 +183,13 @@
           <div id="note-preview" class="note-preview note-body" hidden aria-label="Note preview"></div>
           <p class="muted note-editor-help">Use **bold**, *italic*, # headings, - lists, > quotations, [text](https://example.com), or paste a Spotify/YouTube link on a separate line. Raw HTML isn't supported.</p>
           <label class="check"><input type="checkbox" id="note-published"> Publish This Note</label>
-          <p class="muted">Publication date and time are added automatically when first published (UTC). Drafts don't appear on the public site. Unsaved text is backed up locally in this browser.</p>
+          <label for="note-date-mode">Date Shown On Website
+            <select id="note-date-mode">
+              <option value="published">When First Published</option>
+              <option value="created">When Note Was Started</option>
+            </select>
+          </label>
+          <p class="muted">The start time is recorded when you begin a new note; publication time is recorded when it first goes public. Changing the displayed date does not change its actual publication record. Drafts stay private to the Notes listing until published.</p>
         </div>
 
 </div></details>

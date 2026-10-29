@@ -11,7 +11,9 @@ export async function onRequestGet({env}) {
       for (const object of result.objects) {
         total++;
         bytes+=Number(object.size) || 0;
-        if (/\.(jpe?g|png|tiff?)$/i.test(object.key || '')) photographs++;
+        // Generated 1200x630 Open Graph cards are R2 objects, not gallery photographs.
+        const key=String(object.key || '');
+        if (/\.(jpe?g|png|tiff?)$/i.test(key) && !/\/sharing-1200x630\.jpg$/i.test(key)) photographs++;
       }
       pages++;
       cursor=result.truncated ? result.cursor : null;

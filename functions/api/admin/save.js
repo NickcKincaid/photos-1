@@ -68,7 +68,7 @@ export async function onRequestPost(context) {
     const usedIds = new Set();
     const newId = () => crypto.randomUUID().replaceAll('-', '').slice(0, 24);
     const newRefs = [], treeEntries = [], details = [];
-    const seenExisting = new Set(), seenNew = new Set();
+    const seenExisting = new Set(), seenNew = new Set(), seenPaths = new Set();
     for (const item of input.photos) {
       if (!item || typeof item !== 'object') throw Error('Invalid photo');
       const missing = REQUIRED_EXPOSURE.filter(([field]) => !String(item.meta?.[field] ?? '').trim());
@@ -101,6 +101,9 @@ export async function onRequestPost(context) {
         path = `/media/${slug}/upload-${crypto.randomUUID().replace(/-/g, '')}.jpg`;
         treeEntries.push({ path: path.slice(1), mode:'100644', type:'blob', sha });
       } else throw Error('Unknown photo type');
+      // The same R2 object must not appear twice through different client kinds.
+      if (seenPaths.has(path)) throw Error('This photograph is already included in the project. Remove the duplicate before saving.');
+      seenPaths.add(path);
       newRefs.push(path);
       const old = item.kind === 'existing' ? knownDetails.get(path) : null;
       let permanentId = old && typeof old.id === 'string' && /^[0-9a-f]{24}$/.test(old.id) ? old.id : newId();

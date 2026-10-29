@@ -53,6 +53,24 @@ export async function verifySession(context) {
     return {ok:true};
   } catch {return {ok:false,status:401,error:'Session expired. Please sign in again.'};}
 }
+// Bound external OAuth calls so a stalled GitHub response cannot hang sign-in.
+export async function fetchWithDeadline(url, options={}, timeoutMs=12000) {
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try {
+    return await fetch(url,{...options,signal:controller.signal});
+  } catch (error) {
+    if (controller.signal.aborted) {
+      const expired=Error('Authentication provider request timed out.');
+      expired.status=504;
+      throw expired;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function checkOrigin(request) {
   const method=request.method;
   return method==='GET' || method==='HEAD' || (request.headers.get('origin')===new URL(request.url).origin);

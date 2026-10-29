@@ -36,7 +36,9 @@ test('metadata export includes site projects and notes but not credentials',asyn
     '/contents/content/notes/entry.json':{content:Buffer.from(JSON.stringify({title:'Note',published:false})).toString('base64')}
   };
   globalThis.fetch=async url=>{
-    const path=new URL(url).pathname.replace(/^\/repos\/[^/]+\/[^/]+/,'').replace(/\?ref=main$/,'');
+    const endpoint=new URL(url);
+    if(endpoint.pathname.endsWith('/git/ref/heads/main'))return Response.json({object:{sha:'a'.repeat(40)}});
+    const path=endpoint.pathname.replace(/^\/repos\/[^/]+\/[^/]+/,'').replace(/\?ref=[a-f0-9]{40}$/,'');
     const value=data[path];if(!value)throw Error('Unexpected mock URL '+path);
     return new Response(JSON.stringify(value),{status:200,headers:{'Content-Type':'application/json'}});
   };
@@ -46,6 +48,7 @@ test('metadata export includes site projects and notes but not credentials',asyn
     const content=await response.text();
     assert.doesNotMatch(content,/test-secret/);
     const snapshot=JSON.parse(content);
+    assert.equal(snapshot.sourceCommit,'a'.repeat(40));
     assert.equal(snapshot.site.name,'Nicholas Kincaid');
     assert.equal(snapshot.projects['sample.json'].title,'Sample');
     assert.equal(snapshot.notes['entry.json'].published,false);

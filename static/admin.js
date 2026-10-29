@@ -83,10 +83,23 @@
   const validPixels = n => Number.isInteger(n) && n > 0 && n <= 40000;
   function status(message, type='') { const el=$('status');el.textContent=message;el.className='status '+type; }
   async function api(path, options={}) {
-    const response = await fetch('/api/admin/'+path, { credentials:'same-origin', cache:'no-store', ...options });
-    let body; try { body=await response.json(); } catch { throw Error(`The server returned HTTP ${response.status} without JSON for /api/admin/${path}. Check Cloudflare Pages Functions logs.`); }
-    if (!response.ok) throw Error(body.error || `Request failed (${response.status})`);
-    return body;
+    // These operations may make several sequential GitHub calls; allow the save
+    // to finish, but never leave the editor locked indefinitely on a dead link.
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),90000);
+    try {
+      const response=await fetch('/api/admin/'+path, {
+        credentials:'same-origin',cache:'no-store',...options,signal:controller.signal
+      });
+      let body;
+      try { body=await response.json(); }
+      catch { throw Error(`The server returned HTTP ${response.status} without JSON for /api/admin/${path}. Check Cloudflare Pages Functions logs.`); }
+      if (!response.ok) throw Error(body.error || `Request failed (${response.status})`);
+      return body;
+    } catch(error) {
+      if(controller.signal.aborted) throw Error('The admin request timed out. Check whether GitHub saved your changes before retrying.');
+      throw error;
+    } finally {clearTimeout(timeout);}
   }
   function node(tag, className='', value='') { const el=document.createElement(tag);if(className)el.className=className;if(value)el.textContent=value;return el; }
   function cleanup() { for (const u of localURLs) URL.revokeObjectURL(u); localURLs.clear(); }
@@ -553,6 +566,9 @@
   function sendUpload(blob,headers,onProgress) {
     return new Promise((resolve,reject)=>{
       const xhr=new XMLHttpRequest();xhr.open('POST','/api/admin/upload');xhr.responseType='text';xhr.withCredentials=true;
+      // A dropped connection can otherwise lock the entire photo queue forever.
+      xhr.timeout=120000;
+      xhr.ontimeout=()=>reject(Error('Photo upload timed out. Check your connection and retry this photograph.'));
       for(const [key,value] of Object.entries(headers))xhr.setRequestHeader(key,value);
       xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.min(99,Math.round(e.loaded/e.total*100)));};
       xhr.onerror=()=>reject(Error('Upload connection failed. Check your internet connection and retry.'));

@@ -46,9 +46,9 @@ python3 build.py
 Browser smoke scripts in `tests/` are historical regression tools and may need
 Playwright/Chromium. CI runs Node/Python tests and builds the site.
 
-## Install V35
+## Install current release
 
-Use `INSTALL_V35.bat` from the update ZIP to copy only V35 code into your
+Use the release installer from the update ZIP to copy only reviewed code into your
 cloned `photos-1` repository. The installer does not overwrite `content/`, `media/` or `.git`.
 For rollout and rollback guidance, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -63,6 +63,7 @@ bindings offline.
 The private editor has native, independently collapsible panels for project details, photo upload, batch edits, AI descriptions, link checks, photo metadata, sharing, notes, and Storage tools. The open/closed state is remembered in the browser tab. Click a panel's heading to toggle it; keyboard Enter/Space also work. Save, Preview, and Cancel are grouped together, while Delete stays separated. The deployment-status widget was removed from the admin UI; Cloudflare Pages continues to deploy automatically after GitHub commits.
 
 Project Details now groups title/description before visibility and homepage position. The old browser-local AI usage counters have been removed, replaced by a direct official Cloudflare Workers AI usage link. No Cloudflare tokens or new API permissions are required.
+
 
 ## V36 quality release
 

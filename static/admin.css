@@ -183,3 +183,8 @@ main[hidden] { display: none !important; }
 .storage-cloudflare-link { margin:4px 0 16px; }
 .storage-cloudflare-link a { font-weight:600; }
 @media(max-width:680px){ .project-setting-field.order-field{max-width:100%;} }
+
+/* Notes date selection: match the restrained text inputs, no new widget library. */
+.note-edit-fields select { background: transparent; border: 1px solid var(--line); padding: 10px; font: inherit; color: var(--ink); width: 100%; max-width: 360px; }
+.note-heading .note-date-link { color: var(--muted); text-decoration: none; }
+.note-heading .note-date-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }

@@ -21,6 +21,10 @@ def verify(path: Path) -> tuple[int,int]:
         raise ValueError('Unknown metadata backup format')
     if not isinstance(data.get('site'), dict):
         raise ValueError('Missing site metadata')
+    # Older exports had no sourceCommit; newer exports must carry a valid SHA.
+    commit = data.get('sourceCommit')
+    if commit is not None and (not isinstance(commit,str) or not re.fullmatch(r'[a-fA-F0-9]{40}',commit)):
+        raise ValueError('Invalid GitHub backup source revision')
     counts = []
     for category in ('projects','notes'):
         group = data.get(category)

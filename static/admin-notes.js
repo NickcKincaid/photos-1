@@ -6,18 +6,26 @@
   if (!pane || !projectPane) return;
   const tabs = [$('show-projects'), $('show-notes'), $('show-storage')];
   let notes = [], selected = null, dirty = false, busy = false, loaded = false;
+  let startedAt = new Date().toISOString();
   let previewVisible = false;
   let previewTimer = null;
   window.photoNotesHasPendingChanges = () => dirty || busy;
   const showStatus = (message, error=false) => { $('notes-status').textContent = message; $('notes-status').className = error ? 'status error' : 'status'; };
   const make = (tag, text='', className='') => { const el = document.createElement(tag); el.textContent = text; if(className)el.className = className; return el; };
   const api = async (method='GET', body=null) => {
-    const response = await fetch('/api/admin/notes', {method, credentials:'same-origin', cache:'no-store',
-      ...(body ? {headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : {})});
-    let value;
-    try { value = await response.json(); } catch { throw Error(`The server returned HTTP ${response.status}. Check Cloudflare Pages Functions logs.`); }
-    if (!response.ok) throw Error(value.error || `Request failed (${response.status}).`);
-    return value;
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),45000);
+    try {
+      const response = await fetch('/api/admin/notes', {method, credentials:'same-origin', cache:'no-store',signal:controller.signal,
+        ...(body ? {headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : {})});
+      let value;
+      try { value = await response.json(); } catch { throw Error(`The server returned HTTP ${response.status}. Check Cloudflare Pages Functions logs.`); }
+      if (!response.ok) throw Error(value.error || `Request failed (${response.status}).`);
+      return value;
+    } catch(error) {
+      if(controller.signal.aborted) throw Error('The Notes request timed out. Check whether GitHub saved the note before retrying.');
+      throw error;
+    } finally {clearTimeout(timeout);}
   };
   function canDiscard(message='Discard unsaved changes to this note?') {
     return !dirty || window.confirm(message);
@@ -26,7 +34,8 @@
   function persistDraft() {
     if(!dirty || busy || $('note-form').hidden) return;
     window.PortfolioDrafts?.save('note',noteKey(),selected?.revision,{
-      title:$('note-title').value,body:$('note-body').value,published:$('note-published').checked
+      title:$('note-title').value,body:$('note-body').value,published:$('note-published').checked,
+      date_mode:$('note-date-mode').value, started_at:startedAt
     });
   }
   function tryRestoreDraft(note) {
@@ -40,6 +49,9 @@
     $('note-title').value=String(draft.value.title||'').slice(0,120);
     $('note-body').value=String(draft.value.body||'').slice(0,12000);
     $('note-published').checked=Boolean(draft.value.published);
+    $('note-date-mode').value=draft.value.date_mode === 'created' ? 'created' : 'published';
+    if (typeof draft.value.started_at === 'string' && !Number.isNaN(Date.parse(draft.value.started_at)))
+      startedAt=draft.value.started_at;
     dirty=true;
     showStatus('Local draft recovered. Review and save to publish.');
     if(previewVisible) renderPreview();
@@ -53,14 +65,16 @@
       window.PortfolioDrafts?.clear('note',noteKey());
     }
     selected = note || null;
+    startedAt = note?.created_at || new Date().toISOString();
     dirty = false;
     $('note-title').value = note?.title || '';
     $('note-body').value = note?.body || '';
     if (previewVisible) renderPreview();
     $('note-published').checked = Boolean(note?.published);
+    $('note-date-mode').value = note?.date_mode === 'created' ? 'created' : 'published';
     $('delete-note').hidden = !note?.slug;
     $('note-form').hidden = false;
-    showStatus(note ? (note.published ? 'Published note. Changes will redeploy after saving.' : 'Unpublished draft.') : 'New note. Publication time is set when you publish.');
+    showStatus(note ? (note.published ? 'Published note. Changes will redeploy after saving.' : 'Unpublished draft.') : 'New note. The start time is recorded now; publication time is recorded when you first publish.');
     tryRestoreDraft(note);
     renderList();
     return true;
@@ -69,9 +83,10 @@
     const target = $('notes-list');target.replaceChildren();
     if (!notes.length) { target.appendChild(make('p', 'No notes yet.', 'muted')); return; }
     for (const item of notes) {
-      const button = make('button', item.title, 'note-item' + (item.slug === selected?.slug ? ' active' : ''));
+      const button = make('button', item.title || 'No Title', 'note-item' + (item.slug === selected?.slug ? ' active' : ''));
       button.type = 'button';
-      const subtitle = make('small', item.published ? `Published · ${item.published_at ? new Date(item.published_at).toLocaleDateString() : ''}` : 'Draft');
+      const shown = item.date_mode === 'created' ? item.created_at : item.published_at;
+      const subtitle = make('small', item.published ? `${item.date_mode === 'created' ? 'Started' : 'Published'} · ${shown ? new Date(shown).toLocaleDateString() : ''}` : 'Draft');
       button.appendChild(subtitle);
       button.addEventListener('click', () => newSelection(item));
       target.appendChild(button);
@@ -173,18 +188,19 @@
   });
   $('add-note').addEventListener('click', () => newSelection(null));
   for (const id of ['note-title', 'note-body']) $(id).addEventListener('input', () => { dirty = true; if (id === 'note-body' && previewVisible) { clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 250); } });
-  $('note-published').addEventListener('change', () => { dirty = true; });
+  for (const id of ['note-published', 'note-date-mode']) $(id).addEventListener('change', () => { dirty = true; });
   window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
   $('note-form').addEventListener('submit', async e => {
     e.preventDefault();
     if (busy) return;
     const title = $('note-title').value.trim(), body = $('note-body').value.trim();
-    if (!title || !body) { showStatus('Enter a title and some text.', true); return; }
+    if (!body) { showStatus('Write some text before saving a note.', true); return; }
     busy = true; $('save-note').disabled = true; $('delete-note').disabled = true;
     try {
       showStatus('Saving note to GitHub…');
       const saved = await api('POST', {slug:selected?.slug || null, revision:selected?.revision || null,
-        title, body, published:$('note-published').checked});
+        title, body, published:$('note-published').checked,
+        date_mode:$('note-date-mode').value, started_at:startedAt});
       dirty = false;
       window.dispatchEvent(new Event('portfolio-published'));
       window.PortfolioDrafts?.clear('note',noteKey());
@@ -200,9 +216,11 @@
   $('delete-note').addEventListener('click', async () => {
     if (busy || !selected?.slug) return;
     if (dirty) { showStatus('Save or discard your edits before deleting.', true); return; }
-    const typed = window.prompt(`Delete note "${selected.title}"? Type its exact title to confirm:`);
+    const typed = window.prompt(selected.title
+      ? `Delete note "${selected.title}"? Type its exact title to confirm:`
+      : 'Delete this untitled note? Type DELETE to confirm:');
     if (typed === null) return;
-    if (typed.trim() !== selected.title) { showStatus('Deletion cancelled: title did not match.', true); return; }
+    if (typed.trim() !== (selected.title || 'DELETE')) { showStatus('Deletion cancelled: confirmation did not match.', true); return; }
     busy = true; $('save-note').disabled = true;
     try {
       await api('DELETE', {slug:selected.slug, revision:selected.revision, confirmTitle:selected.title});
