@@ -1,3 +1,23 @@
+## Repository Cleanup — October 2026
+
+- Organized ongoing setup and deployment guides under `docs/`; retained the complete historical `CHANGELOG.md` in the project root. Removed the duplicate, outdated V37 standalone release-notes file after consolidating its changes below.
+- Removed only generated local build artifacts from the distributable copy; kept historical browser tests, compatibility endpoints, `.pages.yml`, and the optimization manifest because they may still serve active workflows.
+- Normalized line-ending-only working tree differences across existing JSON and placeholder files, without changing any saved project, photo, or note values.
+- Added `.gitattributes` to avoid recurring Windows CRLF churn, and extended `.gitignore` for local editors, caches, temporary files, and update archives.
+- Expanded CI to validate content, source helpers and workflows rather than only selected frontend code changes.
+
+## V37b / V37a — Contact and Notes
+
+- Set the public inquiry address to `contact@nickckincaid.com` and retained per-project inquiry subject lines.
+- Allowed optional Notes titles; punctuation-only titles use neutral `note-<id>` URLs, with historical untitled URLs redirected when applicable.
+- Added the option to display either a Note's creation timestamp or first-publication timestamp, preserving both values.
+
+## V37 — Reliability and integrity
+
+- Preserved V36d protections against duplicate photo references, sharing cards appearing in photo inventories and stalled OAuth requests.
+- Pinned multi-file GitHub metadata backups to one immutable commit and recorded their source revision.
+- Added bounded client requests for Notes, project editing and photo uploads to prevent indefinite waiting.
+
 ## V36 — Stability, SEO, security and accessibility (2026-10-21)
 
 - Persist intrinsic pixel dimensions (width and height) for future photograph uploads and existing photographs opened in the editor and explicitly saved. Public gallery images use accurate dimensions to reserve loading space when available; older untouched R2 content retains the V35b fallback.

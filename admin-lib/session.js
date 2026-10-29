@@ -37,7 +37,7 @@ export async function makeSession(env, user) {
   return `${payload}.${b64(signed)}`;
 }
 export async function verifySession(context) {
-  if (!configured(context.env)) return { ok:false, status:503, error:'Admin setup incomplete. See ADMIN_SETUP.md.' };
+  if (!configured(context.env)) return { ok:false, status:503, error:'Admin setup incomplete. See docs/ADMIN_SETUP.md.' };
   const cookie=cookies(context.request).photo_session;
   if (!cookie || cookie.length>4096) return {ok:false,status:401,error:'Please sign in with GitHub.'};
   try {

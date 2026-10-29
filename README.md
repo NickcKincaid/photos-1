@@ -1,74 +1,50 @@
 # Nicholas Kincaid — Photography Portfolio
 
-Minimal static photo portfolio, built with Python and hosted on Cloudflare Pages.
-Photos live in private Cloudflare R2; project and note metadata live in GitHub.
-The admin editor at `/admin/` requires owner authentication through GitHub OAuth.
+A lightweight, static photography portfolio built with Python and hosted on Cloudflare Pages. The public website is [nickckincaid.com](https://nickckincaid.com). Project/Notes metadata is stored in GitHub; original uploaded photographs are stored separately in private Cloudflare R2.
 
-## Public site
+## Site features
 
-- `/`: published projects and their cover photographs.
-- `/projects/<slug>/`: project gallery, **Fit All** compact layout, full-screen viewer,
-  metadata, and inquiry link. AI-generated alt text is not a visible caption.
-- `/notes/`: published notes.
-- `/inquire/`: inquiry information.
+- Public gallery, **Fit All** grid, viewer, photo metadata, skeleton placeholders and separate social-sharing crop.
+- Notes, including optional titles, date-display choices and legacy-URL redirects.
+- Private `/admin/` dashboard, protected by GitHub OAuth, for projects, Notes, R2 uploads, accessibility descriptions and metadata backups.
+- Public `/inquire/` contact page using `contact@nickckincaid.com` (configure email forwarding separately).
 
-## Private editor
+## Repository structure
 
-- Projects: upload to R2, require ISO/aperture/shutter/focal length, order photos,
-  set cover and SEO data, save and delete projects.
-- Generate missing alt text, regenerate individual/all alt text using Workers AI;
-  review text and **Save project** to publish. The Cancel changes button discards
-  unsaved editor changes and its local recovery draft; it does not delete R2 uploads.
-- Storage & backups: inspect R2 storage, manually download metadata, open Cloudflare Web Analytics, and use a direct link to **actual Workers AI usage** in Cloudflare. No estimates are shown.
-- Notes: write and publish notes. Draft project/note metadata committed to a
-  public GitHub repo is not confidential.
+| Directory / file | Purpose |
+| --- | --- |
+| `build.py`, `note_format.py`, `photo_exif.py` | Static-site generation and content processing |
+| `content/` | Project, Notes and site-settings JSON — **keep** |
+| `functions/` | Cloudflare Pages Functions: admin, OAuth, media and project routes |
+| `admin-lib/` | Shared admin/API helpers |
+| `static/` | Lightweight CSS, browser JavaScript, admin UI and icons |
+| `media/` | Legacy tracked images/optimized manifest (current R2 photos are external) |
+| `scripts/` | Image processing, source audit and backup validation tools |
+| `tests/` | Node, Python and historical browser regression tests |
+| `.github/workflows/` | Tests, metadata backups and media-processing automation |
+| `docs/` | [Admin setup](docs/ADMIN_SETUP.md) and [deployment/rollback](docs/DEPLOYMENT.md) |
+| `CHANGELOG.md` | Historical changes and release notes |
 
-## Required Cloudflare configuration
+## Run locally
 
-Cloudflare Pages build command: `python3 build.py`. Output directory: `dist`.
-GitHub OAuth and an R2 binding named `PHOTO_BUCKET` are documented in
-[ADMIN_SETUP.md](ADMIN_SETUP.md).
-
-The optional Workers AI integration needs a **Workers AI binding named `AI`**.
-The optional legacy deployment API (not shown in the admin interface) still supports
-`CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`, and `CF_PAGES_READ_TOKEN` with Pages Read permission.
-It is not required for the V35 admin. Redeploy after changing bindings or variables.
-Never commit secrets.
-
-## Test locally
+Requires Python 3 and Node.js for tests. The static build uses the Python standard library; `npm test` uses Node's built-in test runner.
 
 ```sh
 npm test
 npm run audit
-python3 build.py
+npm run build
 ```
 
-Browser smoke scripts in `tests/` are historical regression tools and may need
-Playwright/Chromium. CI runs Node/Python tests and builds the site.
+The build generates **`dist/`**. This output is disposable and ignored by Git; Cloudflare recreates it on deployment. Historical browser tests may require Chromium/Playwright and are not part of the default test command.
 
-## Install current release
+## Publish with GitHub Desktop
 
-Use the release installer from the update ZIP to copy only reviewed code into your
-cloned `photos-1` repository. The installer does not overwrite `content/`, `media/` or `.git`.
-For rollout and rollback guidance, see [DEPLOYMENT.md](DEPLOYMENT.md).
+1. Open the `photos-1` directory (containing `.git`) in GitHub Desktop, select `main`, and review the changes.
+2. Commit the cleanup. Click **Push origin** to deploy through the existing Cloudflare GitHub integration.
+3. Confirm the Cloudflare deployment succeeded, then spot-check the gallery, Notes and `/admin/`.
 
-**Data safety:** project JSON is not R2 image storage. Uploaded photographs
-already in R2 are not included in this repository ZIP. Keep separate original
-photo backups. This code cannot verify your live OAuth, R2 or Cloudflare AI
-bindings offline.
+**Do not delete** `.git`, `content/` or `media/`. Do not commit local secrets or image backups into this repository. GitHub repository copies do **not** back up photographs stored in Cloudflare R2. For setup and rollback, see [deployment guide](docs/DEPLOYMENT.md).
 
+## Configuration and limits
 
-## V35 editor maintenance
-
-The private editor has native, independently collapsible panels for project details, photo upload, batch edits, AI descriptions, link checks, photo metadata, sharing, notes, and Storage tools. The open/closed state is remembered in the browser tab. Click a panel's heading to toggle it; keyboard Enter/Space also work. Save, Preview, and Cancel are grouped together, while Delete stays separated. The deployment-status widget was removed from the admin UI; Cloudflare Pages continues to deploy automatically after GitHub commits.
-
-Project Details now groups title/description before visibility and homepage position. The old browser-local AI usage counters have been removed, replaced by a direct official Cloudflare Workers AI usage link. No Cloudflare tokens or new API permissions are required.
-
-
-## V36 quality release
-
-- Newly uploaded R2 images save their pixel dimensions; the browser reserves the correct gallery space with native image width/height and a CSS ratio placeholder. The editor can also learn the dimensions of older R2 images when loaded; they persist the next time that project is explicitly saved.
-- Gallery lightbox links use approved descriptions as accessible labels, without displaying them as captions. Touch targets for viewer controls are improved without additional JavaScript.
-- The production builder retains stable canonical links, an image sitemap, real Notes modification dates, and `ImageGallery` / `ImageObject` structured data using reviewed photo descriptions. Verify real indexing through Google Search Console; generating a sitemap does not guarantee indexing.
-- Download a metadata backup in Storage & backups, then verify it offline with `python3 scripts/verify_metadata_backup.py PATH_TO_BACKUP.json`. This only checks structure and cannot restore deleted images: keep a separate copy of your originals/R2 photos.
-- Browser requests, R2 bindings and GitHub OAuth were reviewed locally; production permissions, quota and actual Lighthouse/Core Web Vitals must be checked on the deployed domain.
+Cloudflare Pages: build command `python3 build.py`, output folder `dist`. Existing R2 binding `PHOTO_BUCKET`; optional Workers AI binding `AI`. See [admin setup](docs/ADMIN_SETUP.md) for OAuth/secrets. Keep all API tokens out of Git. Production OAuth, R2, Workers AI and Google indexing require live verification; tests alone cannot confirm those services.

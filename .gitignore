@@ -21,3 +21,19 @@ node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Local virtual environments, reports and temporary update packages.
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.idea/
+coverage/
+playwright-report/
+test-results/
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+*.zip

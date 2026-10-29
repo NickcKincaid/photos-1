@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'build.py'
+      - 'content/**'
+      - 'note_format.py'
+      - 'scripts/**'
       - 'photo_exif.py'
       - 'admin-lib/**'
       - 'functions/**'
