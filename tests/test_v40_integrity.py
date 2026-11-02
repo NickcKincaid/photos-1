@@ -18,13 +18,12 @@ class V40IntegrityTests(unittest.TestCase):
                      'docs/LOCAL_PHOTO_SOURCES.md']:
             self.assertFalse((ROOT/name).exists(),name)
     def test_existing_project_and_note_data_remain_valid(self):
-        projects=list((ROOT/'content/projects').glob('*.json'))
-        notes=list((ROOT/'content/notes').glob('*.json'))
-        self.assertGreaterEqual(len(projects), 8)
-        self.assertGreaterEqual(len(notes), 3)
-        self.assertTrue(all(isinstance(json.loads(p.read_text()),dict) for p in projects+notes))
-        drafts=[json.loads(p.read_text()) for p in notes]
-        self.assertTrue(any(x.get('title')=='tbc' and x.get('published') is False for x in drafts))
+        # Validate current content, including drafts and titleless notes.
+        # Do not require historical filenames, counts, titles, or statuses.
+        from scripts.validate_content import validate_content
+        issues, projects, notes = validate_content(ROOT)
+        self.assertEqual(issues, [], '\n'.join(issues))
+
     def test_security_middleware_and_git_revision_guards(self):
         self.assertIn('verifySession', (ROOT/'functions/api/admin/_middleware.js').read_text())
         dimensions=(ROOT/'functions/api/admin/dimensions.js').read_text()

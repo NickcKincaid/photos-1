@@ -70,23 +70,21 @@ def git_deletions(root: Path, base_ref: str | None = None):
 
 def inspect(root: Path, archive: Path | None = None, base_ref: str | None = None):
     errors=[]
-    projects=sorted((root/'content/projects').glob('*.json'))
-    notes=sorted((root/'content/notes').glob('*.json'))
-    for p in [*projects,*notes,root/'content/site.json']:
-        try:
-            data=json.loads(p.read_text(encoding='utf-8'))
-            if not isinstance(data,dict): errors.append(f'Not a JSON object: {p.relative_to(root)}')
-        except (ValueError,OSError) as err:
-            errors.append(f'Unreadable JSON: {p.relative_to(root)} ({err})')
-    if not projects: errors.append('No project JSON files found.')
-    if not notes: errors.append('No Notes JSON files found.')
+    # Schema validation is content-driven: zero Notes is valid on a new site,
+    # and publishing/renaming/adding Notes never changes the expected count.
+    if __package__:
+        from scripts.validate_content import validate_content
+    else:
+        from validate_content import validate_content
+    issues, project_count, note_count = validate_content(root)
+    errors.extend(issues)
     removed,message=git_deletions(root,base_ref)
     if message: errors.append(message)
     if removed: errors.append('Tracked content/media deletions (review individually): '+', '.join(removed))
     if archive:
         missing,previous,current=compare_zip(root,archive)
         if missing: errors.append(f'{len(missing)} files absent compared with {archive.name}: '+', '.join(missing))
-    return errors, len(projects), len(notes)
+    return errors, project_count, note_count
 
 
 def main():
