@@ -24,6 +24,9 @@ CONTENT = ROOT / 'content'
 OUT = ROOT / 'dist'
 SITE_URL = 'https://nickckincaid.com'
 CONTACT_EMAIL = 'contact@nickckincaid.com'
+HOMEPAGE_SHARE_IMAGE = '/homepage-share.jpg'
+HOMEPAGE_SOCIAL_TITLE = 'Nick Kincaid'
+HOMEPAGE_SHARE_ALT = 'High-contrast black-and-white photograph of four textured curved white forms on black.'
 SITE_VERSION = 'V41a'
 IMAGE_SIZES_HOME = '(max-width: 600px) calc(100vw - 24px), (max-width: 900px) 50vw, 33vw'
 IMAGE_SIZES_GALLERY = '(max-width: 600px) calc(100vw - 24px), 50vw'
@@ -253,13 +256,29 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
     js_version = hashlib.sha256((ROOT / 'static/site.js').read_bytes()).hexdigest()[:10]
     site_url = SITE_URL
     canonical = site_url + path
-    og_cover = image_url(cover)
+    homepage_preview = path == '/'
+    og_cover = HOMEPAGE_SHARE_IMAGE if homepage_preview else image_url(cover)
+    og_alt = HOMEPAGE_SHARE_ALT if homepage_preview else title + " — photograph by Nicholas Kincaid"
     og_image = (f'<meta property="og:image" content="{esc(site_url + og_cover)}">\n'
-                f'  <meta property="og:image:alt" content="{esc(title + " — photograph by Nicholas Kincaid")}">\n'
+                f'  <meta property="og:image:alt" content="{esc(og_alt)}">\n'
                 f'  <meta name="twitter:image" content="{esc(site_url + og_cover)}">\n'
                 f'  <meta name="twitter:card" content="summary_large_image">') if og_cover else '<meta name="twitter:card" content="summary">'
+    if homepage_preview:
+        og_image += ('\n  <meta property="og:image:width" content="1200">'
+                     '\n  <meta property="og:image:height" content="630">'
+                     '\n  <meta property="og:image:type" content="image/jpeg">')
     full_title = f'{site["name"]} — Photography' if path == '/' else f'{title} — {site["name"]}'
     safe_desc = seo_summary(description) or f'Photography by {site["name"]}.'
+    # Public social previews are concise; the separate search description and
+    # structured data remain accurate and descriptive for search engines.
+    social_title = HOMEPAGE_SOCIAL_TITLE if homepage_preview else full_title
+    # Homepage has no social subtitle. Preserve search description
+    # and project/note Open Graph descriptions independently.
+    social_description_tags = '' if homepage_preview else (
+        f'<meta property="og:description" content="{esc(safe_desc)}">\n'
+        f'  <meta name="twitter:description" content="{esc(safe_desc)}">')
+    social_site_name_tag = '' if homepage_preview else (
+        f'<meta property="og:site_name" content="{esc(site["name"])}">')
     schema_tag = ''
     if structured:
         schema = json.dumps(structured, ensure_ascii=False).replace('<', r'\u003c')
@@ -275,12 +294,11 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
   <meta name="author" content="Nicholas Kincaid">
   <link rel="canonical" href="{esc(canonical)}">
   <meta property="og:type" content="{esc(kind)}">
-  <meta property="og:site_name" content="{esc(site['name'])}">
+  {social_site_name_tag}
   <meta property="og:url" content="{esc(canonical)}">
-  <meta property="og:title" content="{esc(full_title)}">
-  <meta property="og:description" content="{esc(safe_desc)}">
-  <meta name="twitter:title" content="{esc(full_title)}">
-  <meta name="twitter:description" content="{esc(safe_desc)}">
+  <meta property="og:title" content="{esc(social_title)}">
+  {social_description_tags}
+  <meta name="twitter:title" content="{esc(social_title)}">
   {og_image}
   {schema_tag}
   <title>{esc(full_title)}</title>
@@ -647,7 +665,7 @@ def run() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-    for name in ('style.css', 'site.js', 'favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', '_headers', '_routes.json'):
+    for name in ('homepage-share.jpg', 'style.css', 'site.js', 'favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', '_headers', '_routes.json'):
         shutil.copy2(ROOT / 'static' / name, OUT / name)
     prep_dir = OUT / 'prepare'
     prep_dir.mkdir(parents=True, exist_ok=True)
