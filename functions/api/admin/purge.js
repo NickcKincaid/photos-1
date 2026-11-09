@@ -1,6 +1,6 @@
 // Optional second phase: remove legacy GitHub image copies AFTER each photo is
 // confirmed in R2 and its project data marks storage:'r2'. No history rewrite.
-import {gh,decodeContent,errorResponse} from '../../../admin-lib/github.js';
+import {gh,decodeContent,errorResponse,assertProjectSnapshot} from '../../../admin-lib/github.js';
 import {json,readLimited} from '../../../admin-lib/session.js';
 const SHA=/^[a-f0-9]{40}$/i;
 const IMAGE=/^media\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+\.(?:jpe?g|png|webp|tiff?)$/i;
@@ -25,16 +25,24 @@ export async function onRequestPost(context) {
     }
     const listing=await gh(context,'/contents/content/projects?ref=main');
     if(!Array.isArray(listing)||listing.length>45)throw Error('Unable to verify shared photographs.');
+    // A newer save can land after our first revision read but before listing.
+    // Never use a stale photo list to decide which GitHub objects to remove.
+    if (listing.find(f=>f.type==='file'&&f.name===`${slug}.json`)?.sha !== revision) {
+      const e=Error('Project changed during cleanup. Refresh before retrying.');e.status=409;throw e;
+    }
     const shared=new Set();
     for(const f of listing) {
       if(f.type!=='file' || !f.name.endsWith('.json') || f.name===`${slug}.json`)continue;
-      const other=decodeContent((await gh(context,`/contents/content/projects/${encodeURIComponent(f.name)}?ref=main`)).content);
+      const doc=await gh(context,`/contents/content/projects/${encodeURIComponent(f.name)}?ref=main`);
+      if (doc.sha !== f.sha) { const e=Error('Project references changed. Refresh and retry.');e.status=409;throw e; }
+      const other=decodeContent(doc.content);
       for(const p of [other.cover,...(other.gallery||[])])if(typeof p==='string')shared.add(p);
     }
     const ref=await gh(context,'/git/ref/heads/main');
     const head=await gh(context,`/git/commits/${ref.object.sha}`);
     const fileTree=await gh(context,`/git/trees/${head.tree.sha}?recursive=1`);
     if(fileTree.truncated||!Array.isArray(fileTree.tree))throw Error('Could not verify the complete repository tree.');
+    assertProjectSnapshot(fileTree, Object.fromEntries(listing.filter(f=>f.type==='file'&&f.name.endsWith('.json')).map(f=>[f.name.slice(0,-5),f.sha])), true);
     const tracked=new Set(fileTree.tree.filter(x=>x.type==='blob').map(x=>x.path));
     const removed=photos.filter(p=>!shared.has(p)&&tracked.has(p.slice(1))).map(p=>p.slice(1));
     if(!removed.length)return json({ok:true,removed:0,shared:photos.filter(p=>shared.has(p)).length});

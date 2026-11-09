@@ -1,7 +1,7 @@
 // Delete one project and its exclusively referenced current images in one Git commit.
 // Deletion is intentionally conservative: never delete an image used by another
 // project, and never rewrite Git history or touch the site's other files.
-import { gh, decodeContent, errorResponse } from '../../../admin-lib/github.js';
+import { gh, decodeContent, errorResponse, assertProjectSnapshot } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
 
 const IMAGE = /^media\/(?!_optimized\/|_unused\/)[a-zA-Z0-9._/-]+\.(?:jpe?g|png|webp|tiff?)$/i;
@@ -70,6 +70,7 @@ export async function onRequestPost(context) {
     const protectedR2 = new Set();
     for (const file of otherFiles) {
       const doc = await gh(context, `/contents/content/projects/${encodeURIComponent(file.name)}?ref=main`);
+      if (doc.sha !== file.sha) { const error = Error('Project references changed. Refresh before deleting.'); error.status = 409; throw error; }
       const other=decodeContent(doc.content);
       for (const path of photoPaths(other)) protectedPhotos.add(path);
       for (const path of r2Keys(other)) protectedR2.add(path);
@@ -121,6 +122,7 @@ export async function onRequestPost(context) {
     const head = await gh(context, `/git/commits/${ref.object.sha}`);
     const tree = await gh(context, `/git/trees/${head.tree.sha}?recursive=1`);
     if (tree.truncated || !Array.isArray(tree.tree)) throw Error('GitHub returned an incomplete file list. Nothing was deleted.');
+    assertProjectSnapshot(tree, Object.fromEntries([[slug, revision], ...otherFiles.map(file => [file.name.slice(0, -5), file.sha])]), true);
     const paths = new Set(tree.tree.filter(x => x.type === 'blob').map(x => x.path));
     const projectPath = `content/projects/${slug}.json`;
     if (!paths.has(projectPath)) throw Error('The project was changed while deleting. Refresh and retry.');

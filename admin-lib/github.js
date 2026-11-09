@@ -61,3 +61,20 @@ export async function getProject(context, slug) {
 export function errorResponse(error) {
   return json({ error: error.message || 'Request failed.' }, error.status || 400);
 }
+
+// Validate a snapshot against a pinned Git commit, not a moving branch. The
+// returned GitHub Contents SHA is the Git blob SHA in a commit tree.
+export function assertProjectSnapshot(tree, revisions, exactSet = false) {
+  const conflict = () => { const error = Error('Projects changed during this operation. Refresh the editor and try again.'); error.status = 409; throw error; };
+  if (!tree || tree.truncated || !Array.isArray(tree.tree)) {
+    const error = Error('GitHub returned an incomplete project snapshot. No changes were saved.'); error.status = 503; throw error;
+  }
+  const actual = new Map(tree.tree.filter(entry => entry?.type === 'blob' &&
+    /^content\/projects\/[a-z0-9-]{1,65}\.json$/.test(entry.path))
+    .map(entry => [entry.path.slice('content/projects/'.length, -5), entry.sha]));
+  if (exactSet && actual.size !== Object.keys(revisions).length) conflict();
+  for (const [slug, sha] of Object.entries(revisions)) {
+    if (!/^[a-z0-9-]{1,65}$/.test(slug) || !/^[a-f0-9]{40}$/i.test(sha) || actual.get(slug) !== sha) conflict();
+  }
+  return true;
+}

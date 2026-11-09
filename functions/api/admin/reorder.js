@@ -1,4 +1,4 @@
-import { gh, decodeContent, errorResponse } from '../../../admin-lib/github.js';
+import { gh, decodeContent, errorResponse, assertProjectSnapshot } from '../../../admin-lib/github.js';
 import { json, readLimited } from '../../../admin-lib/session.js';
 
 // Reorder existing project files in one atomic Git commit. Never modify photos.
@@ -36,6 +36,8 @@ export async function onRequestPost(context) {
     if (!revisions.length) return json({ok:true});
     const ref = await gh(context,'/git/ref/heads/main');
     const head = await gh(context,`/git/commits/${ref.object.sha}`);
+    const snapshot = await gh(context,`/git/trees/${head.tree.sha}?recursive=1`);
+    assertProjectSnapshot(snapshot, expected, true);
     const tree = await gh(context,'/git/trees',{method:'POST',body:{base_tree:head.tree.sha,tree:revisions}});
     const commit = await gh(context,'/git/commits',{method:'POST',body:{
       message:'Reorder photography portfolio projects',tree:tree.sha,parents:[ref.object.sha]

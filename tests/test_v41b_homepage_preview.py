@@ -25,8 +25,8 @@ class HomepageSocialPreviewTests(unittest.TestCase):
     def test_homepage_uses_custom_social_card_but_keeps_search_description(self):
         site = {'name': 'Nicholas Kincaid', 'intro': 'Photography by Nicholas Kincaid'}
         result = self.build.homepage(site, [])
-        self.assertIn('property="og:image" content="https://nickckincaid.com/homepage-share.jpg"', result)
-        self.assertIn('name="twitter:image" content="https://nickckincaid.com/homepage-share.jpg"', result)
+        self.assertRegex(result, r'property="og:image" content="https://nickckincaid\.com/homepage-share\.jpg\?v=[a-f0-9]{12}"')
+        self.assertRegex(result, r'name="twitter:image" content="https://nickckincaid\.com/homepage-share\.jpg\?v=[a-f0-9]{12}"')
         self.assertIn('property="og:image:width" content="1200"', result)
         self.assertIn('property="og:image:height" content="630"', result)
         self.assertIn('property="og:title" content="Nick Kincaid"', result)

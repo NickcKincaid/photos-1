@@ -27,7 +27,7 @@ CONTACT_EMAIL = 'contact@nickckincaid.com'
 HOMEPAGE_SHARE_IMAGE = '/homepage-share.jpg'
 HOMEPAGE_SOCIAL_TITLE = 'Nick Kincaid'
 HOMEPAGE_SHARE_ALT = 'High-contrast black-and-white photograph of four textured curved white forms on black.'
-SITE_VERSION = 'V41c'
+SITE_VERSION = 'V42'
 IMAGE_SIZES_HOME = '(max-width: 600px) calc(100vw - 24px), (max-width: 900px) 50vw, 33vw'
 IMAGE_SIZES_GALLERY = '(max-width: 600px) calc(100vw - 24px), 50vw'
 _OPTIMIZED = None
@@ -258,16 +258,22 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
     canonical = site_url + path
     homepage_preview = path == '/'
     og_cover = HOMEPAGE_SHARE_IMAGE if homepage_preview else image_url(cover)
+    # A content fingerprint gives sharing crawlers a new image URL after edits,
+    # while the public homepage and canonical URL remain unchanged.
+    image_file = ROOT / 'static' / 'homepage-share.jpg'
+    image_href = (site_url + og_cover + '?v=' + hashlib.sha256(image_file.read_bytes()).hexdigest()[:12]
+                  if homepage_preview and image_file.is_file() else site_url + og_cover)
     og_alt = HOMEPAGE_SHARE_ALT if homepage_preview else title + " — photograph by Nicholas Kincaid"
-    og_image = (f'<meta property="og:image" content="{esc(site_url + og_cover)}">\n'
+    og_image = (f'<meta property="og:image" content="{esc(image_href)}">\n'
                 f'  <meta property="og:image:alt" content="{esc(og_alt)}">\n'
-                f'  <meta name="twitter:image" content="{esc(site_url + og_cover)}">\n'
+                f'  <meta name="twitter:image:alt" content="{esc(og_alt)}">\n'
+                f'  <meta name="twitter:image" content="{esc(image_href)}">\n'
                 f'  <meta name="twitter:card" content="summary_large_image">') if og_cover else '<meta name="twitter:card" content="summary">'
     if homepage_preview:
         og_image += ('\n  <meta property="og:image:width" content="1200">'
                      '\n  <meta property="og:image:height" content="630">'
                      '\n  <meta property="og:image:type" content="image/jpeg">')
-    full_title = f'{site["name"]} — Photography' if path == '/' else f'{title} — {site["name"]}'
+    full_title = HOMEPAGE_SOCIAL_TITLE if homepage_preview else f'{title} — {site["name"]}'
     safe_desc = seo_summary(description) or f'Photography by {site["name"]}.'
     # Public social previews are concise; the separate search description and
     # structured data remain accurate and descriptive for search engines.
@@ -293,6 +299,7 @@ def document(title: str, description: str, site: dict, body: str, cover: str = '
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="author" content="Nicholas Kincaid">
   <link rel="canonical" href="{esc(canonical)}">
+  <meta property="og:locale" content="en_US">
   <meta property="og:type" content="{esc(kind)}">
   {social_site_name_tag}
   <meta property="og:url" content="{esc(canonical)}">

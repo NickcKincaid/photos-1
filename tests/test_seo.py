@@ -43,7 +43,7 @@ class SearchMetadataTests(unittest.TestCase):
     def test_homepage_has_clear_search_description_without_visible_intro(self):
         self.site.run()
         home = (self.root / 'dist' / 'index.html').read_text()
-        self.assertIn('<title>Nicholas Kincaid — Photography</title>', home)
+        self.assertIn('<title>Nick Kincaid</title>', home)
         self.assertIn('meta name="description" content="Photography by Nicholas Kincaid. Explore selected photographic projects', home)
         self.assertNotIn('class="home-intro"', home)
         self.assertIn('<h1 class="visually-hidden">Photography by Nicholas Kincaid</h1>', home)

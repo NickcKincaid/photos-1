@@ -173,6 +173,14 @@ export async function onRequestPost(context) {
     // One atomic Git commit for all changes to this project, including new files.
     const ref = await gh(context, '/git/ref/heads/main');
     const head = await gh(context, `/git/commits/${ref.object.sha}`);
+    // The early revision check is insufficient if a second editor saved while
+    // this request was validating images. Recheck at the exact commit used
+    // as our new tree base, before any GitHub write is attempted.
+    let pinned;
+    try { pinned = await gh(context, `/contents/content/projects/${slug}.json?ref=${ref.object.sha}`); }
+    catch (error) { if (error.status !== 404) throw error; pinned = null; }
+    const conflict = () => { const error = Error('This project changed while saving. Refresh the editor and try again.'); error.status = 409; throw error; };
+    if (create ? pinned !== null : (!pinned || pinned.sha !== input.revision)) conflict();
     treeEntries.push({ path:`content/projects/${slug}.json`, mode:'100644', type:'blob', content:JSON.stringify(next, null, 2) + '\n' });
     const tree = await gh(context, '/git/trees', { method:'POST', body:{ base_tree:head.tree.sha, tree:treeEntries } });
     const commit = await gh(context, '/git/commits', { method:'POST', body:{ message:`Publish photography project: ${title}`, tree:tree.sha, parents:[ref.object.sha] } });
