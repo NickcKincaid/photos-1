@@ -24,7 +24,7 @@ CONTENT = ROOT / 'content'
 OUT = ROOT / 'dist'
 SITE_URL = 'https://nickckincaid.com'
 CONTACT_EMAIL = 'contact@nickckincaid.com'
-SITE_VERSION = 'V41'
+SITE_VERSION = 'V41a'
 IMAGE_SIZES_HOME = '(max-width: 600px) calc(100vw - 24px), (max-width: 900px) 50vw, 33vw'
 IMAGE_SIZES_GALLERY = '(max-width: 600px) calc(100vw - 24px), 50vw'
 _OPTIMIZED = None
@@ -227,7 +227,10 @@ def load_projects() -> list[dict]:
 
 
 def nav(site: dict, active: str = '') -> str:
-    menu = [('Projects', '/', 'projects'), ('Notes', '/notes/', 'notes'), ('Inquire', '/inquire/', 'inquire')]
+    menu = [('Projects', '/', 'projects')]
+    if site.get('show_notes_tab', True):
+        menu.append(('Notes', '/notes/', 'notes'))
+    menu.append(('Inquire', '/inquire/', 'inquire'))
     links = ''.join(f'<a href="{href}"{" aria-current=\"page\"" if active == key else ""}>{label}</a>'
                     for label, href, key in menu)
     return f'''<a class="skip-link" href="#main">Skip to content</a>
@@ -637,6 +640,8 @@ def run() -> None:
     site = read_json(CONTENT / 'site.json')
     if not site.get('name'):
         raise ValueError('Set name in content/site.json')
+    if not isinstance(site.get('show_notes_tab', True), bool):
+        raise ValueError('show_notes_tab must be true or false in content/site.json')
     projects = load_projects()
     notes = load_notes()
     if OUT.exists():

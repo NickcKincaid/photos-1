@@ -197,3 +197,9 @@ main[hidden] { display: none !important; }
 .note-date-times .note-date-selected { border-top: 1px solid var(--line); padding-top: 8px; font-weight: 600; }
 .note-date-times .note-date-selected dt { color: var(--ink); }
 @media (max-width: 460px) { .note-date-times > div { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Notes navigation visibility: admin-only; no changes to public styling. */
+.notes-navigation-setting{border-block:1px solid var(--line);padding:8px 0 12px;margin:0 0 12px}
+.notes-navigation-setting .check{white-space:normal}
+.notes-navigation-setting button{padding:6px 9px}
+.notes-navigation-setting .muted{font-size:10px;line-height:1.5;margin:8px 0 0}

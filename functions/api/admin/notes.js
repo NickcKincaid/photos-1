@@ -72,7 +72,7 @@ export async function onRequestPost(context) {
     }
     const note = {title, body, published: input.published,
       created_at: previous.created_at || start,
-      published_at: input.published ? ((previous.published && previous.published_at) || now) : (previous.published_at || null),
+      published_at: input.published ? (previous.published_at || now) : (previous.published_at || null),
       date_mode: input.date_mode || previous.date_mode || 'published',
       updated_at: now};
     const payload = { message: `${creating ? 'Create' : 'Update'} note: ${(title || 'No Title').slice(0, 70)}`,
